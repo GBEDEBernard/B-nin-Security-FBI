@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('nom')->unique();
             $table->string('slug')->unique()->index();
-            $table->string('domain')->nullable()->unique();
-            $table->string('logo_path')->nullable();
+            $table->string('domaine')->nullable()->unique();
+            $table->string('chemin_logo')->nullable();
             $table->text('description')->nullable();
-            $table->json('metadata')->nullable();
-            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
-            $table->timestamp('activated_at')->nullable();
-            $table->timestamp('deactivated_at')->nullable();
+            $table->json('metadonnees')->nullable();
+            $table->enum('statut', ['active', 'inactive', 'suspended'])->default('active');
+            $table->string('telephone')->nullable();
+            $table->string('chemin_avatar')->nullable();
+            $table->timestamp('active_le')->nullable();
+            $table->timestamp('desactive_le')->nullable();
             $table->timestamps();
         });
     }

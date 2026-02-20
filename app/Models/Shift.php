@@ -9,30 +9,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Shift extends Model
 {
     protected $fillable = [
-        'tenant_id',
-        'agency_id',
-        'client_id',
-        'name',
-        'location',
+        'id_locataire',
+        'id_agence',
+        'id_client',
+        'nom',
+        'lieu',
         'description',
-        'start_time',
-        'end_time',
-        'required_agents',
-        'rate_per_agent',
-        'shift_date',
+        'heure_debut',
+        'heure_fin',
+        'agents_requis',
+        'tarif_par_agent',
+        'date_quart',
         'type',
-        'status',
-        'metadata',
+        'statut',
+        'metadonnees',
     ];
 
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
-            'shift_date' => 'date',
-            'start_time' => 'datetime:H:i',
-            'end_time' => 'datetime:H:i',
-            'rate_per_agent' => 'decimal:2',
+            'metadonnees' => 'array',
+            'date_quart' => 'date',
+            'heure_debut' => 'datetime:H:i',
+            'heure_fin' => 'datetime:H:i',
+            'tarif_par_agent' => 'decimal:2',
         ];
     }
 

@@ -4,27 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Client extends Model
+class Supervisor extends Model
 {
     protected $fillable = [
         'id_locataire',
+        'id_utilisateur',
         'id_agence',
-        'type',
-        'nom',
-        'personne_contact',
+        'nom_complet',
         'email',
         'telephone',
-        'autre_telephone',
+        'numero_id',
+        'type_id',
+        'date_naissance',
+        'genre',
         'adresse',
         'ville',
         'code_postal',
-        'pays',
-        'id_fiscal',
-        'notes',
+        'salaire_par_mois',
+        'date_embauche',
         'statut',
+        'date_fin',
         'metadonnees',
     ];
 
@@ -32,6 +32,10 @@ class Client extends Model
     {
         return [
             'metadonnees' => 'array',
+            'date_naissance' => 'date',
+            'date_embauche' => 'date',
+            'date_fin' => 'date',
+            'salaire_par_mois' => 'decimal:2',
         ];
     }
 
@@ -40,18 +44,13 @@ class Client extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function agency(): BelongsTo
     {
         return $this->belongsTo(Agency::class);
-    }
-
-    public function shifts(): HasMany
-    {
-        return $this->hasMany(Shift::class);
-    }
-
-    public function documents(): MorphMany
-    {
-        return $this->morphMany(Document::class, 'documentable');
     }
 }

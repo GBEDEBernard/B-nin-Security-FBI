@@ -13,19 +13,19 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('id_locataire')->constrained('tenants')->onDelete('cascade');
             $table->morphs('documentable');
             $table->string('type');
-            $table->string('file_path');
-            $table->string('original_filename');
-            $table->string('mime_type');
-            $table->unsignedBigInteger('file_size');
-            $table->date('expiry_date')->nullable();
+            $table->string('chemin_fichier');
+            $table->string('nom_fichier_original');
+            $table->string('type_mime');
+            $table->unsignedBigInteger('taille_fichier');
+            $table->date('date_expiration')->nullable();
             $table->text('notes')->nullable();
-            $table->enum('status', ['valid', 'expired', 'pending_renewal'])->default('valid');
-            $table->json('metadata')->nullable();
+            $table->enum('statut', ['valid', 'expired', 'pending_renewal'])->default('valid');
+            $table->json('metadonnees')->nullable();
             $table->timestamps();
-            $table->index(['tenant_id', 'documentable_type', 'documentable_id']);
+            $table->index(['id_locataire', 'documentable_type', 'documentable_id']);
         });
     }
 

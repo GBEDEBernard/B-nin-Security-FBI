@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -20,12 +21,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'tenant_id',
+        'id_locataire',
         'name',
         'email',
         'password',
-        'phone',
-        'avatar_path',
+        'telephone',
+        'chemin_avatar',
     ];
 
     /**
@@ -54,5 +55,25 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function agent(): HasOne
+    {
+        return $this->hasOne(Agent::class);
+    }
+
+    public function supervisor(): HasOne
+    {
+        return $this->hasOne(Supervisor::class);
+    }
+
+    public function controller(): HasOne
+    {
+        return $this->hasOne(Controller::class);
+    }
+
+    public function manager(): HasOne
+    {
+        return $this->hasOne(Manager::class);
     }
 }

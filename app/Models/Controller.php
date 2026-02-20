@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Agent extends Model
+class Controller extends Model
 {
+    protected $table = 'controllers';
+
     protected $fillable = [
         'id_locataire',
+        'id_utilisateur',
         'id_agence',
         'nom_complet',
         'email',
@@ -22,8 +23,7 @@ class Agent extends Model
         'adresse',
         'ville',
         'code_postal',
-        'poste',
-        'salaire_par_jour',
+        'salaire_par_mois',
         'date_embauche',
         'statut',
         'date_fin',
@@ -37,7 +37,7 @@ class Agent extends Model
             'date_naissance' => 'date',
             'date_embauche' => 'date',
             'date_fin' => 'date',
-            'salaire_par_jour' => 'decimal:2',
+            'salaire_par_mois' => 'decimal:2',
         ];
     }
 
@@ -46,18 +46,13 @@ class Agent extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function agency(): BelongsTo
     {
         return $this->belongsTo(Agency::class);
-    }
-
-    public function assignments(): HasMany
-    {
-        return $this->hasMany(Assignment::class);
-    }
-
-    public function documents(): MorphMany
-    {
-        return $this->morphMany(Document::class, 'documentable');
     }
 }

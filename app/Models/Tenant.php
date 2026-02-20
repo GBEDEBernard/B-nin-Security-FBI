@@ -8,23 +8,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Tenant extends Model
 {
     protected $fillable = [
-        'name',
+        'nom',
         'slug',
-        'domain',
-        'logo_path',
+        'domaine',
+        'chemin_logo',
         'description',
-        'metadata',
-        'status',
-        'activated_at',
-        'deactivated_at',
+        'metadonnees',
+        'statut',
+        'telephone',
+        'chemin_avatar',
+        'active_le',
+        'desactive_le',
     ];
 
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
-            'activated_at' => 'datetime',
-            'deactivated_at' => 'datetime',
+            'metadonnees' => 'array',
+            'active_le' => 'datetime',
+            'desactive_le' => 'datetime',
         ];
     }
 

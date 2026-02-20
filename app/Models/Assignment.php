@@ -8,24 +8,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Assignment extends Model
 {
     protected $fillable = [
-        'tenant_id',
-        'agent_id',
-        'shift_id',
-        'status',
-        'check_in_time',
-        'check_out_time',
+        'id_locataire',
+        'id_agent',
+        'id_quart',
+        'statut',
+        'heure_arrivee',
+        'heure_depart',
         'notes',
-        'actual_rate',
-        'metadata',
+        'tarif_reel',
+        'metadonnees',
     ];
 
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
-            'check_in_time' => 'datetime',
-            'check_out_time' => 'datetime',
-            'actual_rate' => 'decimal:2',
+            'metadonnees' => 'array',
+            'heure_arrivee' => 'datetime',
+            'heure_depart' => 'datetime',
+            'tarif_reel' => 'decimal:2',
         ];
     }
 

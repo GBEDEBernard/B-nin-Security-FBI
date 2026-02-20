@@ -9,31 +9,31 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Agency extends Model
 {
     protected $fillable = [
-        'tenant_id',
-        'name',
-        'registration_number',
-        'license_number',
+        'id_locataire',
+        'nom',
+        'numero_enregistrement',
+        'numero_permis',
         'email',
-        'phone',
-        'address',
-        'city',
-        'postal_code',
-        'country',
-        'owner_name',
-        'monthly_rate',
-        'status',
-        'activated_at',
-        'deactivated_at',
-        'metadata',
+        'telephone',
+        'adresse',
+        'ville',
+        'code_postal',
+        'pays',
+        'nom_proprietaire',
+        'tarif_mensuel',
+        'statut',
+        'active_le',
+        'desactive_le',
+        'metadonnees',
     ];
 
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
-            'activated_at' => 'datetime',
-            'deactivated_at' => 'datetime',
-            'monthly_rate' => 'decimal:2',
+            'metadonnees' => 'array',
+            'active_le' => 'datetime',
+            'desactive_le' => 'datetime',
+            'tarif_mensuel' => 'decimal:2',
         ];
     }
 

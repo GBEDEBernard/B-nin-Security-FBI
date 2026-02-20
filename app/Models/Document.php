@@ -9,25 +9,25 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Document extends Model
 {
     protected $fillable = [
-        'tenant_id',
+        'id_locataire',
         'documentable_type',
         'documentable_id',
         'type',
-        'file_path',
-        'original_filename',
-        'mime_type',
-        'file_size',
-        'expiry_date',
+        'chemin_fichier',
+        'nom_fichier_original',
+        'type_mime',
+        'taille_fichier',
+        'date_expiration',
         'notes',
-        'status',
-        'metadata',
+        'statut',
+        'metadonnees',
     ];
 
     protected function casts(): array
     {
         return [
-            'metadata' => 'array',
-            'expiry_date' => 'date',
+            'metadonnees' => 'array',
+            'date_expiration' => 'date',
         ];
     }
 
