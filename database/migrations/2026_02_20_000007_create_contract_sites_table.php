@@ -13,14 +13,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('contrat_prestation_id')->constrained('contrats_prestation')->onDelete('cascade');
             $table->foreignId('site_client_id')->constrained('sites_clients')->onDelete('cascade');
-            
+
             // Spécificités par site
             $table->integer('nombre_agents_site')->default(0);
             $table->json('horaires_site')->nullable(); // Horaires spécifiques à ce site
             $table->text('consignes_site')->nullable();
-            
+
             $table->timestamps();
-            
+
             // Un site ne peut être associé qu'une fois à un contrat
             $table->unique(['contrat_prestation_id', 'site_client_id'], 'unique_site_contrat');
         });
