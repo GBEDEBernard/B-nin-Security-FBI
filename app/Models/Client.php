@@ -5,53 +5,38 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Client extends Model
 {
+    protected $table = 'clients';
+
     protected $fillable = [
-        'id_locataire',
-        'id_agence',
-        'type',
+        'entreprise_id',
+        'type_client',
         'nom',
-        'personne_contact',
+        'prenoms',
+        'raison_sociale',
+        'nif',
+        'rc',
         'email',
         'telephone',
-        'autre_telephone',
+        'telephone_secondaire',
+        'contact_principal_nom',
+        'contact_principal_fonction',
         'adresse',
         'ville',
-        'code_postal',
         'pays',
-        'id_fiscal',
+        'est_actif',
         'notes',
-        'statut',
-        'metadonnees',
     ];
 
-    protected function casts(): array
+    public function entreprise(): BelongsTo
     {
-        return [
-            'metadonnees' => 'array',
-        ];
+        return $this->belongsTo(Entreprise::class);
     }
 
-    public function tenant(): BelongsTo
+    public function sites(): HasMany
     {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    public function agency(): BelongsTo
-    {
-        return $this->belongsTo(Agency::class);
-    }
-
-    public function shifts(): HasMany
-    {
-        return $this->hasMany(Shift::class);
-    }
-
-    public function documents(): MorphMany
-    {
-        return $this->morphMany(Document::class, 'documentable');
+        return $this->hasMany(SiteClient::class, 'client_id');
     }
 }
