@@ -1,39 +1,81 @@
 <!doctype html>
 <html lang="fr">
+<!-- 
+  ========================================
+  PAGE D'INSCRIPTION - BENIN SECURITY
+  ========================================
+  Cette page permet aux nouveaux utilisateurs
+  de créer un compte sur la plateforme.
+-->
 
 <head>
+  <!-- Métadonnées de la page -->
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>@yield('title', 'Bénin Security - Inscription')</title>
+
+  <!-- Viewport pour le responsive design -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+  <!-- Couleur du thème pour mobile -->
   <meta name="theme-color" content="#1a1a2e" />
+
+  <!-- Préchargement des polices Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Polices : Outfit pour les titres, Plus Jakarta Sans pour le corps -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Icônes Bootstrap -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+
+  <!-- Framework Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- 
+    ========================================
+    STYLES CSS PERSONNALISÉS
+    ========================================
+  -->
   <style>
+    /* --- VARIABLES CSS --- */
     :root {
+      /* Couleur principale : teal/vert */
       --primary-color: #00d4aa;
       --primary-dark: #00b894;
+
+      /* Couleur de fond sombre */
       --dark-bg: #0f0f1a;
+
+      /* Style glassmorphism (effet verre) */
       --card-bg: rgba(255, 255, 255, 0.08);
       --card-border: rgba(255, 255, 255, 0.12);
+
+      /* Couleurs du texte */
       --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7);
+
+      /* Style des champs de saisie */
       --input-bg: rgba(255, 255, 255, 0.05);
       --input-border: rgba(255, 255, 255, 0.15);
+
+      /* Couleur d'erreur */
       --error-color: #ff6b6b;
     }
 
+    /* --- RESET ET BASE --- */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    /* --- CORPS DE LA PAGE --- */
     body {
+      /* Police principale */
       font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+      /* Fond sombre avec dégradé */
       background: var(--dark-bg);
+      /* Centrage vertical et horizontal */
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -43,6 +85,7 @@
       padding: 20px 15px;
     }
 
+    /* --- FOND ANIMÉ --- */
     .auth-background {
       position: fixed;
       top: 0;
@@ -53,6 +96,7 @@
       background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
     }
 
+    /* Cercles de couleur en arrière-plan */
     .auth-background::before {
       content: '';
       position: absolute;
@@ -77,6 +121,7 @@
       }
     }
 
+    /* --- FORMES FLOTTANTES --- */
     .floating-shapes {
       position: fixed;
       top: 0;
@@ -96,6 +141,7 @@
       animation: float 12s ease-in-out infinite;
     }
 
+    /* Forme 1 : cercle teal en haut à droite */
     .shape-1 {
       width: 250px;
       height: 250px;
@@ -104,6 +150,7 @@
       right: -50px;
     }
 
+    /* Forme 2 : cercle violet en bas à gauche */
     .shape-2 {
       width: 200px;
       height: 200px;
@@ -125,6 +172,7 @@
       }
     }
 
+    /* --- CONTENEUR PRINCIPAL --- */
     .auth-container {
       position: relative;
       z-index: 10;
@@ -132,11 +180,13 @@
       max-width: 420px;
     }
 
+    /* --- SECTION LOGO --- */
     .logo-section {
       text-align: center;
       margin-bottom: 16px;
     }
 
+    /* Logo avec effet de gradient et animation */
     .logo-wrapper {
       display: inline-flex;
       align-items: center;
@@ -152,6 +202,7 @@
       overflow: hidden;
     }
 
+    /* Effet de shimmer (reflet) sur le logo */
     .logo-wrapper::before {
       content: '';
       position: absolute;
@@ -173,6 +224,7 @@
       }
     }
 
+    /* Animation de pulsation du logo */
     @keyframes logoPulse {
 
       0%,
@@ -190,6 +242,7 @@
       color: white;
     }
 
+    /* Nom de la marque */
     .brand-name {
       font-family: 'Outfit', sans-serif;
       font-size: 22px;
@@ -198,11 +251,13 @@
       margin-bottom: 3px;
     }
 
+    /* Slogan / tagline */
     .brand-tagline {
       font-size: 11px;
       color: var(--text-secondary);
     }
 
+    /* --- CARTE D'AUTHENTIFICATION --- */
     .auth-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
@@ -213,6 +268,7 @@
       box-shadow: 0 18px 35px rgba(0, 0, 0, 0.4);
     }
 
+    /* En-tête de la carte */
     .auth-card-header {
       text-align: center;
       margin-bottom: 18px;
@@ -231,11 +287,13 @@
       color: var(--text-secondary);
     }
 
+    /* --- CHAMPS DE FORMULAIRE --- */
     .form-group {
       margin-bottom: 12px;
       position: relative;
     }
 
+    /* Étiquette du champ */
     .form-label {
       display: block;
       font-size: 11px;
@@ -244,12 +302,14 @@
       margin-bottom: 5px;
     }
 
+    /* Conteneur pour centrer les icônes */
     .input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
     }
 
+    /* Style des champs de saisie */
     .form-control {
       width: 100%;
       padding: 9px 11px;
@@ -270,16 +330,19 @@
       color: rgba(255, 255, 255, 0.3);
     }
 
+    /* Style au focus */
     .form-control:focus {
       background: rgba(255, 255, 255, 0.08);
       border-color: var(--primary-color);
       box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
     }
 
+    /* Style erreur */
     .form-control.is-invalid {
       border-color: var(--error-color);
     }
 
+    /* --- ICÔNES DANS LES CHAMPS --- */
     .input-icon {
       position: absolute;
       left: 10px;
@@ -297,6 +360,7 @@
       color: var(--primary-color);
     }
 
+    /* --- BOUTON VOIR/MASQUER MOT DE PASSE --- */
     .password-toggle {
       position: absolute;
       right: 10px;
@@ -318,10 +382,12 @@
       color: var(--primary-color);
     }
 
+    /* --- INDICATEUR DE FORCE DU MOT DE PASSE --- */
     .password-strength {
       margin-top: 6px;
     }
 
+    /* Barre de progression */
     .strength-bar {
       height: 3px;
       background: var(--input-border);
@@ -330,6 +396,7 @@
       margin-bottom: 4px;
     }
 
+    /* Remplissage de la barre */
     .strength-fill {
       height: 100%;
       width: 0%;
@@ -337,6 +404,7 @@
       border-radius: 2px;
     }
 
+    /* Couleurs selon la force */
     .strength-fill.weak {
       width: 33%;
       background: var(--error-color);
@@ -352,16 +420,19 @@
       background: #00d4aa;
     }
 
+    /* Texte de la force */
     .strength-text {
       font-size: 10px;
       color: var(--text-secondary);
     }
 
+    /* --- CASE À COCHER CONDITIONS --- */
     .form-check-wrapper {
       display: flex;
       align-items: flex-start;
+      justify-content: flex-start;
       margin-bottom: 14px;
-      width: 100%;
+      width: 75%;
     }
 
     .form-check-wrapper .form-check {
@@ -376,6 +447,7 @@
       height: 13px;
       margin: 0;
       margin-right: 5px;
+      margin-left: 0px;
       margin-top: 2px;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
@@ -400,19 +472,21 @@
       color: var(--text-secondary);
       cursor: pointer;
       line-height: 1.4;
-      text-align: left;
+      text-align: right;
     }
 
     .form-check-label a {
       color: var(--primary-color);
       text-decoration: none;
       font-weight: 500;
+      margin-left: 2px;
     }
 
     .form-check-label a:hover {
       text-decoration: underline;
     }
 
+    /* --- BOUTON D'INSCRIPTION --- */
     .btn-submit {
       width: 100%;
       padding: 11px 18px;
@@ -442,6 +516,7 @@
       transform: none;
     }
 
+    /* --- PIED DE PAGE --- */
     .auth-footer {
       text-align: center;
       margin-top: 16px;
@@ -463,6 +538,7 @@
       text-decoration: underline;
     }
 
+    /* --- MESSAGES D'ALERTE --- */
     .alert-custom {
       padding: 10px 12px;
       border-radius: 8px;
@@ -492,6 +568,7 @@
       margin-top: 3px;
     }
 
+    /* --- INDICATEUR DE CHARGEMENT --- */
     .spinner {
       display: inline-block;
       width: 14px;
@@ -508,6 +585,7 @@
       }
     }
 
+    /* --- RESPONSIVE DESIGN (MOBILE) --- */
     @media (max-width: 480px) {
       .auth-container {
         padding: 8px;
@@ -535,6 +613,7 @@
       }
     }
 
+    /* --- MODE CLAIR (SUPPORT) --- */
     @media (prefers-color-scheme: light) {
       :root {
         --dark-bg: #f0f2f5;
@@ -549,27 +628,45 @@
   </style>
 </head>
 
+<!-- 
+  ========================================
+  CORPS DE LA PAGE HTML
+  ========================================
+-->
+
 <body>
 
+  <!-- Fond animé en arrière-plan -->
   <div class="auth-background"></div>
+
+  <!-- Formes flottantes décoratives -->
   <div class="floating-shapes">
     <div class="shape shape-1"></div>
     <div class="shape shape-2"></div>
   </div>
 
+  <!-- Conteneur principal -->
   <div class="auth-container">
+
+    <!-- Section Logo et Nom -->
     <div class="logo-section">
-      <div class="logo-wrapper"><i class="bi bi-shield-check"></i></div>
+      <div class="logo-wrapper">
+        <!-- Icône de bouclier (sécurité) -->
+        <i class="bi bi-shield-check"></i>
+      </div>
       <h1 class="brand-name">Bénin Security</h1>
       <p class="brand-tagline">Gestion de Sécurité Intelligente</p>
     </div>
 
+    <!-- Carte principale d'authentification -->
     <div class="auth-card">
+      <!-- En-tête -->
       <div class="auth-card-header">
         <h2 class="auth-card-title">Créer un compte</h2>
         <p class="auth-card-subtitle">Rejoignez notre plateforme</p>
       </div>
 
+      <!-- Messages d'erreur Laravel -->
       @if($errors->any())
       <div class="alert alert-danger-custom">
         <i class="bi bi-exclamation-circle-fill"></i>
@@ -581,6 +678,7 @@
       </div>
       @endif
 
+      <!-- Message de succès -->
       @if(session('success'))
       <div class="alert alert-success-custom">
         <i class="bi bi-check-circle-fill"></i>
@@ -588,65 +686,87 @@
       </div>
       @endif
 
+      <!-- Formulaire d'inscription -->
       <form method="POST" action="{{ route('register') }}" id="registerForm">
         @csrf
 
+        <!-- Champ Nom complet -->
         <div class="form-group">
           <label for="name" class="form-label">Nom complet</label>
           <div class="input-wrapper">
             <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" placeholder="Votre nom" required autofocus>
+            <!-- Icône personne -->
             <i class="bi bi-person-fill input-icon"></i>
           </div>
-          @error('name') <span class="invalid-feedback-custom">{{ $message }}</span> @enderror
+          @error('name')
+          <span class="invalid-feedback-custom">{{ $message }}</span>
+          @enderror
         </div>
 
+        <!-- Champ Email -->
         <div class="form-group">
           <label for="email" class="form-label">Email</label>
           <div class="input-wrapper">
             <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" placeholder="exemple@email.com" required>
+            <!-- Icône enveloppe -->
             <i class="bi bi-envelope-fill input-icon"></i>
           </div>
-          @error('email') <span class="invalid-feedback-custom">{{ $message }}</span> @enderror
+          @error('email')
+          <span class="invalid-feedback-custom">{{ $message }}</span>
+          @enderror
         </div>
 
+        <!-- Champ Téléphone (optionnel) -->
         <div class="form-group">
           <label for="phone" class="form-label">Téléphone</label>
           <div class="input-wrapper">
             <input type="tel" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" placeholder="+229 XX XX XX XX">
+            <!-- Icône téléphone -->
             <i class="bi bi-phone-fill input-icon"></i>
           </div>
         </div>
 
+        <!-- Champ Mot de passe -->
         <div class="form-group">
           <label for="password" class="form-label">Mot de passe</label>
           <div class="input-wrapper">
             <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="••••••••" required oninput="checkPasswordStrength()">
+            <!-- Icône cadenas -->
             <i class="bi bi-lock-fill input-icon"></i>
+            <!-- Bouton afficher/masquer -->
             <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon1')">
               <i class="bi bi-eye-fill" id="toggleIcon1"></i>
             </button>
           </div>
+          <!-- Indicateur de force du mot de passe -->
           <div class="password-strength">
             <div class="strength-bar">
               <div class="strength-fill" id="strengthFill"></div>
             </div>
             <span class="strength-text" id="strengthText"></span>
           </div>
-          @error('password') <span class="invalid-feedback-custom">{{ $message }}</span> @enderror
+          @error('password')
+          <span class="invalid-feedback-custom">{{ $message }}</span>
+          @enderror
         </div>
 
+        <!-- Champ Confirmer le mot de passe -->
         <div class="form-group">
           <label for="password_confirmation" class="form-label">Confirmer</label>
           <div class="input-wrapper">
             <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="••••••••" required oninput="checkPasswordMatch()">
+            <!-- Icône cadenas -->
             <i class="bi bi-lock-fill input-icon"></i>
+            <!-- Bouton afficher/masquer -->
             <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation', 'toggleIcon2')">
               <i class="bi bi-eye-fill" id="toggleIcon2"></i>
             </button>
           </div>
+          <!-- Feedback de correspondance -->
           <span class="invalid-feedback-custom" id="matchFeedback" style="display: none;"></span>
         </div>
 
+        <!-- Case à cocher Conditions d'utilisation -->
         <div class="form-check-wrapper">
           <div class="form-check">
             <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
@@ -654,22 +774,31 @@
           </div>
         </div>
 
+        <!-- Bouton de soumission -->
         <button type="submit" class="btn-submit" id="submitBtn">
-          <span id="btnText"><i class="bi bi-person-plus"></i> Créer mon compte</span>
+          <span id="btnText">
+            <i class="bi bi-person-plus"></i>
+            Créer mon compte
+          </span>
         </button>
       </form>
 
+      <!-- Lien vers la page de connexion -->
       <div class="auth-footer">
         <p>Déjà un compte ? <a href="{{ route('login') }}">Se connecter</a></p>
       </div>
     </div>
   </div>
 
+  <!-- Scripts JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
+    // Fonction pour afficher/masquer le mot de passe
     function togglePassword(inputId, iconId) {
       const passwordInput = document.getElementById(inputId);
       const toggleIcon = document.getElementById(iconId);
+
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.classList.remove('bi-eye-fill');
@@ -681,17 +810,23 @@
       }
     }
 
+    // Fonction pour vérifier la force du mot de passe
     function checkPasswordStrength() {
       const password = document.getElementById('password').value;
       const strengthFill = document.getElementById('strengthFill');
       const strengthText = document.getElementById('strengthText');
+
       let strength = 0;
+
+      // Critères de force
       if (password.length >= 8) strength++;
       if (password.match(/[a-z]/)) strength++;
       if (password.match(/[A-Z]/)) strength++;
       if (password.match(/[0-9]/)) strength++;
       if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
       strengthFill.className = 'strength-fill';
+
       if (password.length === 0) {
         strengthFill.style.width = '0%';
         strengthText.textContent = '';
@@ -710,10 +845,12 @@
       }
     }
 
+    // Fonction pour vérifier si les mots de passe correspondent
     function checkPasswordMatch() {
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('password_confirmation').value;
       const matchFeedback = document.getElementById('matchFeedback');
+
       if (confirmPassword.length > 0) {
         if (password === confirmPassword) {
           matchFeedback.style.display = 'block';
@@ -729,15 +866,20 @@
       }
     }
 
+    // Gestion de la soumission du formulaire
     document.getElementById('registerForm').addEventListener('submit', function(e) {
       const terms = document.getElementById('terms');
       const submitBtn = document.getElementById('submitBtn');
       const btnText = document.getElementById('btnText');
+
+      // Vérifier si les conditions sont acceptées
       if (!terms.checked) {
         e.preventDefault();
         alert('Veuillez accepter les conditions');
         return;
       }
+
+      // Désactiver le bouton et montrer le chargement
       submitBtn.disabled = true;
       btnText.innerHTML = '<span class="spinner"></span> Création...';
     });
