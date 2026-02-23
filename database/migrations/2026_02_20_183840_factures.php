@@ -1,5 +1,4 @@
 <?php
-// database/migrations/2024_01_01_000014_create_factures_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('factures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('entreprise_id')->constrained()->onDelete('cascade');
+            $table->foreignId('entreprise_id')->constrained('entreprises')->onDelete('cascade');
             $table->foreignId('contrat_prestation_id')->constrained('contrats_prestation')->onDelete('cascade');
-            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
 
             $table->string('numero_facture', 100)->unique();
             $table->string('reference', 255)->nullable();
@@ -27,8 +26,8 @@ return new class extends Migration
             $table->decimal('montant_ttc', 15, 2);
 
             // Détail
-            $table->json('detail_prestation')->nullable(); // Détail des agents, heures, etc.
-            $table->json('periodes_calc ul')->nullable();
+            $table->json('detail_prestation')->nullable();
+            $table->json('periodes_calc')->nullable();
 
             // Dates
             $table->date('date_emission');
@@ -36,9 +35,9 @@ return new class extends Migration
             $table->date('date_paiement')->nullable();
 
             // Paiement
-            $table->enum('statut', ['emise', 'envoyee', 'payee', 'partielle', 'impayee', 'annulee'])->default('emise');
+            $table->enum('statut', ['emise', 'envoyee', 'payee', 'partiellement_payee', 'impayee', 'annulee'])->default('emise');
             $table->decimal('montant_paye', 15, 2)->default(0);
-            $table->decimal('montant_restant', 15, 2)->virtualAs('montant_ttc - montant_paye');
+            $table->decimal('montant_restant', 15, 2)->default(0);
 
             // Fichier
             $table->string('fichier_pdf', 255)->nullable();
@@ -47,6 +46,7 @@ return new class extends Migration
             $table->foreignId('cree_par')->constrained('employes');
 
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['entreprise_id', 'statut']);
             $table->index(['client_id', 'mois', 'annee']);

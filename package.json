@@ -25,6 +25,7 @@
     "dependencies": {
         "@headlessui/vue": "^1.7.23",
         "@vitejs/plugin-vue": "^6.0.4",
+        "admin-lte": "^4.0.0-rc6",
         "leaflet": "^1.9.4",
         "vue": "^3.5.27",
         "vue-router": "^4.6.4",

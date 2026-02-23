@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'admin@benin-security.local'],
             [
                 'name' => 'Super Admin',
-                'phone' => '+229 12 34 56 78',
+                'telephone' => '+229 12 34 56 78',
                 'password' => Hash::make('admin@BenSecure2026'),
                 'email_verified_at' => now(),
             ]
@@ -32,41 +32,49 @@ class SuperAdminSeeder extends Seeder
             [
                 'name' => 'Directeur Général',
                 'email' => 'general-director@benin-security.local',
+                'telephone' => '+229 90 00 00 01',
                 'role' => 'general_director',
             ],
             [
                 'name' => 'Directeur Adjoint',
                 'email' => 'deputy-director@benin-security.local',
+                'telephone' => '+229 90 00 00 02',
                 'role' => 'deputy_director',
             ],
             [
                 'name' => 'Directeur des Opérations',
                 'email' => 'operations-director@benin-security.local',
+                'telephone' => '+229 90 00 00 03',
                 'role' => 'operations_director',
             ],
             [
                 'name' => 'Superviseur',
                 'email' => 'supervisor@benin-security.local',
+                'telephone' => '+229 90 00 00 04',
                 'role' => 'supervisor',
             ],
             [
                 'name' => 'Contrôleur',
                 'email' => 'controller@benin-security.local',
+                'telephone' => '+229 90 00 00 05',
                 'role' => 'controller',
             ],
             [
                 'name' => 'Agent de Sécurité',
                 'email' => 'agent@benin-security.local',
+                'telephone' => '+229 90 00 00 06',
                 'role' => 'agent',
             ],
             [
                 'name' => 'Client Particulier',
                 'email' => 'client-individual@benin-security.local',
+                'telephone' => '+229 90 00 00 07',
                 'role' => 'client_individual',
             ],
             [
                 'name' => 'Client Entreprise',
                 'email' => 'client-company@benin-security.local',
+                'telephone' => '+229 90 00 00 08',
                 'role' => 'client_company',
             ],
         ];
@@ -78,7 +86,7 @@ class SuperAdminSeeder extends Seeder
                 ['email' => $userData['email']],
                 [
                     'name' => $userData['name'],
-                    'phone' => '+229 90 00 00 00',
+                    'telephone' => $userData['telephone'],
                     'password' => $defaultPassword,
                     'email_verified_at' => now(),
                 ]

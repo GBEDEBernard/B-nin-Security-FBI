@@ -95,13 +95,14 @@ return [
     |
     */
 
-    'cipher' => 'AES-256-CBC',
+    'cipher' => 'aes-256-cbc',
 
     'key' => env('APP_KEY'),
 
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
+
         ),
     ],
 

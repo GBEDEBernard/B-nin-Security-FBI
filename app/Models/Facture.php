@@ -52,9 +52,4 @@ class Facture extends Model
     {
         return $this->hasMany(PaiementFacture::class, 'facture_id');
     }
-
-    public function paiements(): HasMany
-    {
-        return $this->hasMany(PaiementFacture::class, 'facture_id');
-    }
 }

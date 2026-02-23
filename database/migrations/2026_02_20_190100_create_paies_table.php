@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('paies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('entreprise_id')->constrained()->onDelete('cascade');
+            $table->foreignId('entreprise_id')->constrained('entreprises')->onDelete('cascade');
             $table->foreignId('employe_id')->constrained('employes')->onDelete('cascade');
 
             $table->integer('mois');
@@ -48,10 +48,11 @@ return new class extends Migration
 
             $table->json('details_calcul')->nullable();
 
-            $table->foreignId('calcule_par')->constrained('employes');
-            $table->foreignId('valide_par')->nullable()->constrained('employes');
+            $table->foreignId('calcule_par')->nullable()->constrained('users');
+            $table->foreignId('valide_par')->nullable()->constrained('users');
 
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['employe_id', 'mois', 'annee']);
             $table->index(['entreprise_id', 'mois', 'annee', 'statut']);

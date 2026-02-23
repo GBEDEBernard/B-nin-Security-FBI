@@ -1,5 +1,4 @@
 <?php
-// database/migrations/2024_01_01_000003_create_employes_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('employes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('entreprise_id')->constrained()->onDelete('cascade');
-            
+            $table->foreignId('entreprise_id')->constrained('entreprises')->onDelete('cascade');
+
             // Identité
             $table->string('matricule', 50)->unique();
             $table->enum('civilite', ['M', 'Mme', 'Mlle'])->default('M');
@@ -27,7 +26,7 @@ return new class extends Migration
             $table->string('telephone_urgence', 50)->nullable();
             $table->string('photo', 255)->nullable();
             $table->text('adresse')->nullable();
-            
+
             // Catégorie hiérarchique (POSTE OCCUPE DANS L'ENTREPRISE DE SECURITE)
             $table->enum('categorie', [
                 'direction',
@@ -35,7 +34,7 @@ return new class extends Migration
                 'controle',
                 'agent'
             ])->default('agent');
-            
+
             $table->enum('poste', [
                 // Direction
                 'directeur_general',
@@ -51,25 +50,26 @@ return new class extends Migration
                 'agent_mobile',
                 'agent_poste_fixe'
             ])->default('agent_terrain');
-            
+
             $table->integer('niveau_hierarchique')->default(5); // 1 = plus haut (DG), 5 = agent
-            
+
             // Contrat avec l'entreprise de sécurité
             $table->enum('type_contrat', ['cdi', 'cdd', 'stage', 'prestation'])->default('cdi');
             $table->date('date_embauche');
             $table->date('date_fin_contrat')->nullable();
             $table->decimal('salaire_base', 10, 2)->default(0);
             $table->string('numero_cnss', 50)->nullable();
-            
+
             // Statut
             $table->boolean('est_actif')->default(true);
             $table->enum('statut', ['en_poste', 'conge', 'suspendu', 'licencie'])->default('en_poste');
             $table->date('date_depart')->nullable();
             $table->text('motif_depart')->nullable();
-            
+
             $table->rememberToken();
             $table->timestamps();
-            
+            $table->softDeletes();
+
             // Index
             $table->index(['entreprise_id', 'categorie', 'poste']);
             $table->index('matricule');
