@@ -119,6 +119,7 @@ class SuperAdminSeeder extends Seeder
                     'telephone' => $userData['telephone'],
                     'password' => $defaultPassword,
                     'email_verified_at' => now(),
+                    'entreprise_id' => $entreprise->id, // Link to the default enterprise
                 ]
             );
 
