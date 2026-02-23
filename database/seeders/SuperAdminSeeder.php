@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Entreprise;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,34 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create super admin user
+        // Create a default enterprise for the security company
+        $entreprise = Entreprise::firstOrCreate(
+            ['email' => 'benin-security@benin-security.local'],
+            [
+                'nom_entreprise' => 'Bénin Security',
+                'slug' => 'benin-security',
+                'nom_commercial' => 'Bénin Security',
+                'forme_juridique' => 'SARL',
+                'numero_registre' => 'RC/2024/001',
+                'numeroIdentificationFiscale' => 'NIF-2024-001',
+                'numeroContribuable' => 'NC-2024-001',
+                'email' => 'benin-security@benin-security.local',
+                'telephone' => '+229 11 22 33 44',
+                'adresse' => 'Cotonou, République du Bénin',
+                'ville' => 'Cotonou',
+                'pays' => 'Bénin',
+                'nom_representant_legal' => 'Administrateur',
+                'email_representant_legal' => 'admin@benin-security.local',
+                'telephone_representant_legal' => '+229 12 34 56 78',
+                'formule' => 'entreprise',
+                'nombre_agents_max' => 100,
+                'nombre_sites_max' => 50,
+                'est_active' => true,
+                'est_en_essai' => false,
+            ]
+        );
+
+        // Create super admin user linked to the enterprise
         $superAdmin = User::firstOrCreate(
             ['email' => 'admin@benin-security.local'],
             [
@@ -21,6 +49,8 @@ class SuperAdminSeeder extends Seeder
                 'telephone' => '+229 12 34 56 78',
                 'password' => Hash::make('admin@BenSecure2026'),
                 'email_verified_at' => now(),
+                'entreprise_id' => $entreprise->id,
+                'is_superadmin' => true,
             ]
         );
 
