@@ -516,28 +516,133 @@
 
     @media (max-width: 480px) {
       .auth-container {
-        padding: 10px;
+        padding: 8px;
+        max-width: 100%;
       }
 
       .auth-card {
-        padding: 20px 16px;
+        padding: 16px 14px;
       }
 
       .logo-wrapper {
-        width: 52px;
-        height: 52px;
+        width: 48px;
+        height: 48px;
       }
 
       .logo-wrapper i {
-        font-size: 24px;
+        font-size: 22px;
       }
 
       .brand-name {
-        font-size: 20px;
+        font-size: 18px;
+      }
+
+      .brand-tagline {
+        font-size: 10px;
       }
 
       .auth-card-title {
-        font-size: 18px;
+        font-size: 16px;
+      }
+
+      .auth-card-subtitle {
+        font-size: 11px;
+      }
+
+      .form-label {
+        font-size: 11px;
+      }
+
+      .form-control {
+        padding: 10px 10px;
+        padding-left: 32px;
+        padding-right: 32px;
+        font-size: 13px;
+        height: 40px;
+      }
+
+      .input-icon {
+        font-size: 12px;
+        left: 10px;
+      }
+
+      .password-toggle {
+        right: 8px;
+        font-size: 12px;
+      }
+
+      .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .remember-wrapper {
+        margin-left: 0 !important;
+      }
+
+      .form-check-label,
+      .forgot-link {
+        font-size: 11px;
+      }
+
+      .btn-submit {
+        padding: 12px 16px;
+        font-size: 13px;
+        height: 40px;
+      }
+
+      .social-divider {
+        margin: 14px 0;
+      }
+
+      .social-divider span {
+        font-size: 10px;
+      }
+
+      .btn-social {
+        padding: 8px;
+        height: 36px;
+        font-size: 14px;
+      }
+
+      .auth-footer p {
+        font-size: 12px;
+      }
+
+      .alert-custom {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 10px 8px;
+      }
+
+      .auth-card {
+        padding: 14px 12px;
+      }
+
+      .brand-name {
+        font-size: 16px;
+      }
+
+      .auth-card-title {
+        font-size: 15px;
+      }
+
+      .form-control {
+        font-size: 12px;
+        height: 38px;
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+
+      .btn-submit {
+        font-size: 12px;
+        height: 38px;
       }
     }
 

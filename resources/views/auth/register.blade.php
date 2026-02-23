@@ -583,31 +583,124 @@
       }
     }
 
-    /* --- RESPONSIVE DESIGN (MOBILE) --- */
     @media (max-width: 480px) {
       .auth-container {
         padding: 8px;
+        max-width: 100%;
       }
 
       .auth-card {
-        padding: 16px 14px;
+        padding: 14px 12px;
       }
 
       .logo-wrapper {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
       }
 
       .logo-wrapper i {
-        font-size: 22px;
+        font-size: 20px;
       }
 
       .brand-name {
-        font-size: 18px;
+        font-size: 16px;
+      }
+
+      .brand-tagline {
+        font-size: 10px;
       }
 
       .auth-card-title {
-        font-size: 16px;
+        font-size: 15px;
+      }
+
+      .auth-card-subtitle {
+        font-size: 11px;
+      }
+
+      .form-label {
+        font-size: 10px;
+      }
+
+      .form-control {
+        padding: 8px 10px;
+        padding-left: 30px;
+        padding-right: 30px;
+        font-size: 12px;
+        height: 36px;
+      }
+
+      .input-icon {
+        font-size: 11px;
+        left: 8px;
+      }
+
+      .password-toggle {
+        right: 8px;
+        font-size: 11px;
+        width: 16px;
+        height: 16px;
+      }
+
+      .form-check-wrapper {
+        margin-bottom: 12px;
+      }
+
+      .form-check-label {
+        font-size: 9px;
+      }
+
+      .form-check-label a {
+        font-size: 9px;
+      }
+
+      .btn-submit {
+        padding: 10px 14px;
+        font-size: 12px;
+        height: 36px;
+      }
+
+      .auth-footer {
+        margin-top: 14px;
+      }
+
+      .auth-footer p {
+        font-size: 11px;
+      }
+
+      .alert-custom {
+        padding: 8px 10px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 8px 6px;
+      }
+
+      .auth-card {
+        padding: 12px 10px;
+      }
+
+      .brand-name {
+        font-size: 14px;
+      }
+
+      .auth-card-title {
+        font-size: 14px;
+      }
+
+      .form-control {
+        font-size: 11px;
+        height: 34px;
+        padding-left: 28px;
+        padding-right: 28px;
+      }
+
+      .btn-submit {
+        font-size: 11px;
+        height: 34px;
       }
     }
 
