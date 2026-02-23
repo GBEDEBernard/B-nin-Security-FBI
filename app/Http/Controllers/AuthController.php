@@ -12,9 +12,14 @@ class AuthController extends Controller
 {
     /**
      * Affiche le formulaire de connexion
+     * Si déjà connecté, redirige vers le dashboard
      */
     public function showLoginForm()
     {
+        // Si déjà connecté, rediriger vers le dashboard
+        if (Auth::check()) {
+            return redirect()->route('dashboard')->with('info', 'Vous êtes déjà connecté.');
+        }
         return view('auth.login');
     }
 
@@ -52,9 +57,14 @@ class AuthController extends Controller
 
     /**
      * Affiche le formulaire d'inscription
+     * Si déjà connecté, redirige vers le dashboard
      */
     public function showRegistrationForm()
     {
+        // Si déjà connecté, rediriger vers le dashboard
+        if (Auth::check()) {
+            return redirect()->route('dashboard')->with('info', 'Vous êtes déjà connecté.');
+        }
         return view('auth.register');
     }
 
@@ -76,7 +86,6 @@ class AuthController extends Controller
         ]);
 
         // Assigner le rôle par défaut (agent pour les nouveaux utilisateurs)
-        // Vous pouvez changer 'agent' selon votre besoin
         $user->assignRole('agent');
 
         Auth::login($user);
@@ -94,6 +103,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('success', 'Vous avez été déconnecté.');
+        return redirect('/login')->with('success', 'Vous avez été déconnecté.');
     }
 }
