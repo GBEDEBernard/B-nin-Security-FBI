@@ -430,9 +430,8 @@
     .form-check-wrapper {
       display: flex;
       align-items: flex-start;
-      justify-content: flex-start;
       margin-bottom: 14px;
-      width: 75%;
+      width: 100%;
     }
 
     .form-check-wrapper .form-check {
@@ -447,7 +446,6 @@
       height: 13px;
       margin: 0;
       margin-right: 5px;
-      margin-left: 0px;
       margin-top: 2px;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
@@ -768,7 +766,7 @@
 
         <!-- Case à cocher Conditions d'utilisation -->
         <div class="form-check-wrapper">
-          <div class="form-check">
+          <div class="form-check" style="margin-left: 25px;margin-top: 5px;">
             <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
             <label class="form-check-label" for="terms">J'accepte les <a href="#">conditions</a> et la <a href="#">politique</a></label>
           </div>

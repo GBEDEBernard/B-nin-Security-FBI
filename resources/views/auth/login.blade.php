@@ -619,7 +619,7 @@
         </div>
 
         <div class="form-options">
-          <div class="remember-wrapper">
+          <div class="remember-wrapper" style="margin-left: 20px;">
             <div class="form-check">
               <input type="checkbox" class="form-check-input" id="remember" name="remember">
               <label class="form-check-label" for="remember">Se souvenir</label>
