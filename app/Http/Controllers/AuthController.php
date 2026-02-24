@@ -41,6 +41,13 @@ class AuthController extends Controller
             ]);
         }
 
+        // Vérifier si le compte est actif
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['Votre compte est inactif. Veuillez contacter l\'administrateur.'],
+            ]);
+        }
+
         // Vérifier si l'utilisateur peut accéder à l'application
         if (!$user->peutAcceder()) {
             throw ValidationException::withMessages([
@@ -52,7 +59,15 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/dashboard')->with('success', 'Bienvenue ' . $user->name . ' !');
+        // Enregistrer les informations de connexion
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ]);
+
+        // Rediriger vers le dashboard approprié selon le rôle
+        return redirect()->to($user->getDashboardUrl())
+            ->with('success', 'Bienvenue ' . $user->name . ' !');
     }
 
     /**

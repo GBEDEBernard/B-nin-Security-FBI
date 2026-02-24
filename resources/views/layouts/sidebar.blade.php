@@ -3,7 +3,7 @@
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
     <!--begin::Brand Link-->
-    <a href="/" class="brand-link">
+    <a href="{{ auth()->check() ? route(auth()->user()->getDashboardRoute()) : route('home') }}" class="brand-link">
       <!--begin::Brand Image-->
       <div class="brand-image-container">
         <i class="bi bi-shield-check brand-icon"></i>
@@ -24,13 +24,84 @@
 
         {{-- Dashboard --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+          <a href="{{ auth()->check() ? route(auth()->user()->getDashboardRoute()) : route('home') }}" class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-speedometer2"></i>
             <p>Dashboard</p>
           </a>
         </li>
 
-        {{-- Gestion --}}
+        {{-- =========================================================== --}}
+        {{-- MENU SUPER ADMIN --}}
+        {{-- =========================================================== --}}
+        @if(auth()->check() && auth()->user()->estSuperAdmin())
+
+        <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
+
+        {{-- Gestion des Entreprises --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-building-fill"></i>
+            <p>
+              Entreprises
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('dashboard.superadmin.entreprises.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des entreprises</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('dashboard.superadmin.entreprises.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Ajouter une entreprise</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Utilisateurs Globaux --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-people-gear"></i>
+            <p>
+              Utilisateurs
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('dashboard.superadmin.utilisateurs.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des utilisateurs</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('dashboard.superadmin.utilisateurs.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouvel utilisateur</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Paramètres --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.superadmin.parametres.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-gear-fill"></i>
+            <p>Paramètres Système</p>
+          </a>
+        </li>
+
+        @endif
+
+        {{-- =========================================================== --}}
+        {{-- MENU ENTREPRISE (Direction, Superviseur, Contrôleur) --}}
+        {{-- =========================================================== --}}
+        @if(auth()->check() && auth()->user()->estUtilisateurEntreprise() && !auth()->user()->estSuperAdmin())
+
         <li class="nav-header text-uppercase fw-bold text-primary">Gestion</li>
 
         {{-- Clients --}}
@@ -44,21 +115,15 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.clients.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des clients</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.clients.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un client</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Types de clients</p>
               </a>
             </li>
           </ul>
@@ -75,21 +140,15 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.employes.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des employés</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.employes.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un employé</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Catégories</p>
               </a>
             </li>
           </ul>
@@ -107,27 +166,9 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.contrats.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Tous les contrats</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Contrats actifs</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Contrats expirés</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Nouveau contrat</p>
               </a>
             </li>
           </ul>
@@ -158,7 +199,6 @@
           </ul>
         </li>
 
-        {{-- Opérations --}}
         <li class="nav-header text-uppercase fw-bold text-primary">Opérations</li>
 
         {{-- Pointages --}}
@@ -180,7 +220,7 @@
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
-                <p>今天的 pointage</p>
+                <p>Today's pointage</p>
               </a>
             </li>
           </ul>
@@ -197,7 +237,7 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Planning</p>
               </a>
@@ -262,7 +302,6 @@
           </ul>
         </li>
 
-        {{-- Comptabilité --}}
         <li class="nav-header text-uppercase fw-bold text-primary">Comptabilité</li>
 
         {{-- Facturation --}}
@@ -321,7 +360,14 @@
           </ul>
         </li>
 
-        {{-- Paramètres --}}
+        {{-- Rapports --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.entreprise.rapports.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-graph-up"></i>
+            <p>Rapports</p>
+          </a>
+        </li>
+
         <li class="nav-header text-uppercase fw-bold text-primary">Paramètres</li>
 
         {{-- Entreprise --}}
@@ -349,30 +395,110 @@
           </ul>
         </li>
 
-        {{-- Utilisateurs --}}
+        @endif
+
+        {{-- =========================================================== --}}
+        {{-- MENU AGENT --}}
+        {{-- =========================================================== --}}
+        @if(auth()->check() && auth()->user()->estAgent())
+
+        <li class="nav-header text-uppercase fw-bold text-primary">Mon Activité</li>
+
+        {{-- Mes Missions --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.agent.missions.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-briefcase-fill"></i>
+            <p>Mes Missions</p>
+          </a>
+        </li>
+
+        {{-- Pointages --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.agent.pointages.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-clock-fill"></i>
+            <p>Mes Pointages</p>
+          </a>
+        </li>
+
+        {{-- Congés --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.agent.conges.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-calendar-event-fill"></i>
+            <p>Mes Congés</p>
+          </a>
+        </li>
+
+        <li class="nav-header text-uppercase fw-bold text-primary">Mon Compte</li>
+
+        {{-- Profil --}}
         <li class="nav-item">
           <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-person-gear"></i>
+            <i class="nav-icon bi bi-person-circle"></i>
+            <p>Mon Profil</p>
+          </a>
+        </li>
+
+        @endif
+
+        {{-- =========================================================== --}}
+        {{-- MENU CLIENT --}}
+        {{-- =========================================================== --}}
+        @if(auth()->check() && auth()->user()->estClient())
+
+        <li class="nav-header text-uppercase fw-bold text-primary">Mon Espace</li>
+
+        {{-- Mes Contrats --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.client.contrats.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-file-earmark-check-fill"></i>
+            <p>Mes Contrats</p>
+          </a>
+        </li>
+
+        {{-- Mes Factures --}}
+        <li class="nav-item">
+          <a href="{{ route('dashboard.client.factures.index') }}" class="nav-link">
+            <i class="nav-icon bi bi-receipt"></i>
+            <p>Mes Factures</p>
+          </a>
+        </li>
+
+        {{-- Incidents --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-exclamation-triangle-fill"></i>
             <p>
-              Utilisateurs
+              Incidents
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.client.incidents.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
-                <p>Liste utilisateurs</p>
+                <p>Historique</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('dashboard.client.incidents.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
-                <p>Rôles & Permissions</p>
+                <p>Signaler un incident</p>
               </a>
             </li>
           </ul>
         </li>
+
+        <li class="nav-header text-uppercase fw-bold text-primary">Mon Compte</li>
+
+        {{-- Profil --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-person-circle"></i>
+            <p>Mon Profil</p>
+          </a>
+        </li>
+
+        @endif
 
       </ul>
       <!--end::Sidebar Menu-->

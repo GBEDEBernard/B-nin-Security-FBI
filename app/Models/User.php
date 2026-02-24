@@ -23,6 +23,12 @@ class User extends Authenticatable
         'entreprise_id',
         'employe_id',
         'is_superadmin',
+        // Nouveaux champs multi-tenant
+        'type_user',
+        'client_id',
+        'is_active',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     protected $hidden = [
@@ -34,8 +40,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_superadmin' => 'boolean',
+        'is_active' => 'boolean',
         'entreprise_id' => 'integer',
         'employe_id' => 'integer',
+        'client_id' => 'integer',
+        'last_login_at' => 'datetime',
     ];
 
     // ── Relations ───────────────────────────────────────────────────────────
@@ -85,11 +94,123 @@ class User extends Authenticatable
             return true;
         }
 
+        // Vérifier si le compte est actif
+        if ($this->is_active === false) {
+            return false;
+        }
+
         if (!$this->entreprise_id) {
             return false;
         }
 
         $entreprise = $this->entreprise;
         return $entreprise && $entreprise->est_active;
+    }
+
+    // ── Relations pour les clients ─────────────────────────────────────────
+
+    /**
+     * Le client (si l'utilisateur est un client)
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    // ── Méthodes de vérification de rôle ───────────────────────────────────
+
+    /**
+     * Est un utilisateur interne (employé de l'entreprise de sécurité)
+     */
+    public function estInterne(): bool
+    {
+        return $this->type_user === 'interne';
+    }
+
+    /**
+     * Est un client (particulier ou entreprise avec compte)
+     */
+    public function estClient(): bool
+    {
+        return $this->type_user === 'client';
+    }
+
+    /**
+     * Est direction (Directeur Général ou Directeur Adjoint)
+     */
+    public function estDirection(): bool
+    {
+        return $this->hasRole(['general_director', 'deputy_director']);
+    }
+
+    /**
+     * Est superviseur
+     */
+    public function estSuperviseur(): bool
+    {
+        return $this->hasRole('supervisor');
+    }
+
+    /**
+     * Est contrôleur
+     */
+    public function estControleur(): bool
+    {
+        return $this->hasRole('controller');
+    }
+
+    /**
+     * Est agent de terrain
+     */
+    public function estAgent(): bool
+    {
+        return $this->hasRole('agent');
+    }
+
+    /**
+     * Est un utilisateur de l'entreprise (direction, superviseur, contrôleur, agent)
+     */
+    public function estUtilisateurEntreprise(): bool
+    {
+        return $this->estDirection() || $this->estSuperviseur() || $this->estControleur() || $this->estAgent();
+    }
+
+    // ── Méthodes de redirection ───────────────────────────────────────────
+
+    /**
+     * Retourne le nom de la route du dashboard selon le rôle
+     */
+    public function getDashboardRoute(): string
+    {
+        // Super Admin
+        if ($this->estSuperAdmin()) {
+            return 'dashboard.superadmin.index';
+        }
+
+        // Client
+        if ($this->estClient()) {
+            return 'dashboard.client.index';
+        }
+
+        // Utilisateurs de l'entreprise (direction, superviseur, contrôleur, agent)
+        if ($this->estUtilisateurEntreprise()) {
+            // Les agents ont un dashboard spécifique
+            if ($this->estAgent()) {
+                return 'dashboard.agent.index';
+            }
+            // Direction, superviseur et contrôleur ont le dashboard entreprise
+            return 'dashboard.entreprise.index';
+        }
+
+        // Par défaut, dashboard générique
+        return 'dashboard';
+    }
+
+    /**
+     * Retourne l'URL du dashboard selon le rôle
+     */
+    public function getDashboardUrl(): string
+    {
+        return route($this->getDashboardRoute());
     }
 }
