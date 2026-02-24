@@ -1,9 +1,9 @@
  <!--begin::Header-->
- <nav class="app-header navbar navbar-expand bg-dark shadow-sm" data-bs-theme="dark">
+ <nav class="app-header navbar navbar-expand bg-dark shadow-sm" data-bs-theme="dark" style="min-height: 60px;">
    <!--begin::Container-->
    <div class="container-fluid">
      <!--begin::Start Navbar Links-->
-     <ul class="navbar-nav">
+     <ul class="navbar-nav align-items-center">
        <li class="nav-item">
          <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
            <i class="bi bi-list"></i>
@@ -18,7 +18,7 @@
      <!--end::Start Navbar Links-->
 
      <!--begin::End Navbar Links-->
-     <ul class="navbar-nav ms-auto">
+     <ul class="navbar-nav ms-auto align-items-center">
        <!--begin::Navbar Search-->
        <li class="nav-item">
          <a class="nav-link" data-widget="navbar-search" href="#" role="button">
@@ -152,8 +152,8 @@
 
        <!--begin::User Menu Dropdown-->
        @auth
-       <li class="nav-item dropdown user-menu">
-         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+       <li class="nav-item dropdown user-menu ms-2">
+         <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
            <div class="user-image-wrapper">
              @if(Auth::user()->photo)
              <img
@@ -166,30 +166,31 @@
              </div>
              @endif
            </div>
-           <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+           <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</span>
          </a>
          <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
            <!--begin::User Image-->
-           <li class="user-header text-bg-dark">
+           <li class="user-header text-bg-dark d-flex flex-column align-items-center py-3">
              @if(Auth::user()->photo)
              <img
                src="{{ asset('storage/' . Auth::user()->photo) }}"
-               class="rounded-circle shadow"
-               alt="User Image" />
+               class="rounded-circle shadow mb-2"
+               alt="User Image"
+               style="width: 60px; height: 60px; object-fit: cover;" />
              @else
-             <div class="user-avatar-lg rounded-circle shadow mx-auto mb-2">
+             <div class="user-avatar-lg rounded-circle shadow mb-2">
                {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
              </div>
              @endif
-             <p>
+             <p class="mb-0 text-center">
                {{ Auth::user()->name }}
-               @if(Auth::user()->roles && count(Auth::user()->roles) > 0)
-               <small>{{ Auth::user()->roles[0]->name }}</small>
-               @else
-               <small>Membre</small>
-               @endif
-               <small>Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
              </p>
+             @if(Auth::user()->roles && count(Auth::user()->roles) > 0)
+             <small class="text-success">{{ Auth::user()->roles[0]->name }}</small>
+             @else
+             <small>Membre</small>
+             @endif
+             <small class="text-secondary" style="font-size: 0.75rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
            </li>
            <!--end::User Image-->
            <!--begin::Menu Body-->
@@ -210,13 +211,13 @@
            </li>
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
-           <li class="user-footer">
-             <a href="#" class="btn btn-outline-secondary">
+           <li class="user-footer p-2">
+             <a href="#" class="btn btn-outline-secondary btn-sm">
                <i class="bi bi-person-circle me-1"></i> Profil
              </a>
              <form method="POST" action="{{ route('logout') }}" class="d-inline">
                @csrf
-               <button type="submit" class="btn btn-outline-danger float-end">
+               <button type="submit" class="btn btn-outline-danger btn-sm float-end">
                  <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
                </button>
              </form>
@@ -239,7 +240,7 @@
        <!--end::User Menu Dropdown-->
 
        <!--begin::Theme Toggle-->
-       <li class="nav-item">
+       <li class="nav-item ms-2">
          <button
            class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
            id="bd-theme"
@@ -302,23 +303,38 @@
  <!--end::Header-->
 
  <style>
-   /* Custom Header Styles */
+   /* Custom Header Styles - Responsive & Fixed Height */
+   .app-header {
+     min-height: 60px !important;
+     max-height: 60px !important;
+   }
+
+   .app-header .navbar-nav {
+     align-items: center;
+   }
+
+   .app-header .nav-link {
+     padding-top: 0.5rem;
+     padding-bottom: 0.5rem;
+   }
+
    .user-image-wrapper {
      position: relative;
-     width: 32px;
-     height: 32px;
+     width: 36px;
+     height: 36px;
      overflow: hidden;
+     flex-shrink: 0;
    }
 
    .user-image {
-     width: 32px;
-     height: 32px;
+     width: 36px;
+     height: 36px;
      object-fit: cover;
    }
 
    .user-avatar {
-     width: 32px;
-     height: 32px;
+     width: 36px;
+     height: 36px;
      display: flex;
      align-items: center;
      justify-content: center;
@@ -346,5 +362,50 @@
      right: 2px;
      font-size: 0.6rem;
      padding: 0.15rem 0.35rem;
+   }
+
+   /* Text truncation for username */
+   .text-truncate {
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+   }
+
+   /* Responsive adjustments */
+   @media (max-width: 991.98px) {
+     .app-header {
+       min-height: 56px !important;
+       max-height: 56px !important;
+     }
+
+     .user-image-wrapper {
+       width: 32px;
+       height: 32px;
+     }
+
+     .user-image {
+       width: 32px;
+       height: 32px;
+     }
+
+     .user-avatar {
+       width: 32px;
+       height: 32px;
+       font-size: 12px;
+     }
+   }
+
+   @media (max-width: 575.98px) {
+     .app-header {
+       min-height: 52px !important;
+       max-height: 52px !important;
+       padding-left: 0.5rem !important;
+       padding-right: 0.5rem !important;
+     }
+
+     /* Hide non-essential elements on very small screens */
+     .nav-link[data-lte-toggle="sidebar"] {
+       padding: 0.25rem 0.5rem;
+     }
    }
  </style>
