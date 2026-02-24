@@ -1,5 +1,5 @@
  <!--begin::Header-->
- <nav class="app-header navbar navbar-expand bg-body">
+ <nav class="app-header navbar navbar-expand bg-dark shadow-sm" data-bs-theme="dark">
    <!--begin::Container-->
    <div class="container-fluid">
      <!--begin::Start Navbar Links-->
@@ -10,10 +10,9 @@
          </a>
        </li>
        <li class="nav-item d-none d-md-block">
-         <a href="#" class="nav-link">Home</a>
-       </li>
-       <li class="nav-item d-none d-md-block">
-         <a href="#" class="nav-link">Contact</a>
+         <a href="{{ route('dashboard') }}" class="nav-link">
+           <i class="bi bi-house-door me-1"></i> Accueil
+         </a>
        </li>
      </ul>
      <!--end::Start Navbar Links-->
@@ -40,8 +39,7 @@
              <div class="d-flex">
                <div class="flex-shrink-0">
                  <img
-
-                   src="./assets/img/user1-128x128.jpg"
+                   src="{{ asset('dist/assets/img/user1-128x128.jpg') }}"
                    alt="User Avatar"
                    class="img-size-50 rounded-circle me-3" />
                </div>
@@ -64,7 +62,7 @@
              <div class="d-flex">
                <div class="flex-shrink-0">
                  <img
-                   src="./assets/img/user8-128x128.jpg"
+                   src="{{ asset('dist/assets/img/user8-128x128.jpg') }}"
                    alt="User Avatar"
                    class="img-size-50 rounded-circle me-3" />
                </div>
@@ -89,7 +87,7 @@
              <div class="d-flex">
                <div class="flex-shrink-0">
                  <img
-                   src="./assets/img/user3-128x128.jpg"
+                   src="{{ asset('dist/assets/img/user3-128x128.jpg') }}"
                    alt="User Avatar"
                    class="img-size-50 rounded-circle me-3" />
                </div>
@@ -109,7 +107,7 @@
              <!--end::Message-->
            </a>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
+           <a href="#" class="dropdown-item dropdown-footer">Voir tous les messages</a>
          </div>
        </li>
        <!--end::Messages Dropdown Menu-->
@@ -118,27 +116,27 @@
        <li class="nav-item dropdown">
          <a class="nav-link" data-bs-toggle="dropdown" href="#">
            <i class="bi bi-bell-fill"></i>
-           <span class="navbar-badge badge text-bg-warning">15</span>
+           <span class="navbar-badge badge text-bg-warning">5</span>
          </a>
          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <span class="dropdown-item dropdown-header">15 Notifications</span>
+           <span class="dropdown-item dropdown-header">5 Notifications</span>
            <div class="dropdown-divider"></div>
            <a href="#" class="dropdown-item">
-             <i class="bi bi-envelope me-2"></i> 4 new messages
+             <i class="bi bi-envelope me-2"></i> 4 nouveaux messages
              <span class="float-end text-secondary fs-7">3 mins</span>
            </a>
            <div class="dropdown-divider"></div>
            <a href="#" class="dropdown-item">
-             <i class="bi bi-people-fill me-2"></i> 8 friend requests
-             <span class="float-end text-secondary fs-7">12 hours</span>
+             <i class="bi bi-people-fill me-2"></i> 8 demandes de congés
+             <span class="float-end text-secondary fs-7">12 heures</span>
            </a>
            <div class="dropdown-divider"></div>
            <a href="#" class="dropdown-item">
-             <i class="bi bi-file-earmark-fill me-2"></i> 3 new reports
-             <span class="float-end text-secondary fs-7">2 days</span>
+             <i class="bi bi-exclamation-triangle me-2"></i> 3 nouveaux incidents
+             <span class="float-end text-secondary fs-7">2 jours</span>
            </a>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer"> See All Notifications </a>
+           <a href="#" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
          </div>
        </li>
        <!--end::Notifications Dropdown Menu-->
@@ -156,21 +154,40 @@
        @auth
        <li class="nav-item dropdown user-menu">
          <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-           <img
-             src="./assets/img/user2-160x160.jpg"
-             class="user-image rounded-circle shadow"
-             alt="User Image" />
+           <div class="user-image-wrapper">
+             @if(Auth::user()->photo)
+             <img
+               src="{{ asset('storage/' . Auth::user()->photo) }}"
+               class="user-image rounded-circle shadow"
+               alt="User Image" />
+             @else
+             <div class="user-avatar rounded-circle shadow">
+               {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+             </div>
+             @endif
+           </div>
            <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
          </a>
          <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
            <!--begin::User Image-->
-           <li class="user-header text-bg-primary">
+           <li class="user-header text-bg-dark">
+             @if(Auth::user()->photo)
              <img
-               src="./assets/img/user2-160x160.jpg"
+               src="{{ asset('storage/' . Auth::user()->photo) }}"
                class="rounded-circle shadow"
                alt="User Image" />
+             @else
+             <div class="user-avatar-lg rounded-circle shadow mx-auto mb-2">
+               {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+             </div>
+             @endif
              <p>
                {{ Auth::user()->name }}
+               @if(Auth::user()->roles && count(Auth::user()->roles) > 0)
+               <small>{{ Auth::user()->roles[0]->name }}</small>
+               @else
+               <small>Membre</small>
+               @endif
                <small>Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
              </p>
            </li>
@@ -180,10 +197,10 @@
              <!--begin::Row-->
              <div class="row">
                <div class="col-4 text-center">
-                 <a href="#">Rôles</a>
+                 <a href="#">Profil</a>
                </div>
                <div class="col-4 text-center">
-                 <a href="#">Permissions</a>
+                 <a href="#">Rôles</a>
                </div>
                <div class="col-4 text-center">
                  <a href="#">Paramètres</a>
@@ -194,7 +211,9 @@
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
            <li class="user-footer">
-             <a href="#" class="btn btn-outline-secondary">Profil</a>
+             <a href="#" class="btn btn-outline-secondary">
+               <i class="bi bi-person-circle me-1"></i> Profil
+             </a>
              <form method="POST" action="{{ route('logout') }}" class="d-inline">
                @csrf
                <button type="submit" class="btn btn-outline-danger float-end">
@@ -219,67 +238,113 @@
        @endauth
        <!--end::User Menu Dropdown-->
 
-       <!--begin::End Navbar links-->
-       <ul class="navbar-nav ms-auto">
-         <li class="nav-item dropdown">
-           <button
-             class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
-             id="bd-theme"
-             type="button"
-             aria-expanded="false"
-             data-bs-toggle="dropdown"
-             data-bs-display="static">
-             <span class="theme-icon-active">
-               <i class="my-1"></i>
-             </span>
-             <span class="d-lg-none ms-2" id="bd-theme-text">Toggle theme</span>
-           </button>
-           <ul
-             class="dropdown-menu dropdown-menu-end"
-             aria-labelledby="bd-theme-text"
-             style="--bs-dropdown-min-width: 8rem;">
-             <li>
-               <button
-                 type="button"
-                 class="dropdown-item d-flex align-items-center active"
-                 data-bs-theme-value="light"
-                 aria-pressed="false">
-                 <i class="bi bi-sun-fill me-2"></i>
-                 Light
-                 <i class="bi bi-check-lg ms-auto d-none"></i>
-               </button>
-             </li>
-             <li>
-               <button
-                 type="button"
-                 class="dropdown-item d-flex align-items-center"
-                 data-bs-theme-value="dark"
-                 aria-pressed="false">
-                 <i class="bi bi-moon-fill me-2"></i>
-                 Dark
-                 <i class="bi bi-check-lg ms-auto d-none"></i>
-               </button>
-             </li>
-             <li>
-               <button
-                 type="button"
-                 class="dropdown-item d-flex align-items-center"
-                 data-bs-theme-value="auto"
-                 aria-pressed="true">
-                 <i class="bi bi-circle-fill-half-stroke me-2"></i>
-                 Auto
-                 <i class="bi bi-check-lg ms-auto d-none"></i>
-               </button>
-             </li>
-           </ul>
-         </li>
-       </ul>
+       <!--begin::Theme Toggle-->
+       <li class="nav-item">
+         <button
+           class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+           id="bd-theme"
+           type="button"
+           aria-expanded="false"
+           data-bs-toggle="dropdown"
+           data-bs-display="static">
+           <span class="theme-icon-active">
+             <i class="my-1"></i>
+           </span>
+           <span class="d-lg-none ms-2" id="bd-theme-text">Changer le thème</span>
+         </button>
+         <ul
+           class="dropdown-menu dropdown-menu-end"
+           aria-labelledby="bd-theme-text"
+           style="--bs-dropdown-min-width: 8rem;">
+           <li>
+             <button
+               type="button"
+               class="dropdown-item d-flex align-items-center active"
+               data-bs-theme-value="light"
+               aria-pressed="false">
+               <i class="bi bi-sun-fill me-2"></i>
+               Clair
+               <i class="bi bi-check-lg ms-auto d-none"></i>
+             </button>
+           </li>
+           <li>
+             <button
+               type="button"
+               class="dropdown-item d-flex align-items-center"
+               data-bs-theme-value="dark"
+               aria-pressed="false">
+               <i class="bi bi-moon-fill me-2"></i>
+               Sombre
+               <i class="bi bi-check-lg ms-auto d-none"></i>
+             </button>
+           </li>
+           <li>
+             <button
+               type="button"
+               class="dropdown-item d-flex align-items-center"
+               data-bs-theme-value="auto"
+               aria-pressed="true">
+               <i class="bi bi-circle-fill-half-stroke me-2"></i>
+               Auto
+               <i class="bi bi-check-lg ms-auto d-none"></i>
+             </button>
+           </li>
+         </ul>
+       </li>
+       <!--end::Theme Toggle-->
+
      </ul>
-
-
      <!--end::End Navbar Links-->
 
    </div>
    <!--end::Container-->
  </nav>
  <!--end::Header-->
+
+ <style>
+   /* Custom Header Styles */
+   .user-image-wrapper {
+     position: relative;
+     width: 32px;
+     height: 32px;
+     overflow: hidden;
+   }
+
+   .user-image {
+     width: 32px;
+     height: 32px;
+     object-fit: cover;
+   }
+
+   .user-avatar {
+     width: 32px;
+     height: 32px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+     color: white;
+     font-weight: bold;
+     font-size: 14px;
+   }
+
+   .user-avatar-lg {
+     width: 60px;
+     height: 60px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+     color: white;
+     font-weight: bold;
+     font-size: 20px;
+   }
+
+   .navbar-badge {
+     position: absolute;
+     top: 2px;
+     right: 2px;
+     font-size: 0.6rem;
+     padding: 0.15rem 0.35rem;
+   }
+ </style>
