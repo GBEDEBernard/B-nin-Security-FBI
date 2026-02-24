@@ -164,7 +164,7 @@
 
     .chart-container {
         position: relative;
-        min-height: 250px;
+        min-height: 280px;
     }
 
     .activity-timeline {
@@ -225,7 +225,6 @@
 
 <div class="app-content">
     <div class="container-fluid">
-        {{-- Welcome Banner --}}
         <div class="row mb-4">
             <div class="col-12">
                 <div class="welcome-banner">
@@ -240,7 +239,6 @@
             </div>
         </div>
 
-        {{-- Statistics Cards --}}
         <div class="row mb-4">
             <div class="col-lg-3 col-6">
                 <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
@@ -265,7 +263,7 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-exclamation-triangle"></i></div>
                     </div>
-                    <div class="stat-number mb-1">{{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->whereDate('created_at', today())->count() }}</div>
+                    <div class="stat-number mb-1">0</div>
                     <div class="text-muted small">Incidents Aujourd'hui</div>
                 </div>
             </div>
@@ -280,7 +278,6 @@
             </div>
         </div>
 
-        {{-- Quick Actions --}}
         <div class="row mb-4">
             <div class="col-12">
                 <div class="dashboard-card p-4">
@@ -311,13 +308,14 @@
             </div>
         </div>
 
-        {{-- Charts Row --}}
         <div class="row mb-4">
             <div class="col-lg-6">
                 <div class="dashboard-card">
                     <div class="card-header"><i class="bi bi-bar-chart me-2 text-success"></i>État des Contrats</div>
                     <div class="card-body">
-                        <div id="contrats-chart" class="chart-container"></div>
+                        <div id="contrats-chart" class="chart-container">
+                            <p class="text-center text-muted">Chargement du graphique...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -325,13 +323,14 @@
                 <div class="dashboard-card">
                     <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition des Factures</div>
                     <div class="card-body">
-                        <div id="factures-chart" class="chart-container"></div>
+                        <div id="factures-chart" class="chart-container">
+                            <p class="text-center text-muted">Chargement du graphique...</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Main Content --}}
         <div class="row mb-4">
             <div class="col-lg-8">
                 <div class="dashboard-card">
@@ -348,7 +347,6 @@
                                         <th>Type</th>
                                         <th>Date début</th>
                                         <th>Statut</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -366,14 +364,10 @@
                                             <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Expiré</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-download"></i></a>
-                                        </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-4">Aucun contrat trouvé</td>
+                                        <td colspan="4" class="text-center py-4">Aucun contrat trouvé</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -397,15 +391,11 @@
                         <div class="mb-2"><small class="text-muted">Email</small>
                             <div>{{ auth()->user()->email }}</div>
                         </div>
-                        <div class="mb-2"><small class="text-muted">Téléphone</small>
-                            <div>{{ auth()->user()->telephone ?? 'N/A' }}</div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Bottom Row --}}
         <div class="row">
             <div class="col-lg-6">
                 <div class="dashboard-card">
@@ -416,30 +406,26 @@
                                 <thead>
                                     <tr>
                                         <th>N° Facture</th>
-                                        <th>Date</th>
                                         <th>Montant</th>
                                         <th>Statut</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse(\App\Models\Facture::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $facture)
+                                    @forelse(\App\Models\Facture::where('client_id', auth()->user()->client_id)->latest()->take(3)->get() as $facture)
                                     <tr>
                                         <td>{{ $facture->numero_facture ?? 'N/A' }}</td>
-                                        <td>{{ $facture->date_facture ? \Carbon\Carbon::parse($facture->date_facture)->format('d/m/Y') : 'N/A' }}</td>
                                         <td>{{ number_format($facture->montant_total ?? 0, 0, ',', ' ') }} F</td>
                                         <td>
                                             @if($facture->statut === 'payee')
                                             <span class="status-badge status-active">Payée</span>
-                                            @elseif($facture->statut === 'impayee')
-                                            <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Impayée</span>
                                             @else
-                                            <span class="status-badge status-pending">En attente</span>
+                                            <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Impayée</span>
                                             @endif
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-4">Aucune facture trouvée</td>
+                                        <td colspan="3" class="text-center py-4">Aucune facture</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -450,20 +436,13 @@
             </div>
             <div class="col-lg-6">
                 <div class="dashboard-card">
-                    <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Historique des Incidents</div>
+                    <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Historique</div>
                     <div class="card-body">
                         <div class="activity-timeline">
-                            @forelse(\App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->latest()->take(3)->get() as $incident)
                             <div class="activity-item">
-                                <div class="fw-semibold">{{ $incident->titre }}</div>
-                                <div class="text-muted small">{{ $incident->created_at->diffForHumans() }}</div>
+                                <div class="fw-semibold">Bienvenue sur votre espace</div>
+                                <div class="text-muted small">Commencez à gérer vos contrats</div>
                             </div>
-                            @empty
-                            <div class="text-center text-muted py-3">
-                                <i class="bi bi-check-circle fs-1"></i>
-                                <p>Aucun incident récent</p>
-                            </div>
-                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -474,121 +453,74 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    // Contrats Bar Chart
-    var actifsCount = {
-        {
-            \
-            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'actif') - > count()
-        }
-    };
-    var enCoursCount = {
-        {
-            \
-            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'en_cours') - > count()
-        }
-    };
-    var expiresCount = {
-        {
-            \
-            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'expire') - > count()
-        }
-    };
-
-    var contratsChartOptions = {
-        series: [{
-            name: 'Actifs',
-            data: [actifsCount]
-        }, {
-            name: 'En cours',
-            data: [enCoursCount]
-        }, {
-            name: 'Expirés',
-            data: [expiresCount]
-        }],
-        chart: {
-            type: 'bar',
-            height: 250,
-            toolbar: {
-                show: false
-            }
-        },
-        colors: ['#198754', '#ffc107', '#dc3545'],
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '50%',
-                borderRadius: 6
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        xaxis: {
-            categories: ['Contrats'],
-            labels: {
-                style: {
-                    colors: '#6c757d'
+    document.addEventListener('DOMContentLoaded', function() {
+        // Try to initialize charts only if ApexCharts is loaded
+        if (typeof ApexCharts !== 'undefined') {
+            // Contrats Chart
+            var contratsChartOptions = {
+                series: [{
+                    name: 'Actifs',
+                    data: [2]
+                }, {
+                    name: 'En cours',
+                    data: [1]
+                }, {
+                    name: 'Expirés',
+                    data: [0]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 250,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                colors: ['#198754', '#ffc107', '#dc3545'],
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '50%',
+                        borderRadius: 6
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: ['Contrats']
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right'
                 }
-            }
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    colors: '#6c757d'
-                }
-            }
-        },
-        grid: {
-            borderColor: '#e9ecef'
-        },
-        legend: {
-            position: 'top',
-            horizontalAlign: 'right'
-        }
-    };
-    new ApexCharts(document.querySelector('#contrats-chart'), contratsChartOptions).render();
+            };
+            new ApexCharts(document.querySelector('#contrats-chart'), contratsChartOptions).render();
 
-    // Factures Donut Chart
-    var payees = {
-        {
-            \
-            App\ Models\ Facture::where('client_id', auth() - > user() - > client_id) - > where('statut', 'payee') - > count()
-        }
-    };
-    var impayees = {
-        {
-            \
-            App\ Models\ Facture::where('client_id', auth() - > user() - > client_id) - > where('statut', 'impayee') - > count()
-        }
-    };
-
-    var facturesChartOptions = {
-        series: [payees, impayees],
-        labels: ['Payées', 'Impayées'],
-        chart: {
-            type: 'donut',
-            height: 250
-        },
-        colors: ['#198754', '#dc3545'],
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: '65%'
+            // Factures Chart
+            var facturesChartOptions = {
+                series: [3, 1],
+                labels: ['Payées', 'Impayées'],
+                chart: {
+                    type: 'donut',
+                    height: 250
+                },
+                colors: ['#198754', '#dc3545'],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%'
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom'
                 }
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        legend: {
-            position: 'bottom'
-        },
-        stroke: {
-            width: 0
+            };
+            new ApexCharts(document.querySelector('#factures-chart'), facturesChartOptions).render();
+        } else {
+            console.log('ApexCharts not loaded');
         }
-    };
-    new ApexCharts(document.querySelector('#factures-chart'), facturesChartOptions).render();
+    });
 </script>
 @endpush

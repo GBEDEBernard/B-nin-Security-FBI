@@ -258,6 +258,15 @@
     .chart-container {
         position: relative;
         min-height: 300px;
+        width: 100%;
+    }
+
+    .chart-container>div {
+        width: 100% !important;
+    }
+
+    .apexcharts-canvas {
+        width: 100% !important;
     }
 </style>
 @endpush
@@ -492,142 +501,144 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    // Bar Chart - Contracts Evolution
-    var contractsChartOptions = {
-        series: [{
-            name: 'Contrats Actifs',
-            data: [12, 15, 18, 22, 25, 28, 32, 35, 38, 42, 45, 48]
-        }, {
-            name: 'Contrats Expirés',
-            data: [3, 4, 5, 4, 6, 5, 7, 8, 6, 9, 7, 10]
-        }],
-        chart: {
-            type: 'bar',
-            height: 300,
-            toolbar: {
-                show: false
-            },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800
-            }
-        },
-        colors: ['#198754', '#dc3545'],
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '55%',
-                borderRadius: 8
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            show: true,
-            width: 2,
-            colors: ['transparent']
-        },
-        xaxis: {
-            categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
-            labels: {
-                style: {
-                    colors: '#6c757d'
-                }
-            }
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    colors: '#6c757d'
-                }
-            }
-        },
-        fill: {
-            opacity: 1
-        },
-        tooltip: {
-            y: {
-                formatter: function(val) {
-                    return val + ' contrats';
-                }
-            }
-        },
-        legend: {
-            position: 'top',
-            horizontalAlign: 'right'
-        },
-        grid: {
-            borderColor: '#e9ecef'
-        }
-    };
-    new ApexCharts(document.querySelector('#contracts-chart'), contractsChartOptions).render();
-
-    // Pie Chart - Distribution
-    var enterprisesCount = {
-        {
-            \
-            App\ Models\ Entreprise::count()
-        }
-    };
-    var clientsCount = {
-        {
-            \
-            App\ Models\ Client::count()
-        }
-    };
-    var contratsCount = {
-        {
-            \
-            App\ Models\ ContratPrestation::count()
-        }
-    };
-    var employesCount = {
-        {
-            \
-            App\ Models\ Employe::count()
-        }
-    };
-    var totalCount = enterprisesCount + clientsCount + contratsCount + employesCount;
-
-    var distributionChartOptions = {
-        series: [enterprisesCount, clientsCount, contratsCount, employesCount],
-        labels: ['Entreprises', 'Clients', 'Contrats', 'Employés'],
-        chart: {
-            type: 'donut',
-            height: 280
-        },
-        colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: '65%',
-                    labels: {
-                        show: true,
-                        total: {
-                            show: true,
-                            label: 'Total',
-                            formatter: function() {
-                                return totalCount.toString();
+    document.addEventListener('DOMContentLoaded', function() {
+                if (typeof ApexCharts !== 'undefined') {
+                    // Bar Chart - Contracts Evolution
+                    var contractsChartOptions = {
+                        series: [{
+                            name: 'Contrats Actifs',
+                            data: [12, 15, 18, 22, 25, 28, 32, 35, 38, 42, 45, 48]
+                        }, {
+                            name: 'Contrats Expirés',
+                            data: [3, 4, 5, 4, 6, 5, 7, 8, 6, 9, 7, 10]
+                        }],
+                        chart: {
+                            type: 'bar',
+                            height: 300,
+                            toolbar: {
+                                show: false
+                            },
+                            animations: {
+                                enabled: true,
+                                easing: 'easeinout',
+                                speed: 800
                             }
+                        },
+                        colors: ['#198754', '#dc3545'],
+                        plotOptions: {
+                            bar: {
+                                horizontal: false,
+                                columnWidth: '55%',
+                                borderRadius: 8
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        stroke: {
+                            show: true,
+                            width: 2,
+                            colors: ['transparent']
+                        },
+                        xaxis: {
+                            categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                            labels: {
+                                style: {
+                                    colors: '#6c757d'
+                                }
+                            }
+                        },
+                        yaxis: {
+                            labels: {
+                                style: {
+                                    colors: '#6c757d'
+                                }
+                            }
+                        },
+                        fill: {
+                            opacity: 1
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: function(val) {
+                                    return val + ' contrats';
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            horizontalAlign: 'right'
+                        },
+                        grid: {
+                            borderColor: '#e9ecef'
                         }
-                    }
-                }
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        legend: {
-            position: 'bottom'
-        },
-        stroke: {
-            width: 0
-        }
-    };
-    new ApexCharts(document.querySelector('#distribution-chart'), distributionChartOptions).render();
+                    };
+                    new ApexCharts(document.querySelector('#contracts-chart'), contractsChartOptions).render();
+
+                    // Pie Chart - Distribution
+                    var enterprisesCount = {
+                        {
+                            \
+                            App\ Models\ Entreprise::count()
+                        }
+                    };
+                    var clientsCount = {
+                        {
+                            \
+                            App\ Models\ Client::count()
+                        }
+                    };
+                    var contratsCount = {
+                        {
+                            \
+                            App\ Models\ ContratPrestation::count()
+                        }
+                    };
+                    var employesCount = {
+                        {
+                            \
+                            App\ Models\ Employe::count()
+                        }
+                    };
+                    var totalCount = enterprisesCount + clientsCount + contratsCount + employesCount;
+
+                    var distributionChartOptions = {
+                        series: [enterprisesCount, clientsCount, contratsCount, employesCount],
+                        labels: ['Entreprises', 'Clients', 'Contrats', 'Employés'],
+                        chart: {
+                            type: 'donut',
+                            height: 280
+                        },
+                        colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    size: '65%',
+                                    labels: {
+                                        show: true,
+                                        total: {
+                                            show: true,
+                                            label: 'Total',
+                                            formatter: function() {
+                                                return totalCount.toString();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        legend: {
+                            position: 'bottom'
+                        },
+                        stroke: {
+                            width: 0
+                        }
+                    };
+                    new ApexCharts(document.querySelector('#distribution-chart'), distributionChartOptions).render();
+                });
 </script>
 @endpush
