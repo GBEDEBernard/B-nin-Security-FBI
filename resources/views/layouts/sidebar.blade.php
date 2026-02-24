@@ -37,6 +37,26 @@
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
+        {{-- Bouton de retour au SuperAdmin (si en contexte entreprise) --}}
+        @if(auth()->user()->estEnContexteEntreprise())
+        <li class="nav-item">
+          <a href="{{ route('admin.superadmin.return') }}" class="nav-link bg-warning text-dark">
+            <i class="nav-icon bi bi-arrow-left-circle"></i>
+            <p class="fw-bold">Retour Super Admin</p>
+          </a>
+        </li>
+
+        {{-- Indicateur de l'entreprise courante --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link bg-info bg-opacity-25">
+            <i class="nav-icon bi bi-building text-info"></i>
+            <p class="text-info">
+              <strong>{{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}</strong>
+            </p>
+          </a>
+        </li>
+        @endif
+
         {{-- Gestion des Entreprises --}}
         <li class="nav-item">
           <a href="#" class="nav-link">
@@ -61,6 +81,35 @@
             </li>
           </ul>
         </li>
+
+        {{-- Accès Rapide aux Tableaux de Bord --}}
+        @php
+        $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();
+        @endphp
+        @if($entreprises->count() > 0)
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-layout-text-window-reverse"></i>
+            <p>
+              Accès Rapide
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            @foreach($entreprises as $entreprise)
+            <li class="nav-item">
+              <form method="POST" action="{{ route('admin.superadmin.entreprises.connect', $entreprise->id) }}" style="display: contents;">
+                @csrf
+                <button type="submit" class="nav-link btn btn-link text-start">
+                  <i class="nav-icon bi bi-box-arrow-in-right text-primary"></i>
+                  <p>{{ $entreprise->nom_entreprise }}</p>
+                </button>
+              </form>
+            </li>
+            @endforeach
+          </ul>
+        </li>
+        @endif
 
         {{-- Utilisateurs Globaux --}}
         <li class="nav-item">

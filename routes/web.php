@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SuperAdminController;
 
 /*|--------------------------------------------------------------------------
 | Web Routes
@@ -43,42 +44,33 @@ Route::get('/admin', function () {
 
 // Admin Super Admin
 Route::middleware(['auth', 'tenant'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
-    Route::get('/', function () {
-        return view('admin.superadmin');
-    })->name('index');
+    // Dashboard
+    Route::get('/', [SuperAdminController::class, 'index'])->name('index');
 
     // Routes pour la gestion des entreprises (tenants)
     Route::prefix('entreprises')->name('entreprises.')->group(function () {
-        Route::get('/', function () {
-            return view('admin.superadmin.entreprises.index');
-        })->name('index');
-        Route::get('/create', function () {
-            return view('admin.superadmin.entreprises.create');
-        })->name('create');
-        Route::get('/{id}', function ($id) {
-            return view('admin.superadmin.entreprises.show', ['id' => $id]);
-        })->name('show');
-        Route::get('/{id}/edit', function ($id) {
-            return view('admin.superadmin.entreprises.edit', ['id' => $id]);
-        })->name('edit');
+        Route::get('/', [SuperAdminController::class, 'entreprisesIndex'])->name('index');
+        Route::get('/create', [SuperAdminController::class, 'entreprisesCreate'])->name('create');
+        Route::get('/{id}', [SuperAdminController::class, 'entreprisesShow'])->name('show');
+        Route::get('/{id}/edit', [SuperAdminController::class, 'entreprisesEdit'])->name('edit');
+
+        // Route pour se connecter au tableau de bord d'une entreprise
+        Route::post('/{id}/connect', [SuperAdminController::class, 'switchToEntreprise'])->name('connect');
     });
 
     // Routes pour la gestion des utilisateurs globaux
     Route::prefix('utilisateurs')->name('utilisateurs.')->group(function () {
-        Route::get('/', function () {
-            return view('admin.superadmin.utilisateurs.index');
-        })->name('index');
-        Route::get('/create', function () {
-            return view('admin.superadmin.utilisateurs.create');
-        })->name('create');
+        Route::get('/', [SuperAdminController::class, 'utilisateursIndex'])->name('index');
+        Route::get('/create', [SuperAdminController::class, 'utilisateursCreate'])->name('create');
     });
 
     // Paramètres globaux
     Route::prefix('parametres')->name('parametres.')->group(function () {
-        Route::get('/', function () {
-            return view('admin.superadmin.parametres.index');
-        })->name('index');
+        Route::get('/', [SuperAdminController::class, 'parametresIndex'])->name('index');
     });
+
+    // Route pour retourner au dashboard superadmin
+    Route::get('/return', [SuperAdminController::class, 'returnToSuperAdmin'])->name('return');
 });
 
 // Admin Entreprise (Direction, Superviseur, Contrôleur)

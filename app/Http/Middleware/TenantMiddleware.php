@@ -21,6 +21,19 @@ class TenantMiddleware
 
         // Les super admins ont accès à tout
         if ($user && $user->estSuperAdmin()) {
+            // Vérifier si le superadmin est en contexte d'entreprise temporaire
+            if ($user->estEnContexteEntreprise()) {
+                $entrepriseId = $user->getEntrepriseContexteId();
+                $entreprise = \App\Models\Entreprise::find($entrepriseId);
+
+                // Vérifier que l'entreprise temporaire est active
+                if (!$entreprise || !$entreprise->est_active) {
+                    // Retourner au dashboard superadmin si l'entreprise est inactive
+                    Auth::logout();
+                    return redirect('/login')->with('error', 'L\'entreprise temporaire est inactive.');
+                }
+            }
+
             return $next($request);
         }
 

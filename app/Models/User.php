@@ -213,4 +213,65 @@ class User extends Authenticatable
     {
         return route($this->getAdminRoute());
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // GESTION DU CONTEXTE TEMPORAIRE (POUR SUPERADMIN SE CONNECTANT AUX ENTREPRISES)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Vérifie si le superadmin est en contexte d'entreprise
+     */
+    public function estEnContexteEntreprise(): bool
+    {
+        return session()->has('superadmin_temp_entreprise_id') && $this->estSuperAdmin();
+    }
+
+    /**
+     * Obtient l'ID de l'entreprise temporaire (si en contexte)
+     */
+    public function getEntrepriseContexteId(): ?int
+    {
+        if ($this->estEnContexteEntreprise()) {
+            return session()->get('superadmin_temp_entreprise_id');
+        }
+        return null;
+    }
+
+    /**
+     * Obtient l'entreprise du contexte temporaire (si applicable)
+     */
+    public function getEntrepriseContexte(): ?Entreprise
+    {
+        $entrepriseId = $this->getEntrepriseContexteId();
+
+        if ($entrepriseId) {
+            return Entreprise::find($entrepriseId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Vérifie si on peut retourner au mode superadmin
+     */
+    public function peutRetournerSuperAdmin(): bool
+    {
+        return $this->estEnContexteEntreprise() && session()->has('superadmin_original');
+    }
+
+    /**
+     * Retourne l'URL de retour au superadmin
+     */
+    public function getUrlRetourSuperAdmin(): string
+    {
+        return route('admin.superadmin.return');
+    }
+
+    /**
+     * Retourne l'URL du dashboard entreprise (pour le superadmin en contexte)
+     */
+    public function getUrlDashboardEntreprise(): string
+    {
+        return route('admin.entreprise.index');
+    }
 }
