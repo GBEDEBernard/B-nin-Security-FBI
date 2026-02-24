@@ -98,13 +98,14 @@
           <ul class="nav nav-treeview">
             @foreach($entreprises as $entreprise)
             <li class="nav-item">
-              <form method="POST" action="{{ route('admin.superadmin.entreprises.connect', $entreprise->id) }}" style="display: contents;">
-                @csrf
-                <button type="submit" class="nav-link btn btn-link text-start">
-                  <i class="nav-icon bi bi-box-arrow-in-right text-primary"></i>
-                  <p>{{ $entreprise->nom_entreprise }}</p>
-                </button>
-              </form>
+              <button type="button" class="nav-link btn btn-link text-start w-100 connect-entreprise-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#connectModal"
+                data-entreprise-id="{{ $entreprise->id }}"
+                data-entreprise-nom="{{ $entreprise->nom_entreprise ?? $entreprise->nom }}">
+                <i class="nav-icon bi bi-box-arrow-in-right text-success"></i>
+                <p>{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</p>
+              </button>
             </li>
             @endforeach
           </ul>

@@ -2,12 +2,45 @@
 
 @section('title', 'Entreprises - Super Admin')
 
+@push('styles')
+<style>
+    /* Styles spécifiques pour la page des entreprises */
+    .entreprises-table .avatar-sm {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .entreprises-table .badge {
+        font-weight: 500;
+    }
+
+    .entreprises-table .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .connect-btn {
+        transition: all 0.2s ease;
+    }
+
+    .connect-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+@endpush
+
 @section('content')
+<!--begin::App Content Header-->
 <div class="app-content-header">
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
-                <h3 class="mb-0">Gestion des Entreprises</h3>
+                <h3 class="mb-0"><i class="bi bi-building-fill me-2"></i>Gestion des Entreprises</h3>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-end">
@@ -18,7 +51,9 @@
         </div>
     </div>
 </div>
+<!--end::App Content Header-->
 
+<!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
         <!-- Messages de session -->
@@ -36,17 +71,18 @@
         </div>
         @endif
 
+        <!--begin::Card-->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title">Liste des Entreprises</h5>
-                <a href="{{ route('admin.superadmin.entreprises.create') }}" class="btn btn-primary">
+                <h5 class="card-title m-0"><i class="bi bi-list-ul me-2"></i>Liste des Entreprises</h5>
+                <a href="{{ route('admin.superadmin.entreprises.create') }}" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-circle me-1"></i> Nouvelle entreprise
                 </a>
             </div>
             <div class="card-body">
                 @if($entreprises->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped">
+                    <table class="table table-hover table-striped entreprises-table">
                         <thead>
                             <tr>
                                 <th>Nom</th>
@@ -64,8 +100,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: rgba(13, 110, 253, 0.1);">
-                                            <span class="text-primary fw-bold">{{ substr($entreprise->nom_entreprise ?? $entreprise->nom, 0, 2) }}</span>
+                                        <div class="avatar-sm me-2 bg-success-subtle rounded-circle d-flex align-items-center justify-content-center" style="background: rgba(25, 135, 84, 0.1);">
+                                            <span class="text-success fw-bold">{{ strtoupper(substr($entreprise->nom_entreprise ?? $entreprise->nom, 0, 2)) }}</span>
                                         </div>
                                         <span class="fw-semibold">{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</span>
                                     </div>
@@ -80,7 +116,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class=" badge bg-info">{{ $entreprise->employes_count ?? 0 }}</span>
+                                    <span class="badge bg-info text-dark">{{ $entreprise->employes_count ?? 0 }}</span>
                                 </td>
                                 <td>
                                     <span class="badge bg-warning text-dark">{{ $entreprise->clients_count ?? 0 }}</span>
@@ -92,15 +128,17 @@
                                     <div class="btn-group" role="group">
                                         <!-- Bouton de connexion à l'entreprise -->
                                         @if($entreprise->est_active)
-                                        <form method="POST" action="{{ route('admin.superadmin.entreprises.connect', $entreprise->id) }}" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Se connecter au tableau de bord">
-                                                <i class="bi bi-box-arrow-in-right"></i> Connexion
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-success connect-btn"
+                                            title="Se connecter au tableau de bord"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#connectModal"
+                                            data-entreprise-id="{{ $entreprise->id }}"
+                                            data-entreprise-nom="{{ $entreprise->nom_entreprise ?? $entreprise->nom }}">
+                                            <i class="bi bi-box-arrow-in-right"></i>
+                                        </button>
                                         @else
                                         <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Entreprise inactive">
-                                            <i class="bi bi-x-circle"></i> Inactive
+                                            <i class="bi bi-x-circle"></i>
                                         </button>
                                         @endif
 
@@ -137,6 +175,8 @@
                 @endif
             </div>
         </div>
+        <!--end::Card-->
     </div>
 </div>
+<!--end::App Content-->
 @endsection

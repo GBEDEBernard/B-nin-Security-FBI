@@ -145,6 +145,37 @@
     </main>
 
     @include('layouts.footer')
+
+    <!-- Modal de confirmation de connexion à l'entreprise -->
+    <div class="modal fade" id="connectModal" tabindex="-1" aria-labelledby="connectModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="connectModalLabel">
+              <i class="bi bi-building me-2"></i>Confirmer la connexion
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-2">
+              Voulez-vous vous connecter au tableau de bord de l'entreprise
+            </p>
+            <p class="mb-0">
+              <strong id="entrepriseNom" class="text-success"></strong> ?
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-1"></i>Annuler
+            </button>
+            <button type="button" class="btn btn-success btn-sm" id="confirmConnectBtn">
+              <i class="bi bi-check-circle me-1"></i>Confirmer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end::Modal-->
   </div>
 
   <!--begin::Third Party Plugin(OverlayScrollbars)-->
@@ -293,6 +324,94 @@
 
   <!-- Page Specific Scripts -->
   @stack('scripts')
+
+  <!-- Script pour le modal de connexion aux entreprises -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let entrepriseId = null;
+      let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+      // Si pas de token CSRF dans meta, on utilise le token du formulaire
+      if (!csrfToken) {
+        csrfToken = '{{ csrf_token() }}';
+      }
+
+      // Récupérer les données de l'entreprise lors de l'ouverture du modal
+      const connectModal = document.getElementById('connectModal');
+      if (connectModal) {
+        connectModal.addEventListener('show.bs.modal', function(event) {
+          const button = event.relatedTarget;
+          if (button) {
+            entrepriseId = button.getAttribute('data-entreprise-id');
+            const entrepriseNom = button.getAttribute('data-entreprise-nom');
+
+            const nomElement = document.getElementById('entrepriseNom');
+            if (nomElement) {
+              nomElement.textContent = entrepriseNom;
+            }
+          }
+        });
+      }
+
+      // Gérer le clic sur le bouton confirmer
+      const confirmBtn = document.getElementById('confirmConnectBtn');
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+          if (!entrepriseId) {
+            alert('Erreur: ID de l\'entreprise manquant');
+            return;
+          }
+
+          // Désactiver le bouton pendant la requête
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Connexion...';
+
+          // Effectuer la requête AJAX
+          fetch(`/admin/superadmin/entreprises/${entrepriseId}/connect`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+              }
+            })
+            .then(response => {
+              if (response.redirected) {
+                // Si redirection, suivre la redirection
+                window.location.href = response.url;
+              } else {
+                return response.json().then(data => {
+                  if (data.success || data.message) {
+                    // Rediriger vers le dashboard de l'entreprise
+                    window.location.href = data.redirect || '/admin/entreprise';
+                  } else {
+                    throw new Error(data.message || 'Erreur lors de la connexion');
+                  }
+                }).catch(() => {
+                  // Si ce n'est pas du JSON, essayer de suivre la redirection
+                  window.location.href = '/admin/entreprise';
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Erreur:', error);
+              alert('Une erreur est survenue lors de la connexion. Veuillez réessayer.');
+              confirmBtn.disabled = false;
+              confirmBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Confirmer';
+
+              // Fermer le modal
+              const modalEl = document.getElementById('connectModal');
+              if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                  modal.hide();
+                }
+              }
+            });
+        });
+      }
+    });
+  </script>
 
 </body>
 <!--end::Body-->
