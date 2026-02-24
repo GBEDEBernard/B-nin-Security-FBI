@@ -240,18 +240,17 @@
        <!--end::User Menu Dropdown-->
 
        <!--begin::Theme Toggle-->
-       <li class="nav-item ms-2">
+       <li class="nav-item theme-toggle">
          <button
-           class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+           class="btn btn-link nav-link p-2"
            id="bd-theme"
            type="button"
            aria-expanded="false"
            data-bs-toggle="dropdown"
            data-bs-display="static">
            <span class="theme-icon-active">
-             <i class="my-1"></i>
+             <i class="bi bi-palette"></i>
            </span>
-           <span class="d-lg-none ms-2" id="bd-theme-text">Changer le thème</span>
          </button>
          <ul
            class="dropdown-menu dropdown-menu-end"
@@ -406,6 +405,18 @@
      /* Hide non-essential elements on very small screens */
      .nav-link[data-lte-toggle="sidebar"] {
        padding: 0.25rem 0.5rem;
+     }
+
+     /* Theme toggle - compact on mobile */
+     .theme-toggle .nav-link {
+       padding: 0.25rem !important;
+       font-size: 0.875rem;
+     }
+
+     .theme-toggle .dropdown-menu {
+       position: absolute;
+       right: 0;
+       left: auto;
      }
    }
  </style>
