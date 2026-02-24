@@ -26,3 +26,4 @@
 - [x] Add custom styles and Tailwind CSS
 - [x] Clean up scripts for better performance
 - [x] Add stack for custom styles and scripts
+// style talwinds pour mes tableau de bord 
