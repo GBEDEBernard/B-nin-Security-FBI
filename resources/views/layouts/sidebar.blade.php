@@ -3,7 +3,7 @@
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
     <!--begin::Brand Link-->
-    <a href="{{ auth()->check() ? route(auth()->user()->getDashboardRoute()) : route('home') }}" class="brand-link">
+    <a href="{{ auth()->check() ? route(auth()->user()->getAdminRoute()) : route('home') }}" class="brand-link">
       <!--begin::Brand Image-->
       <div class="brand-image-container">
         <i class="bi bi-shield-check brand-icon"></i>
@@ -22,11 +22,11 @@
       <!--begin::Sidebar Menu-->
       <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="navigation">
 
-        {{-- Dashboard --}}
+        {{-- Admin --}}
         <li class="nav-item">
-          <a href="{{ auth()->check() ? route(auth()->user()->getDashboardRoute()) : route('home') }}" class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}">
+          <a href="{{ auth()->check() ? route(auth()->user()->getAdminRoute()) : route('home') }}" class="nav-link {{ request()->routeIs('admin*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-speedometer2"></i>
-            <p>Dashboard</p>
+            <p>Admin</p>
           </a>
         </li>
 
@@ -48,13 +48,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.superadmin.entreprises.index') }}" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Liste des entreprises</p>
+              admin.superadmin.entreprises.index
+              <i class="nav-icon bi bi-circle"></i>
+              <p>Liste des entreprises</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('dashboard.superadmin.entreprises.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.entreprises.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter une entreprise</p>
               </a>
@@ -73,13 +73,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.superadmin.utilisateurs.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.utilisateurs.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des utilisateurs</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('dashboard.superadmin.utilisateurs.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouvel utilisateur</p>
               </a>
@@ -89,7 +89,7 @@
 
         {{-- Paramètres --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.superadmin.parametres.index') }}" class="nav-link">
+          <a href="{{ route('admin.superadmin.parametres.index') }}" class="nav-link">
             <i class="nav-icon bi bi-gear-fill"></i>
             <p>Paramètres Système</p>
           </a>
@@ -115,13 +115,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.clients.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.clients.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des clients</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.clients.create') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.clients.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un client</p>
               </a>
@@ -140,13 +140,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.employes.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.employes.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des employés</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.employes.create') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.employes.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un employé</p>
               </a>
@@ -166,7 +166,7 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.contrats.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.contrats.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Tous les contrats</p>
               </a>
@@ -237,7 +237,7 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.affectations.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Planning</p>
               </a>
@@ -362,7 +362,7 @@
 
         {{-- Rapports --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.entreprise.rapports.index') }}" class="nav-link">
+          <a href="{{ route('admin.entreprise.rapports.index') }}" class="nav-link">
             <i class="nav-icon bi bi-graph-up"></i>
             <p>Rapports</p>
           </a>
@@ -406,7 +406,7 @@
 
         {{-- Mes Missions --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.agent.missions.index') }}" class="nav-link">
+          <a href="{{ route('admin.agent.missions.index') }}" class="nav-link">
             <i class="nav-icon bi bi-briefcase-fill"></i>
             <p>Mes Missions</p>
           </a>
@@ -414,7 +414,7 @@
 
         {{-- Pointages --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.agent.pointages.index') }}" class="nav-link">
+          <a href="{{ route('admin.agent.pointages.index') }}" class="nav-link">
             <i class="nav-icon bi bi-clock-fill"></i>
             <p>Mes Pointages</p>
           </a>
@@ -422,7 +422,7 @@
 
         {{-- Congés --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.agent.conges.index') }}" class="nav-link">
+          <a href="{{ route('admin.agent.conges.index') }}" class="nav-link">
             <i class="nav-icon bi bi-calendar-event-fill"></i>
             <p>Mes Congés</p>
           </a>
@@ -449,7 +449,7 @@
 
         {{-- Mes Contrats --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.client.contrats.index') }}" class="nav-link">
+          <a href="{{ route('admin.client.contrats.index') }}" class="nav-link">
             <i class="nav-icon bi bi-file-earmark-check-fill"></i>
             <p>Mes Contrats</p>
           </a>
@@ -457,7 +457,7 @@
 
         {{-- Mes Factures --}}
         <li class="nav-item">
-          <a href="{{ route('dashboard.client.factures.index') }}" class="nav-link">
+          <a href="{{ route('admin.client.factures.index') }}" class="nav-link">
             <i class="nav-icon bi bi-receipt"></i>
             <p>Mes Factures</p>
           </a>
@@ -474,13 +474,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{{ route('dashboard.client.incidents.index') }}" class="nav-link">
+              <a href="{{ route('admin.client.incidents.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Historique</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('dashboard.client.incidents.create') }}" class="nav-link">
+              <a href="{{ route('admin.client.incidents.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Signaler un incident</p>
               </a>

@@ -11,7 +11,7 @@ class RoleBasedRedirect
 {
     /**
      * Handle an incoming request.
-     * Redirige l'utilisateur vers le dashboard approprié selon son rôle
+     * Redirige l'utilisateur vers l'admin approprié selon son rôle
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
@@ -32,24 +32,24 @@ class RoleBasedRedirect
         // Chemin actuel
         $currentPath = $request->path();
 
-        // Tableau des routes de dashboard par rôle
-        $dashboardRoutes = [
-            'superadmin' => 'dashboard.superadmin.index',
-            'entreprise' => 'dashboard.entreprise.index',
-            'agent' => 'dashboard.agent.index',
-            'client' => 'dashboard.client.index',
+        // Tableau des routes admin par rôle
+        $adminRoutes = [
+            'superadmin' => 'admin.superadmin.index',
+            'entreprise' => 'admin.entreprise.index',
+            'agent' => 'admin.agent.index',
+            'client' => 'admin.client.index',
         ];
 
         // Obtenir la route attendue selon le rôle
-        $expectedRoute = $user->getDashboardRoute();
+        $expectedRoute = $user->getAdminRoute();
 
-        // Si l'utilisateur accède à une route de dashboard différente de son rôle
-        foreach ($dashboardRoutes as $type => $routeName) {
-            $routePattern = 'dashboard.' . $type;
+        // Si l'utilisateur accède à une route admin différente de son rôle
+        foreach ($adminRoutes as $type => $routeName) {
+            $routePattern = 'admin/' . $type;
 
-            // Si l'utilisateur est sur un dashboard qui n'est pas le sien
-            if (str_starts_with($currentPath, 'dashboard/' . $type) && $expectedRoute !== $routeName) {
-                // Rediriger vers son propre dashboard
+            // Si l'utilisateur est sur un admin qui n'est pas le sien
+            if (str_starts_with($currentPath, 'admin/' . $type) && $expectedRoute !== $routeName) {
+                // Rediriger vers son propre admin
                 return redirect()->route($expectedRoute)->with('info', 'Vous avez été redirigé vers votre tableau de bord.');
             }
         }

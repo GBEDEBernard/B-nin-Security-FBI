@@ -178,39 +178,39 @@ class User extends Authenticatable
     // ── Méthodes de redirection ───────────────────────────────────────────
 
     /**
-     * Retourne le nom de la route du dashboard selon le rôle
+     * Retourne le nom de la route admin selon le rôle
      */
-    public function getDashboardRoute(): string
+    public function getAdminRoute(): string
     {
         // Super Admin
         if ($this->estSuperAdmin()) {
-            return 'dashboard.superadmin.index';
+            return 'admin.superadmin.index';
         }
 
         // Client
         if ($this->estClient()) {
-            return 'dashboard.client.index';
+            return 'admin.client.index';
         }
 
         // Utilisateurs de l'entreprise (direction, superviseur, contrôleur, agent)
         if ($this->estUtilisateurEntreprise()) {
-            // Les agents ont un dashboard spécifique
+            // Les agents ont un admin spécifique
             if ($this->estAgent()) {
-                return 'dashboard.agent.index';
+                return 'admin.agent.index';
             }
-            // Direction, superviseur et contrôleur ont le dashboard entreprise
-            return 'dashboard.entreprise.index';
+            // Direction, superviseur et contrôleur ont le admin entreprise
+            return 'admin.entreprise.index';
         }
 
-        // Par défaut, dashboard générique
-        return 'dashboard';
+        // Par défaut, admin générique
+        return 'admin';
     }
 
     /**
-     * Retourne l'URL du dashboard selon le rôle
+     * Retourne l'URL du admin selon le rôle
      */
-    public function getDashboardUrl(): string
+    public function getAdminUrl(): string
     {
-        return route($this->getDashboardRoute());
+        return route($this->getAdminRoute());
     }
 }

@@ -10,7 +10,7 @@
          </a>
        </li>
        <li class="nav-item d-none d-md-block">
-         <a href="{{ route('dashboard') }}" class="nav-link">
+         <a href="{{ route('admin') }}" class="nav-link">
            <i class="bi bi-house-door me-1"></i> Accueil
          </a>
        </li>

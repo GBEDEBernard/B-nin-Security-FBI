@@ -30,160 +30,160 @@ Route::get('/', function () {
 })->name('home');
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ROUTES DES DASHBOARDS PAR RÔLE
+// ROUTES DES ADMINISTRATIONS PAR RÔLE
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Dashboard principal (redirige selon le rôle)
-Route::get('/dashboard', function () {
+// Administration principal (redirige selon le rôle)
+Route::get('/admin', function () {
     if (Auth::check()) {
-        return redirect()->to(Auth::user()->getDashboardUrl());
+        return redirect()->to(Auth::user()->getAdminUrl());
     }
     return redirect('/login');
-})->middleware('auth')->name('dashboard');
+})->middleware('auth')->name('admin');
 
-// Dashboard Super Admin
-Route::middleware(['auth', 'tenant'])->prefix('dashboard/superadmin')->name('dashboard.superadmin.')->group(function () {
+// Admin Super Admin
+Route::middleware(['auth', 'tenant'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
     Route::get('/', function () {
-        return view('dashboard.superadmin');
+        return view('admin.superadmin');
     })->name('index');
 
     // Routes pour la gestion des entreprises (tenants)
     Route::prefix('entreprises')->name('entreprises.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.superadmin.entreprises.index');
+            return view('admin.superadmin.entreprises.index');
         })->name('index');
         Route::get('/create', function () {
-            return view('dashboard.superadmin.entreprises.create');
+            return view('admin.superadmin.entreprises.create');
         })->name('create');
         Route::get('/{id}', function ($id) {
-            return view('dashboard.superadmin.entreprises.show', ['id' => $id]);
+            return view('admin.superadmin.entreprises.show', ['id' => $id]);
         })->name('show');
         Route::get('/{id}/edit', function ($id) {
-            return view('dashboard.superadmin.entreprises.edit', ['id' => $id]);
+            return view('admin.superadmin.entreprises.edit', ['id' => $id]);
         })->name('edit');
     });
 
     // Routes pour la gestion des utilisateurs globaux
     Route::prefix('utilisateurs')->name('utilisateurs.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.superadmin.utilisateurs.index');
+            return view('admin.superadmin.utilisateurs.index');
         })->name('index');
         Route::get('/create', function () {
-            return view('dashboard.superadmin.utilisateurs.create');
+            return view('admin.superadmin.utilisateurs.create');
         })->name('create');
     });
 
     // Paramètres globaux
     Route::prefix('parametres')->name('parametres.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.superadmin.parametres.index');
+            return view('admin.superadmin.parametres.index');
         })->name('index');
     });
 });
 
-// Dashboard Entreprise (Direction, Superviseur, Contrôleur)
-Route::middleware(['auth', 'tenant'])->prefix('dashboard/entreprise')->name('dashboard.entreprise.')->group(function () {
+// Admin Entreprise (Direction, Superviseur, Contrôleur)
+Route::middleware(['auth', 'tenant'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
     Route::get('/', function () {
-        return view('dashboard.entreprise');
+        return view('admin.entreprise');
     })->name('index');
 
     // Gestion des employés
     Route::prefix('employes')->name('employes.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.entreprise.employes.index');
+            return view('admin.entreprise.employes.index');
         })->name('index');
         Route::get('/create', function () {
-            return view('dashboard.entreprise.employes.create');
+            return view('admin.entreprise.employes.create');
         })->name('create');
     });
 
     // Gestion des clients
     Route::prefix('clients')->name('clients.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.entreprise.clients.index');
+            return view('admin.entreprise.clients.index');
         })->name('index');
         Route::get('/create', function () {
-            return view('dashboard.entreprise.clients.create');
+            return view('admin.entreprise.clients.create');
         })->name('create');
     });
 
     // Contrats
     Route::prefix('contrats')->name('contrats.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.entreprise.contrats.index');
+            return view('admin.entreprise.contrats.index');
         })->name('index');
     });
 
     // Affectations
     Route::prefix('affectations')->name('affectations.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.entreprise.affectations.index');
+            return view('admin.entreprise.affectations.index');
         })->name('index');
     });
 
     // Rapports
     Route::prefix('rapports')->name('rapports.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.entreprise.rapports.index');
+            return view('admin.entreprise.rapports.index');
         })->name('index');
     });
 });
 
-// Dashboard Agent
-Route::middleware(['auth', 'tenant'])->prefix('dashboard/agent')->name('dashboard.agent.')->group(function () {
+// Admin Agent
+Route::middleware(['auth', 'tenant'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
     Route::get('/', function () {
-        return view('dashboard.agent');
+        return view('admin.agent');
     })->name('index');
 
     // Mes pointages
     Route::prefix('pointages')->name('pointages.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.agent.pointages.index');
+            return view('admin.agent.pointages.index');
         })->name('index');
     });
 
     // Mes missions
     Route::prefix('missions')->name('missions.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.agent.missions.index');
+            return view('admin.agent.missions.index');
         })->name('index');
     });
 
     // Mes congés
     Route::prefix('conges')->name('conges.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.agent.conges.index');
+            return view('admin.agent.conges.index');
         })->name('index');
     });
 });
 
-// Dashboard Client
-Route::middleware(['auth', 'tenant'])->prefix('dashboard/client')->name('dashboard.client.')->group(function () {
+// Admin Client
+Route::middleware(['auth', 'tenant'])->prefix('admin/client')->name('admin.client.')->group(function () {
     Route::get('/', function () {
-        return view('dashboard.client');
+        return view('admin.client');
     })->name('index');
 
     // Mes contrats
     Route::prefix('contrats')->name('contrats.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.client.contrats.index');
+            return view('admin.client.contrats.index');
         })->name('index');
     });
 
     // Mes factures
     Route::prefix('factures')->name('factures.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.client.factures.index');
+            return view('admin.client.factures.index');
         })->name('index');
     });
 
     // Signaler un incident
     Route::prefix('incidents')->name('incidents.')->group(function () {
         Route::get('/', function () {
-            return view('dashboard.client.incidents.index');
+            return view('admin.client.incidents.index');
         })->name('index');
         Route::get('/create', function () {
-            return view('dashboard.client.incidents.create');
+            return view('admin.client.incidents.create');
         })->name('create');
     });
 });

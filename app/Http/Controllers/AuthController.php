@@ -12,13 +12,13 @@ class AuthController extends Controller
 {
     /**
      * Affiche le formulaire de connexion
-     * Si déjà connecté, redirige vers le dashboard
+     * Si déjà connecté, redirige vers l'admin
      */
     public function showLoginForm()
     {
-        // Si déjà connecté, rediriger vers le dashboard
+        // Si déjà connecté, rediriger vers l'admin
         if (Auth::check()) {
-            return redirect()->route('dashboard')->with('info', 'Vous êtes déjà connecté.');
+            return redirect()->route('admin')->with('info', 'Vous êtes déjà connecté.');
         }
         return view('auth.login');
     }
@@ -65,20 +65,20 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ]);
 
-        // Rediriger vers le dashboard approprié selon le rôle
-        return redirect()->to($user->getDashboardUrl())
+        // Rediriger vers l'admin approprié selon le rôle
+        return redirect()->to($user->getAdminUrl())
             ->with('success', 'Bienvenue ' . $user->name . ' !');
     }
 
     /**
      * Affiche le formulaire d'inscription
-     * Si déjà connecté, redirige vers le dashboard
+     * Si déjà connecté, redirige vers l'admin
      */
     public function showRegistrationForm()
     {
-        // Si déjà connecté, rediriger vers le dashboard
+        // Si déjà connecté, rediriger vers l'admin
         if (Auth::check()) {
-            return redirect()->route('dashboard')->with('info', 'Vous êtes déjà connecté.');
+            return redirect()->route('admin')->with('info', 'Vous êtes déjà connecté.');
         }
         return view('auth.register');
     }
@@ -105,7 +105,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'Compte créé avec succès !');
+        return redirect('/admin')->with('success', 'Compte créé avec succès !');
     }
 
     /**
