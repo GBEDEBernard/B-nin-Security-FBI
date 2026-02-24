@@ -266,7 +266,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-exclamation-triangle"></i></div>
                         </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('affectation', function($q) { $q->whereHas('contratPrestation', function($q2) { $q2->where('client_id', auth()->user()->client_id); }); })->whereDate('created_at', today())->count() }}</div>
+                        <div class="stat-number mb-1">{{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->whereDate('created_at', today())->count() }}</div>
                         <div class="text-muted small">Incidents Aujourd'hui</div>
                     </div>
                 </div>
@@ -454,7 +454,7 @@
                         <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Historique des Incidents</div>
                         <div class="card-body">
                             <div class="activity-timeline">
-                                @forelse(\App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('affectation', function($q) { $q->whereHas('contratPrestation', function($q2) { $q2->where('client_id', auth()->user()->client_id); }); })->latest()->take(3)->get() as $incident)
+                                @forelse(\App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->latest()->take(3)->get() as $incident)
                                 <div class="activity-item">
                                     <div class="fw-semibold">{{ $incident->titre }}</div>
                                     <div class="text-muted small">{{ $incident->created_at->diffForHumans() }}</div>

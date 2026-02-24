@@ -205,13 +205,14 @@
             </div>
 
             {{-- Statistics Cards --}}
+            @php $employeId = auth()->user()->employe_id; @endphp
             <div class="row mb-4">
                 <div class="col-lg-3 col-6">
                     <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-briefcase"></i></div>
                         </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Affectation::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->count() }}</div>
+                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Affectation::where('employe_id', $employeId)->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->count() : 0 }}</div>
                         <div class="text-muted small">Mes Missions</div>
                     </div>
                 </div>
@@ -220,7 +221,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-clock"></i></div>
                         </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Pointage::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->whereDate('date_pointage', today())->count() }}</div>
+                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Pointage::where('employe_id', $employeId)->whereDate('date_pointage', today())->count() : 0 }}</div>
                         <div class="text-muted small">Pointages Aujourd'hui</div>
                     </div>
                 </div>
@@ -229,7 +230,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-calendar-event"></i></div>
                         </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Conge::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->where('statut', 'en_attente')->count() }}</div>
+                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Conge::where('employe_id', $employeId)->where('statut', 'en_attente')->count() : 0 }}</div>
                         <div class="text-muted small">Congés en Attente</div>
                     </div>
                 </div>
@@ -238,7 +239,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-exclamation-triangle"></i></div>
                         </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Incident::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->whereDate('created_at', today())->count() }}</div>
+                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Incident::where('employe_id', $employeId)->whereDate('created_at', today())->count() : 0 }}</div>
                         <div class="text-muted small">Incidents Aujourd'hui</div>
                     </div>
                 </div>
@@ -316,7 +317,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse(\App\Models\Affectation::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->with(['siteClient', 'contratPrestation.client'])->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->latest()->take(5)->get() as $affectation)
+                                        @forelse($employeId ? \App\Models\Affectation::where('employe_id', $employeId)->with(['siteClient', 'contratPrestation.client'])->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->latest()->take(5)->get() : [] as $affectation)
                                             <tr>
                                                 <td>{{ $affectation->siteClient->nom_site ?? 'N/A' }}</td>
                                                 <td>{{ $affectation->contratPrestation->client->nom ?? 'N/A' }}</td>
@@ -380,7 +381,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse(\App\Models\Pointage::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->with('affectation.siteClient')->latest()->take(5)->get() as $pointage)
+                                        @forelse($employeId ? \App\Models\Pointage::where('employe_id', $employeId)->with('affectation.siteClient')->latest()->take(5)->get() : [] as $pointage)
                                         <tr>
                                             <td>{{ $pointage->date_pointage ? \Carbon\Carbon::parse($pointage->date_pointage)->format('d/m/Y') : 'N/A' }}</td>
                                             <td>{{ $pointage->affectation->siteClient->nom_site ?? 'N/A' }}</td>
@@ -427,7 +428,7 @@
                     <label for="site" class="form-label">Site</label>
                     <select class="form-select" id="site" required>
                         <option value="">Sélectionner un site</option>
-                        @foreach(\App\Models\Affectation::whereHas('employe', function($q) { $q->where('user_id', auth()->id()); })->with('siteClient')->get() as $affectation)
+                        @foreach($employeId ? \App\Models\Affectation::where('employe_id', $employeId)->with('siteClient')->get() : [] as $affectation)
                         <option value="{{ $affectation->siteClient->id }}">{{ $affectation->siteClient->nom_site }}</option>
                         @endforeach
                     </select>
