@@ -32,8 +32,9 @@
 
         {{-- =========================================================== --}}
         {{-- MENU SUPER ADMIN --}}
+        {{-- Caché quand le super admin est en contexte entreprise --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estSuperAdmin())
+        @if(auth()->check() && auth()->user()->estSuperAdmin() && !auth()->user()->estEnContexteEntreprise())
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
@@ -149,10 +150,44 @@
 
         {{-- =========================================================== --}}
         {{-- MENU ENTREPRISE (Direction, Superviseur, Contrôleur) --}}
+        {{-- Affiché aussi quand le super admin est en contexte entreprise --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estUtilisateurEntreprise() && !auth()->user()->estSuperAdmin())
+        @php
+        $estEnContexteEntreprise = auth()->check() && (
+        (auth()->user()->estUtilisateurEntreprise() && !auth()->user()->estSuperAdmin()) ||
+        (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
+        );
+        $estSuperAdminEnContexte = auth()->check() && auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise();
+        @endphp
+        @if($estEnContexteEntreprise)
 
-        <li class="nav-header text-uppercase fw-bold text-primary">Gestion</li>
+        <li class="nav-header text-uppercase fw-bold text-primary">
+          @if($estSuperAdminEnContexte)
+          <i class="bi bi-shield-lock me-1"></i> Super Admin
+          @else
+          Gestion
+          @endif
+        </li>
+
+        {{-- Bouton de retour au SuperAdmin (si super admin en contexte entreprise) --}}
+        @if($estSuperAdminEnContexte)
+        <li class="nav-item">
+          <a href="{{ route('admin.superadmin.return') }}" class="nav-link bg-warning text-dark">
+            <i class="nav-icon bi bi-arrow-left-circle"></i>
+            <p class="fw-bold">Retour Super Admin</p>
+          </a>
+        </li>
+
+        {{-- Indicateur de l'entreprise courante --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link bg-info bg-opacity-25">
+            <i class="nav-icon bi bi-building text-info"></i>
+            <p class="text-info">
+              <strong>{{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}</strong>
+            </p>
+          </a>
+        </li>
+        @endif
 
         {{-- Clients --}}
         <li class="nav-item">

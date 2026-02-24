@@ -148,28 +148,73 @@
 
     <!-- Modal de confirmation de connexion à l'entreprise -->
     <div class="modal fade" id="connectModal" tabindex="-1" aria-labelledby="connectModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="connectModalLabel">
-              <i class="bi bi-building me-2"></i>Confirmer la connexion
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+          <!-- Header avec dégradé -->
+          <div class="modal-header bg-gradient-success text-white border-0" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%);">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-white bg-opacity-25 rounded-circle p-2">
+                  <i class="bi bi-building fs-5"></i>
+                </div>
+              </div>
+              <div>
+                <h5 class="modal-title fw-bold" id="connectModalLabel">Connexion à l'Entreprise</h5>
+                <p class="mb-0 small opacity-75">Confirmation de changement de contexte</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
           </div>
-          <div class="modal-body">
-            <p class="mb-2">
-              Voulez-vous vous connecter au tableau de bord de l'entreprise
-            </p>
-            <p class="mb-0">
-              <strong id="entrepriseNom" class="text-success"></strong> ?
-            </p>
+
+          <!-- Body -->
+          <div class="modal-body py-4 px-4">
+            <div class="text-center mb-4">
+              <div class="mb-3">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                  <i class="bi bi-box-arrow-in-right fs-1 text-success"></i>
+                </div>
+              </div>
+              <h6 class="text-muted mb-2">Vous allez accéder au tableau de bord de :</h6>
+              <h4 class="fw-bold text-success mb-3" id="entrepriseNom"></h4>
+              <div class="alert alert-info d-flex align-items-center justify-content-center py-2 px-3" style="border-radius: 8px;">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>Vous pourrez retourner au Super Admin à tout moment</small>
+              </div>
+            </div>
+
+            <!-- Liste des accès qui seront disponibles -->
+            <div class="bg-light rounded-3 p-3 mb-0">
+              <h6 class="fw-bold text-muted mb-2"><i class="bi bi-list-check me-2"></i>Accès disponibles :</h6>
+              <div class="row text-center small">
+                <div class="col-6 mb-2">
+                  <i class="bi bi-people text-primary me-1"></i> Employés
+                </div>
+                <div class="col-6 mb-2">
+                  <i class="bi bi-person-badge text-info me-1"></i> Clients
+                </div>
+                <div class="col-6 mb-2">
+                  <i class="bi bi-file-earmark-text text-warning me-1"></i> Contrats
+                </div>
+                <div class="col-6 mb-2">
+                  <i class="bi bi-calendar-check text-success me-1"></i> Affectations
+                </div>
+                <div class="col-6 mb-0">
+                  <i class="bi bi-receipt text-danger me-1"></i> Facturation
+                </div>
+                <div class="col-6 mb-0">
+                  <i class="bi bi-graph-up text-purple" style="color: #6f42c1;"></i> Rapports
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
-              <i class="bi bi-x-circle me-1"></i>Annuler
+
+          <!-- Footer -->
+          <div class="modal-footer bg-light border-0 px-4 pb-4">
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal" style="border-radius: 8px;">
+              <i class="bi bi-x-circle me-2"></i>Annuler
             </button>
-            <button type="button" class="btn btn-success btn-sm" id="confirmConnectBtn">
-              <i class="bi bi-check-circle me-1"></i>Confirmer
+            <button type="button" class="btn btn-success btn-lg px-4" id="confirmConnectBtn" style="border-radius: 8px;">
+              <i class="bi bi-check-circle me-2"></i>Confirmer
             </button>
           </div>
         </div>
