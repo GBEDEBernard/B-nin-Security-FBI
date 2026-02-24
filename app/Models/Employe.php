@@ -47,6 +47,7 @@ class Employe extends Model
 
         // Statut
         'est_actif',
+        'disponible',
         'statut', // en_poste, conge, suspendu, licencie
         'date_depart',
         'motif_depart',
@@ -54,6 +55,7 @@ class Employe extends Model
 
     protected $casts = [
         'est_actif' => 'boolean',
+        'disponible' => 'boolean',
         'date_naissance' => 'date',
         'date_embauche' => 'date',
         'date_fin_contrat' => 'date',
@@ -167,6 +169,14 @@ class Employe extends Model
     public function scopeAgents($query)
     {
         return $query->where('categorie', 'agent');
+    }
+
+    /**
+     * Employés disponibles (pour les missions)
+     */
+    public function scopeDisponibles($query)
+    {
+        return $query->where('disponible', true)->where('est_actif', true);
     }
 
     // ── Accesseurs ──────────────────────────────────────────────────────────
