@@ -477,31 +477,35 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     // Contrats Bar Chart
+    var actifsCount = {
+        {
+            \
+            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'actif') - > count()
+        }
+    };
+    var enCoursCount = {
+        {
+            \
+            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'en_cours') - > count()
+        }
+    };
+    var expiresCount = {
+        {
+            \
+            App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'expire') - > count()
+        }
+    };
+
     var contratsChartOptions = {
         series: [{
             name: 'Actifs',
-            data: [{
-                {
-                    \
-                    App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'actif') - > count()
-                }
-            }]
+            data: [actifsCount]
         }, {
             name: 'En cours',
-            data: [{
-                {
-                    \
-                    App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'en_cours') - > count()
-                }
-            }]
+            data: [enCoursCount]
         }, {
             name: 'Expirés',
-            data: [{
-                {
-                    \
-                    App\ Models\ ContratPrestation::where('client_id', auth() - > user() - > client_id) - > where('statut', 'expire') - > count()
-                }
-            }]
+            data: [expiresCount]
         }],
         chart: {
             type: 'bar',
@@ -559,6 +563,7 @@
             App\ Models\ Facture::where('client_id', auth() - > user() - > client_id) - > where('statut', 'impayee') - > count()
         }
     };
+
     var facturesChartOptions = {
         series: [payees, impayees],
         labels: ['Payées', 'Impayées'],

@@ -594,39 +594,40 @@
     var totalCount = enterprisesCount + clientsCount + contratsCount + employesCount;
 
     var distributionChartOptions = {
-            series: [enterprisesCount, clientsCount, contratsCount, employesCount],
-            labels: ['Entreprises', 'Clients', 'Contrats', 'Employés'],
-            chart: {
-                type: 'donut',
-                height: 280
-            },
-            colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '65%',
-                        labels: {
+        series: [enterprisesCount, clientsCount, contratsCount, employesCount],
+        labels: ['Entreprises', 'Clients', 'Contrats', 'Employés'],
+        chart: {
+            type: 'donut',
+            height: 280
+        },
+        colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%',
+                    labels: {
+                        show: true,
+                        total: {
                             show: true,
-                            total: {
-                                show: true,
-                                label: 'Total',
-                                formatter: function() {
-                                    return totalCount.toString();
-                                }
+                            label: 'Total',
+                            formatter: function() {
+                                return totalCount.toString();
                             }
                         }
                     }
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                legend: {
-                    position: 'bottom'
-                },
-                stroke: {
-                    width: 0
                 }
-            };
-            new ApexCharts(document.querySelector('#distribution-chart'), distributionChartOptions).render();
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        legend: {
+            position: 'bottom'
+        },
+        stroke: {
+            width: 0
+        }
+    };
+    new ApexCharts(document.querySelector('#distribution-chart'), distributionChartOptions).render();
 </script>
 @endpush

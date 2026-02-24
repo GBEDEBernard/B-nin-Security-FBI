@@ -48,9 +48,9 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              admin.superadmin.entreprises.index
-              <i class="nav-icon bi bi-circle"></i>
-              <p>Liste des entreprises</p>
+              <a href="{{ route('admin.superadmin.entreprises.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des entreprises</p>
               </a>
             </li>
             <li class="nav-item">
