@@ -251,9 +251,15 @@
 
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
-        activeThemeIcon.setAttribute("class", svgOfActiveBtn);
-        const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
-        themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
+
+        if (activeThemeIcon) {
+          activeThemeIcon.setAttribute("class", svgOfActiveBtn);
+        }
+
+        if (themeSwitcherText) {
+          const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
+          themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
+        }
 
         if (focus) {
           themeSwitcher.focus();

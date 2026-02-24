@@ -28,7 +28,7 @@
        <!--end::Navbar Search-->
 
        <!--begin::Messages Dropdown Menu-->
-       <li class="nav-item dropdown">
+       <li class="nav-item dropdown messages-dropdown">
          <a class="nav-link" data-bs-toggle="dropdown" href="#">
            <i class="bi bi-chat-text"></i>
            <span class="navbar-badge badge text-bg-danger">3</span>
@@ -113,7 +113,7 @@
        <!--end::Messages Dropdown Menu-->
 
        <!--begin::Notifications Dropdown Menu-->
-       <li class="nav-item dropdown">
+       <li class="nav-item dropdown notifications-dropdown">
          <a class="nav-link" data-bs-toggle="dropdown" href="#">
            <i class="bi bi-bell-fill"></i>
            <span class="navbar-badge badge text-bg-warning">5</span>
@@ -417,6 +417,49 @@
        position: absolute;
        right: 0;
        left: auto;
+     }
+
+     /* Messages & Notifications dropdowns - responsive */
+     .messages-dropdown .dropdown-menu,
+     .notifications-dropdown .dropdown-menu {
+       position: absolute;
+       left: 0;
+       right: 0;
+       width: 100%;
+       max-width: 100%;
+       margin: 0;
+       border-radius: 0;
+       border-left: none;
+       border-right: none;
+     }
+
+     .messages-dropdown .dropdown-item,
+     .notifications-dropdown .dropdown-item {
+       padding: 0.75rem 1rem;
+       font-size: 0.875rem;
+     }
+
+     .messages-dropdown .img-size-50,
+     .notifications-dropdown .img-size-50 {
+       width: 40px !important;
+       height: 40px !important;
+     }
+
+     .messages-dropdown .dropdown-item-title,
+     .notifications-dropdown .dropdown-item-title {
+       font-size: 0.9rem;
+     }
+
+     .messages-dropdown .fs-7,
+     .notifications-dropdown .fs-7 {
+       font-size: 0.75rem !important;
+     }
+
+     .messages-dropdown .navbar-badge,
+     .notifications-dropdown .navbar-badge {
+       top: 0;
+       right: 0;
+       font-size: 0.5rem;
      }
    }
  </style>
