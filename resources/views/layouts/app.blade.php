@@ -63,9 +63,6 @@
     integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0="
     crossorigin="anonymous" />
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- Custom Styles -->
   @stack('styles')
 
@@ -127,7 +124,6 @@
   <div class="app-wrapper">
 
     <!--begin::App Main-->
-
     @include('layouts.header')
     @include('layouts.sidebar')
 

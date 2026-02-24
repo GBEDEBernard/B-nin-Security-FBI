@@ -298,334 +298,330 @@
 @endpush
 
 @section('content')
-<!--begin::App Main-->
-<main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <h3 class="mb-0">
-                        <i class="bi bi-building me-2 text-success"></i>
-                        Dashboard Entreprise
-                    </h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </div>
+<!--begin::App Content Header-->
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h3 class="mb-0">
+                    <i class="bi bi-building me-2 text-success"></i>
+                    Dashboard Entreprise
+                </h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
             </div>
         </div>
     </div>
-    <!--end::App Content Header-->
+</div>
+<!--end::App Content Header-->
 
-    <!--begin::App Content-->
-    <div class="app-content">
-        <div class="container-fluid">
+<!--begin::App Content-->
+<div class="app-content">
+    <div class="container-fluid">
 
-            {{-- Welcome Banner --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="welcome-banner">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h4 class="mb-1">
-                                    Bienvenue, {{ Auth::user()->name }}! 👋
-                                </h4>
-                                <p class="mb-0 opacity-75">
-                                    Voici un aperçu de votre entreprise de sécurité
-                                </p>
-                            </div>
-                            <div class="d-none d-md-block">
-                                <i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i>
-                            </div>
+        {{-- Welcome Banner --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="welcome-banner">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="mb-1">
+                                Bienvenue, {{ Auth::user()->name }}! 👋
+                            </h4>
+                            <p class="mb-0 opacity-75">
+                                Voici un aperçu de votre entreprise de sécurité
+                            </p>
+                        </div>
+                        <div class="d-none d-md-block">
+                            <i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Statistics Cards --}}
-            <div class="row mb-4">
-                {{-- Total Employés --}}
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-primary text-white">
-                                <i class="bi bi-people"></i>
-                            </div>
+        {{-- Statistics Cards --}}
+        <div class="row mb-4">
+            {{-- Total Employés --}}
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-primary text-white">
+                            <i class="bi bi-people"></i>
                         </div>
-                        <div class="stat-number mb-1">
-                            {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
-                        </div>
-                        <div class="text-muted small">Total Employés</div>
                     </div>
-                </div>
-
-                {{-- Total Clients --}}
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-success text-white">
-                                <i class="bi bi-person-vcard"></i>
-                            </div>
-                        </div>
-                        <div class="stat-number mb-1">
-                            {{ \App\Models\Client::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
-                        </div>
-                        <div class="text-muted small">Clients</div>
+                    <div class="stat-number mb-1">
+                        {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
                     </div>
-                </div>
-
-                {{-- Contrats Actifs --}}
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-warning text-dark">
-                                <i class="bi bi-file-earmark-check"></i>
-                            </div>
-                        </div>
-                        <div class="stat-number mb-1">
-                            {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
-                        </div>
-                        <div class="text-muted small">Contrats Actifs</div>
-                    </div>
-                </div>
-
-                {{-- Incidents Aujourd'hui --}}
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-danger text-white">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                        </div>
-                        <div class="stat-number mb-1">
-                            {{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('created_at', today())->count() }}
-                        </div>
-                        <div class="text-muted small">Incidents Aujourd'hui</div>
-                    </div>
+                    <div class="text-muted small">Total Employés</div>
                 </div>
             </div>
 
-            {{-- Quick Actions --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="dashboard-card p-4">
-                        <h6 class="fw-bold mb-3">
-                            <i class="bi bi-lightning me-2 text-warning"></i>
-                            Actions Rapides
-                        </h6>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.entreprise.employes.create') }}" class="quick-action-btn">
-                                    <i class="bi bi-person-plus text-primary"></i>
-                                    <span>Nouvel Employé</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.entreprise.clients.create') }}" class="quick-action-btn">
-                                    <i class="bi bi-person-vcard-add text-success"></i>
-                                    <span>Nouveau Client</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.entreprise.contrats.index') }}" class="quick-action-btn">
-                                    <i class="bi bi-file-earmark-plus text-warning"></i>
-                                    <span>Nouveau Contrat</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="quick-action-btn">
-                                    <i class="bi bi-calendar-check text-info"></i>
-                                    <span>Affectations</span>
-                                </a>
-                            </div>
+            {{-- Total Clients --}}
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-success text-white">
+                            <i class="bi bi-person-vcard"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number mb-1">
+                        {{ \App\Models\Client::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
+                    </div>
+                    <div class="text-muted small">Clients</div>
+                </div>
+            </div>
+
+            {{-- Contrats Actifs --}}
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-warning text-dark">
+                            <i class="bi bi-file-earmark-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number mb-1">
+                        {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
+                    </div>
+                    <div class="text-muted small">Contrats Actifs</div>
+                </div>
+            </div>
+
+            {{-- Incidents Aujourd'hui --}}
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-danger text-white">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number mb-1">
+                        {{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('created_at', today())->count() }}
+                    </div>
+                    <div class="text-muted small">Incidents Aujourd'hui</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Quick Actions --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card p-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-lightning me-2 text-warning"></i>
+                        Actions Rapides
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.entreprise.employes.create') }}" class="quick-action-btn">
+                                <i class="bi bi-person-plus text-primary"></i>
+                                <span>Nouvel Employé</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.entreprise.clients.create') }}" class="quick-action-btn">
+                                <i class="bi bi-person-vcard-add text-success"></i>
+                                <span>Nouveau Client</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.entreprise.contrats.index') }}" class="quick-action-btn">
+                                <i class="bi bi-file-earmark-plus text-warning"></i>
+                                <span>Nouveau Contrat</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="quick-action-btn">
+                                <i class="bi bi-calendar-check text-info"></i>
+                                <span>Affectations</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Main Content Row --}}
-            <div class="row mb-4">
-                {{-- Affectations du Jour --}}
-                <div class="col-lg-8">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span>
-                                <i class="bi bi-calendar-event me-2 text-success"></i>
-                                Affectations du Jour
-                            </span>
-                            <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="btn btn-sm btn-outline-success">Voir tout</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Agent</th>
-                                            <th>Site</th>
-                                            <th>Client</th>
-                                            <th>Horaire</th>
-                                            <th>Statut</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse(\App\Models\Affectation::where('entreprise_id', auth()->user()->entreprise_id)->with(['employe', 'siteClient', 'contratPrestation.client'])->latest()->take(10)->get() as $affectation)
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-sm me-2 bg-primary-subtle rounded-circle">
-                                                        {{ substr($affectation->employe->prenoms ?? 'N', 0, 1) }}{{ substr($affectation->employe->nom ?? 'A', 0, 1) }}
-                                                    </div>
-                                                    <span>{{ $affectation->employe->prenoms ?? 'N/A' }} {{ $affectation->employe->nom ?? '' }}</span>
+        {{-- Main Content Row --}}
+        <div class="row mb-4">
+            {{-- Affectations du Jour --}}
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-calendar-event me-2 text-success"></i>
+                            Affectations du Jour
+                        </span>
+                        <a href="{{ route('dashboard.entreprise.affectations.index') }}" class="btn btn-sm btn-outline-success">Voir tout</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Agent</th>
+                                        <th>Site</th>
+                                        <th>Client</th>
+                                        <th>Horaire</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(\App\Models\Affectation::where('entreprise_id', auth()->user()->entreprise_id)->with(['employe', 'siteClient', 'contratPrestation.client'])->latest()->take(10)->get() as $affectation)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2 bg-primary-subtle rounded-circle">
+                                                    {{ substr($affectation->employe->prenoms ?? 'N', 0, 1) }}{{ substr($affectation->employe->nom ?? 'A', 0, 1) }}
                                                 </div>
-                                            </td>
-                                            <td>{{ $affectation->siteClient->nom_site ?? 'N/A' }}</td>
-                                            <td>{{ $affectation->contratPrestation->client->nom ?? 'N/A' }}</td>
-                                            <td>{{ $affectation->heure_debut ?? 'N/A' }} - {{ $affectation->heure_fin ?? 'N/A' }}</td>
-                                            <td><span class="status-badge status-active">Actif</span></td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center py-4">Aucune affectation trouvée</td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Statistiques Rapides --}}
-                <div class="col-lg-4">
-                    <div class="dashboard-card mb-4">
-                        <div class="card-header">
-                            <i class="bi bi-graph-up me-2 text-primary"></i>
-                            Statistiques Rapides
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="fw-semibold">Agents disponibles</span>
-                                    <span class="text-success fw-bold">
-                                        {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count() }}
-                                    </span>
-                                </div>
-                                <div class="custom-progress">
-                                    @php
-                                    $totalAgents = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count();
-                                    $disponibles = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count();
-                                    $percent = $totalAgents > 0 ? ($disponibles / $totalAgents) * 100 : 0;
-                                    @endphp
-                                    <div class="progress-bar bg-success" style="width: {{ $percent }}%;"></div>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="fw-semibold">Pointages aujourd'hui</span>
-                                    <span class="text-primary fw-bold">
-                                        {{ \App\Models\Pointage::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('date_pointage', today())->count() }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="fw-semibold">Congés en attente</span>
-                                    <span class="text-warning fw-bold">
-                                        {{ \App\Models\Conge::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_attente')->count() }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="mb-0">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="fw-semibold">Factures impayées</span>
-                                    <span class="text-danger fw-bold">
-                                        {{ \App\Models\Facture::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'impayee')->count() }}
-                                    </span>
-                                </div>
-                            </div>
+                                                <span>{{ $affectation->employe->prenoms ?? 'N/A' }} {{ $affectation->employe->nom ?? '' }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ $affectation->siteClient->nom_site ?? 'N/A' }}</td>
+                                        <td>{{ $affectation->contratPrestation->client->nom ?? 'N/A' }}</td>
+                                        <td>{{ $affectation->heure_debut ?? 'N/A' }} - {{ $affectation->heure_fin ?? 'N/A' }}</td>
+                                        <td><span class="status-badge status-active">Actif</span></td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Aucune affectation trouvée</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Bottom Row --}}
-            <div class="row">
-                {{-- Évolution des Contrats --}}
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <i class="bi bi-pie-chart me-2 text-info"></i>
-                            État des Contrats
-                        </div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <div class="stat-icon bg-gradient-success text-white mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <i class="bi bi-check-circle"></i>
-                                    </div>
-                                    <div class="fw-bold fs-3">
-                                        {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
-                                    </div>
-                                    <div class="text-muted small">Actifs</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-icon bg-gradient-warning text-dark mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <i class="bi bi-clock"></i>
-                                    </div>
-                                    <div class="fw-bold fs-3">
-                                        {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_cours')->count() }}
-                                    </div>
-                                    <div class="text-muted small">En cours</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-icon bg-gradient-danger text-white mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                        <i class="bi bi-x-circle"></i>
-                                    </div>
-                                    <div class="fw-bold fs-3">
-                                        {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'expire')->count() }}
-                                    </div>
-                                    <div class="text-muted small">Expirés</div>
-                                </div>
+            {{-- Statistiques Rapides --}}
+            <div class="col-lg-4">
+                <div class="dashboard-card mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-graph-up me-2 text-primary"></i>
+                        Statistiques Rapides
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-semibold">Agents disponibles</span>
+                                <span class="text-success fw-bold">
+                                    {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count() }}
+                                </span>
+                            </div>
+                            <div class="custom-progress">
+                                @php
+                                $totalAgents = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count();
+                                $disponibles = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count();
+                                $percent = $totalAgents > 0 ? ($disponibles / $totalAgents) * 100 : 0;
+                                @endphp
+                                <div class="progress-bar bg-success" style="width: {{ $percent }}%;"></div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Activité Récente --}}
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <i class="bi bi-activity me-2 text-danger"></i>
-                            Activité Récente
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-semibold">Pointages aujourd'hui</span>
+                                <span class="text-primary fw-bold">
+                                    {{ \App\Models\Pointage::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('date_pointage', today())->count() }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="activity-timeline">
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Nouveau pointage</div>
-                                    <div class="text-muted small">Agent: Jean Koffi - Site SBEE - Il y a 1h</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Facture créée</div>
-                                    <div class="text-muted small">Facture #2024-001 - SONEB - Il y a 3h</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Incident signalé</div>
-                                    <div class="text-muted small">Incident sur le site de la SBEE - Hier</div>
-                                </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-semibold">Congés en attente</span>
+                                <span class="text-warning fw-bold">
+                                    {{ \App\Models\Conge::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_attente')->count() }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-semibold">Factures impayées</span>
+                                <span class="text-danger fw-bold">
+                                    {{ \App\Models\Facture::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'impayee')->count() }}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
-        <!--end::Container-->
+
+        {{-- Bottom Row --}}
+        <div class="row">
+            {{-- Évolution des Contrats --}}
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <i class="bi bi-pie-chart me-2 text-info"></i>
+                        État des Contrats
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="stat-icon bg-gradient-success text-white mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="fw-bold fs-3">
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
+                                </div>
+                                <div class="text-muted small">Actifs</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-icon bg-gradient-warning text-dark mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div class="fw-bold fs-3">
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_cours')->count() }}
+                                </div>
+                                <div class="text-muted small">En cours</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-icon bg-gradient-danger text-white mx-auto mb-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-x-circle"></i>
+                                </div>
+                                <div class="fw-bold fs-3">
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'expire')->count() }}
+                                </div>
+                                <div class="text-muted small">Expirés</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Activité Récente --}}
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <i class="bi bi-activity me-2 text-danger"></i>
+                        Activité Récente
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            <div class="activity-item">
+                                <div class="fw-semibold">Nouveau pointage</div>
+                                <div class="text-muted small">Agent: Jean Koffi - Site SBEE - Il y a 1h</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="fw-semibold">Facture créée</div>
+                                <div class="text-muted small">Facture #2024-001 - SONEB - Il y a 3h</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="fw-semibold">Incident signalé</div>
+                                <div class="text-muted small">Incident sur le site de la SBEE - Hier</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <!--end::App Content-->
-</main>
-<!--end::App Main-->
+    <!--end::Container-->
+</div>
+<!--end::App Content-->
 @endsection

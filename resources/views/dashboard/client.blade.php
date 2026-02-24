@@ -207,272 +207,270 @@
 @endpush
 
 @section('content')
-<main class="app-main">
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <h3 class="mb-0"><i class="bi bi-person-vcard me-2 text-success"></i>Mon Espace Client</h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </div>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h3 class="mb-0"><i class="bi bi-person-vcard me-2 text-success"></i>Mon Espace Client</h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="app-content">
-        <div class="container-fluid">
-            {{-- Welcome Banner --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="welcome-banner">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
-                                <p class="mb-0 opacity-75">Gérez vos contrats et services de sécurité</p>
-                            </div>
-                            <div class="d-none d-md-block"><i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i></div>
+<div class="app-content">
+    <div class="container-fluid">
+        {{-- Welcome Banner --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="welcome-banner">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
+                            <p class="mb-0 opacity-75">Gérez vos contrats et services de sécurité</p>
                         </div>
+                        <div class="d-none d-md-block"><i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i></div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Statistics Cards --}}
-            <div class="row mb-4">
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-file-earmark-check"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->count() }}</div>
-                        <div class="text-muted small">Mes Contrats</div>
+        {{-- Statistics Cards --}}
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-file-earmark-check"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-receipt"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Facture::where('client_id', auth()->user()->client_id)->where('statut', 'impayee')->count() }}</div>
-                        <div class="text-muted small">Factures Impayées</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-exclamation-triangle"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->whereDate('created_at', today())->count() }}</div>
-                        <div class="text-muted small">Incidents Aujourd'hui</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-building"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\SiteClient::where('client_id', auth()->user()->client_id)->count() }}</div>
-                        <div class="text-muted small">Mes Sites</div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->count() }}</div>
+                    <div class="text-muted small">Mes Contrats</div>
                 </div>
             </div>
-
-            {{-- Quick Actions --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="dashboard-card p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.client.incidents.create') }}" class="quick-action-btn w-100">
-                                    <i class="bi bi-exclamation-triangle text-danger"></i><span>Signaler Incident</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.client.factures.index') }}" class="quick-action-btn w-100">
-                                    <i class="bi bi-receipt text-warning"></i><span>Mes Factures</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.client.contrats.index') }}" class="quick-action-btn w-100">
-                                    <i class="bi bi-file-earmark-text text-primary"></i><span>Mes Contrats</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="#" class="quick-action-btn w-100">
-                                    <i class="bi bi-chat-dots text-info"></i><span>Contacter Support</span>
-                                </a>
-                            </div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-receipt"></i></div>
                     </div>
+                    <div class="stat-number mb-1">{{ \App\Models\Facture::where('client_id', auth()->user()->client_id)->where('statut', 'impayee')->count() }}</div>
+                    <div class="text-muted small">Factures Impayées</div>
                 </div>
             </div>
-
-            {{-- Charts Row --}}
-            <div class="row mb-4">
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-bar-chart me-2 text-success"></i>État des Contrats</div>
-                        <div class="card-body">
-                            <div id="contrats-chart" class="chart-container"></div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-exclamation-triangle"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition des Factures</div>
-                        <div class="card-body">
-                            <div id="factures-chart" class="chart-container"></div>
-                        </div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->whereDate('created_at', today())->count() }}</div>
+                    <div class="text-muted small">Incidents Aujourd'hui</div>
                 </div>
             </div>
-
-            {{-- Main Content --}}
-            <div class="row mb-4">
-                <div class="col-lg-8">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-file-earmark-text me-2 text-primary"></i>Mes Contrats</span>
-                            <a href="{{ route('dashboard.client.contrats.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>N° Contrat</th>
-                                            <th>Type</th>
-                                            <th>Date début</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse(\App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $contrat)
-                                        <tr>
-                                            <td>{{ $contrat->numero_contrat ?? 'N/A' }}</td>
-                                            <td>{{ $contrat->type_contrat ?? 'Prestation' }}</td>
-                                            <td>{{ $contrat->date_debut ? \Carbon\Carbon::parse($contrat->date_debut)->format('d/m/Y') : 'N/A' }}</td>
-                                            <td>
-                                                @if($contrat->statut === 'actif')
-                                                <span class="status-badge status-active">Actif</span>
-                                                @elseif($contrat->statut === 'en_cours')
-                                                <span class="status-badge status-pending">En cours</span>
-                                                @else
-                                                <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Expiré</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                                <a href="#" class="btn btn-sm btn-info"><i class="bi bi-download"></i></a>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center py-4">Aucun contrat trouvé</td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-building"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="dashboard-card mb-4">
-                        <div class="card-header"><i class="bi bi-person-circle me-2 text-info"></i>Informations du Compte</div>
-                        <div class="card-body">
-                            @php $client = auth()->user()->client; @endphp
-                            <div class="text-center mb-3">
-                                <div class="avatar-sm mx-auto mb-2 bg-primary-subtle rounded-circle" style="width: 60px; height: 60px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
-                                <h5 class="fw-bold">{{ $client->nom ?? 'N/A' }}</h5>
-                                <span class="badge bg-primary">{{ $client && $client->type_client === 'entreprise' ? 'Entreprise' : 'Particulier' }}</span>
-                            </div>
-                            <div class="mb-2"><small class="text-muted">Email</small>
-                                <div>{{ auth()->user()->email }}</div>
-                            </div>
-                            <div class="mb-2"><small class="text-muted">Téléphone</small>
-                                <div>{{ auth()->user()->telephone ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\SiteClient::where('client_id', auth()->user()->client_id)->count() }}</div>
+                    <div class="text-muted small">Mes Sites</div>
                 </div>
             </div>
+        </div>
 
-            {{-- Bottom Row --}}
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-receipt me-2 text-warning"></i>Mes Factures Récentes</div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>N° Facture</th>
-                                            <th>Date</th>
-                                            <th>Montant</th>
-                                            <th>Statut</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse(\App\Models\Facture::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $facture)
-                                        <tr>
-                                            <td>{{ $facture->numero_facture ?? 'N/A' }}</td>
-                                            <td>{{ $facture->date_facture ? \Carbon\Carbon::parse($facture->date_facture)->format('d/m/Y') : 'N/A' }}</td>
-                                            <td>{{ number_format($facture->montant_total ?? 0, 0, ',', ' ') }} F</td>
-                                            <td>
-                                                @if($facture->statut === 'payee')
-                                                <span class="status-badge status-active">Payée</span>
-                                                @elseif($facture->statut === 'impayee')
-                                                <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Impayée</span>
-                                                @else
-                                                <span class="status-badge status-pending">En attente</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center py-4">Aucune facture trouvée</td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+        {{-- Quick Actions --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.client.incidents.create') }}" class="quick-action-btn w-100">
+                                <i class="bi bi-exclamation-triangle text-danger"></i><span>Signaler Incident</span>
+                            </a>
                         </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Historique des Incidents</div>
-                        <div class="card-body">
-                            <div class="activity-timeline">
-                                @forelse(\App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->latest()->take(3)->get() as $incident)
-                                <div class="activity-item">
-                                    <div class="fw-semibold">{{ $incident->titre }}</div>
-                                    <div class="text-muted small">{{ $incident->created_at->diffForHumans() }}</div>
-                                </div>
-                                @empty
-                                <div class="text-center text-muted py-3">
-                                    <i class="bi bi-check-circle fs-1"></i>
-                                    <p>Aucun incident récent</p>
-                                </div>
-                                @endforelse
-                            </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.client.factures.index') }}" class="quick-action-btn w-100">
+                                <i class="bi bi-receipt text-warning"></i><span>Mes Factures</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.client.contrats.index') }}" class="quick-action-btn w-100">
+                                <i class="bi bi-file-earmark-text text-primary"></i><span>Mes Contrats</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="#" class="quick-action-btn w-100">
+                                <i class="bi bi-chat-dots text-info"></i><span>Contacter Support</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- Charts Row --}}
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-bar-chart me-2 text-success"></i>État des Contrats</div>
+                    <div class="card-body">
+                        <div id="contrats-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition des Factures</div>
+                    <div class="card-body">
+                        <div id="factures-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Main Content --}}
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-file-earmark-text me-2 text-primary"></i>Mes Contrats</span>
+                        <a href="{{ route('dashboard.client.contrats.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>N° Contrat</th>
+                                        <th>Type</th>
+                                        <th>Date début</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(\App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $contrat)
+                                    <tr>
+                                        <td>{{ $contrat->numero_contrat ?? 'N/A' }}</td>
+                                        <td>{{ $contrat->type_contrat ?? 'Prestation' }}</td>
+                                        <td>{{ $contrat->date_debut ? \Carbon\Carbon::parse($contrat->date_debut)->format('d/m/Y') : 'N/A' }}</td>
+                                        <td>
+                                            @if($contrat->statut === 'actif')
+                                            <span class="status-badge status-active">Actif</span>
+                                            @elseif($contrat->statut === 'en_cours')
+                                            <span class="status-badge status-pending">En cours</span>
+                                            @else
+                                            <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Expiré</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Aucun contrat trouvé</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card mb-4">
+                    <div class="card-header"><i class="bi bi-person-circle me-2 text-info"></i>Informations du Compte</div>
+                    <div class="card-body">
+                        @php $client = auth()->user()->client; @endphp
+                        <div class="text-center mb-3">
+                            <div class="avatar-sm mx-auto mb-2 bg-primary-subtle rounded-circle" style="width: 60px; height: 60px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">{{ $client->nom ?? 'N/A' }}</h5>
+                            <span class="badge bg-primary">{{ $client && $client->type_client === 'entreprise' ? 'Entreprise' : 'Particulier' }}</span>
+                        </div>
+                        <div class="mb-2"><small class="text-muted">Email</small>
+                            <div>{{ auth()->user()->email }}</div>
+                        </div>
+                        <div class="mb-2"><small class="text-muted">Téléphone</small>
+                            <div>{{ auth()->user()->telephone ?? 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Bottom Row --}}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-receipt me-2 text-warning"></i>Mes Factures Récentes</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>N° Facture</th>
+                                        <th>Date</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(\App\Models\Facture::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $facture)
+                                    <tr>
+                                        <td>{{ $facture->numero_facture ?? 'N/A' }}</td>
+                                        <td>{{ $facture->date_facture ? \Carbon\Carbon::parse($facture->date_facture)->format('d/m/Y') : 'N/A' }}</td>
+                                        <td>{{ number_format($facture->montant_total ?? 0, 0, ',', ' ') }} F</td>
+                                        <td>
+                                            @if($facture->statut === 'payee')
+                                            <span class="status-badge status-active">Payée</span>
+                                            @elseif($facture->statut === 'impayee')
+                                            <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Impayée</span>
+                                            @else
+                                            <span class="status-badge status-pending">En attente</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">Aucune facture trouvée</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Historique des Incidents</div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            @forelse(\App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereHas('site', function($q) { $q->where('client_id', auth()->user()->client_id); })->latest()->take(3)->get() as $incident)
+                            <div class="activity-item">
+                                <div class="fw-semibold">{{ $incident->titre }}</div>
+                                <div class="text-muted small">{{ $incident->created_at->diffForHumans() }}</div>
+                            </div>
+                            @empty
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-check-circle fs-1"></i>
+                                <p>Aucun incident récent</p>
+                            </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</main>
+</div>
 @endsection
 
 @push('scripts')

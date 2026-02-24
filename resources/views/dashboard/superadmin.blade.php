@@ -263,234 +263,232 @@
 @endpush
 
 @section('content')
-<main class="app-main">
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <h3 class="mb-0"><i class="bi bi-shield-lock me-2 text-purple"></i>Dashboard Super Administrateur</h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </div>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h3 class="mb-0"><i class="bi bi-shield-lock me-2 text-purple"></i>Dashboard Super Administrateur</h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="app-content">
-        <div class="container-fluid">
-            {{-- Welcome Banner --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="welcome-banner">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
-                                <p class="mb-0 opacity-75">Vue d'ensemble de toutes les entreprises de sécurité</p>
-                            </div>
-                            <div class="d-none d-md-block"><i class="bi bi-shield-lock" style="font-size: 4rem; opacity: 0.3;"></i></div>
+<div class="app-content">
+    <div class="container-fluid">
+        {{-- Welcome Banner --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="welcome-banner">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
+                            <p class="mb-0 opacity-75">Vue d'ensemble de toutes les entreprises de sécurité</p>
                         </div>
+                        <div class="d-none d-md-block"><i class="bi bi-shield-lock" style="font-size: 4rem; opacity: 0.3;"></i></div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Statistics Cards --}}
-            <div class="row mb-4">
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-building"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Entreprise::count() }}</div>
-                        <div class="text-muted small">Entreprises</div>
+        {{-- Statistics Cards --}}
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-building"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-people"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\User::where('is_superadmin', false)->count() }}</div>
-                        <div class="text-muted small">Utilisateurs</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-person-vcard"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\Client::count() }}</div>
-                        <div class="text-muted small">Clients</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-file-earmark-check"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('statut', 'actif')->count() }}</div>
-                        <div class="text-muted small">Contrats Actifs</div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\Entreprise::count() }}</div>
+                    <div class="text-muted small">Entreprises</div>
                 </div>
             </div>
-
-            {{-- Quick Actions --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="dashboard-card p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.superadmin.entreprises.create') }}" class="quick-action-btn">
-                                    <i class="bi bi-building-add text-primary"></i><span>Nouvelle Entreprise</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.superadmin.utilisateurs.create') }}" class="quick-action-btn">
-                                    <i class="bi bi-person-plus text-success"></i><span>Nouvel Utilisateur</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.superadmin.parametres.index') }}" class="quick-action-btn">
-                                    <i class="bi bi-gear text-warning"></i><span>Paramètres</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="#" class="quick-action-btn"><i class="bi bi-bar-chart text-info"></i><span>Rapports</span></a>
-                            </div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-people"></i></div>
                     </div>
+                    <div class="stat-number mb-1">{{ \App\Models\User::where('is_superadmin', false)->count() }}</div>
+                    <div class="text-muted small">Utilisateurs</div>
                 </div>
             </div>
-
-            {{-- Charts Row --}}
-            <div class="row mb-4">
-                <div class="col-lg-8">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Contrats</span>
-                        </div>
-                        <div class="card-body">
-                            <div id="contracts-chart" class="chart-container"></div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-person-vcard"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="dashboard-card h-100">
-                        <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition</div>
-                        <div class="card-body">
-                            <div id="distribution-chart" class="chart-container"></div>
-                        </div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\Client::count() }}</div>
+                    <div class="text-muted small">Clients</div>
                 </div>
             </div>
-
-            {{-- Table & Stats Row --}}
-            <div class="row mb-4">
-                <div class="col-lg-8">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-building me-2 text-purple"></i>Entreprises de Sécurité</span>
-                            <a href="{{ route('dashboard.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-purple" style="color: #6f42c1; border-color: #6f42c1;">Voir tout</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Nom</th>
-                                            <th>Email</th>
-                                            <th>Téléphone</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse(\App\Models\Entreprise::latest()->take(8)->get() as $entreprise)
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-sm me-2 bg-purple-subtle rounded-circle" style="background: rgba(111, 66, 193, 0.1);">{{ substr($entreprise->nom, 0, 2) }}</div>{{ $entreprise->nom }}
-                                                </div>
-                                            </td>
-                                            <td>{{ $entreprise->email }}</td>
-                                            <td>{{ $entreprise->telephone }}</td>
-                                            <td>@if($entreprise->est_active)<span class="status-badge status-active">Actif</span>@else<span class="status-badge status-inactive">Inactif</span>@endif</td>
-                                            <td>
-                                                <a href="{{ route('dashboard.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                                <a href="{{ route('dashboard.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center py-4">Aucune entreprise trouvée</td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-file-earmark-check"></i></div>
                     </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-bar-chart me-2 text-info"></i>Statistiques Globales</div>
-                        <div class="card-body">
-                            <div class="text-center mb-4">
-                                <div class="stat-icon bg-gradient-success text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-person-badge"></i></div>
-                                <div class="fs-2 fw-bold">{{ \App\Models\Employe::count() }}</div>
-                                <div class="text-muted small">Employés</div>
-                            </div>
-                            <div class="text-center mb-4">
-                                <div class="stat-icon bg-gradient-warning text-dark mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-file-earmark-text"></i></div>
-                                <div class="fs-2 fw-bold">{{ \App\Models\ContratPrestation::count() }}</div>
-                                <div class="text-muted small">Contrats</div>
-                            </div>
-                            <div class="text-center mb-4">
-                                <div class="stat-icon bg-gradient-info text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-receipt"></i></div>
-                                <div class="fs-2 fw-bold">{{ \App\Models\Facture::count() }}</div>
-                                <div class="text-muted small">Factures</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="stat-icon bg-gradient-danger text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-exclamation-triangle"></i></div>
-                                <div class="fs-2 fw-bold">{{ \App\Models\Incident::count() }}</div>
-                                <div class="text-muted small">Incidents</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('statut', 'actif')->count() }}</div>
+                    <div class="text-muted small">Contrats Actifs</div>
                 </div>
             </div>
+        </div>
 
-            {{-- Activity Timeline --}}
-            <div class="row">
-                <div class="col-12">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Activité Récente</div>
-                        <div class="card-body">
-                            <div class="activity-timeline">
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Nouvelle entreprise ajoutée</div>
-                                    <div class="text-muted small">Entreprise de Sécurité ABC - Il y a 2h</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Nouveau contrat créé</div>
-                                    <div class="text-muted small">Contrat avec SBEE - Il y a 5h</div>
-                                </div>
-                                <div class="activity-item">
-                                    <div class="fw-semibold">Utilisateur activé</div>
-                                    <div class="text-muted small">Jean Dupont - Agent - Hier</div>
-                                </div>
-                            </div>
+        {{-- Quick Actions --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.superadmin.entreprises.create') }}" class="quick-action-btn">
+                                <i class="bi bi-building-add text-primary"></i><span>Nouvelle Entreprise</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.superadmin.utilisateurs.create') }}" class="quick-action-btn">
+                                <i class="bi bi-person-plus text-success"></i><span>Nouvel Utilisateur</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.superadmin.parametres.index') }}" class="quick-action-btn">
+                                <i class="bi bi-gear text-warning"></i><span>Paramètres</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="#" class="quick-action-btn"><i class="bi bi-bar-chart text-info"></i><span>Rapports</span></a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- Charts Row --}}
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Contrats</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="contracts-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card h-100">
+                    <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition</div>
+                    <div class="card-body">
+                        <div id="distribution-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Table & Stats Row --}}
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-building me-2 text-purple"></i>Entreprises de Sécurité</span>
+                        <a href="{{ route('dashboard.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-purple" style="color: #6f42c1; border-color: #6f42c1;">Voir tout</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(\App\Models\Entreprise::latest()->take(8)->get() as $entreprise)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-2 bg-purple-subtle rounded-circle" style="background: rgba(111, 66, 193, 0.1);">{{ substr($entreprise->nom, 0, 2) }}</div>{{ $entreprise->nom }}
+                                            </div>
+                                        </td>
+                                        <td>{{ $entreprise->email }}</td>
+                                        <td>{{ $entreprise->telephone }}</td>
+                                        <td>@if($entreprise->est_active)<span class="status-badge status-active">Actif</span>@else<span class="status-badge status-inactive">Inactif</span>@endif</td>
+                                        <td>
+                                            <a href="{{ route('dashboard.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                                            <a href="{{ route('dashboard.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Aucune entreprise trouvée</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-bar-chart me-2 text-info"></i>Statistiques Globales</div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="stat-icon bg-gradient-success text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-person-badge"></i></div>
+                            <div class="fs-2 fw-bold">{{ \App\Models\Employe::count() }}</div>
+                            <div class="text-muted small">Employés</div>
+                        </div>
+                        <div class="text-center mb-4">
+                            <div class="stat-icon bg-gradient-warning text-dark mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-file-earmark-text"></i></div>
+                            <div class="fs-2 fw-bold">{{ \App\Models\ContratPrestation::count() }}</div>
+                            <div class="text-muted small">Contrats</div>
+                        </div>
+                        <div class="text-center mb-4">
+                            <div class="stat-icon bg-gradient-info text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-receipt"></i></div>
+                            <div class="fs-2 fw-bold">{{ \App\Models\Facture::count() }}</div>
+                            <div class="text-muted small">Factures</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-icon bg-gradient-danger text-white mx-auto mb-2" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="bi bi-exclamation-triangle"></i></div>
+                            <div class="fs-2 fw-bold">{{ \App\Models\Incident::count() }}</div>
+                            <div class="text-muted small">Incidents</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Activity Timeline --}}
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Activité Récente</div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            <div class="activity-item">
+                                <div class="fw-semibold">Nouvelle entreprise ajoutée</div>
+                                <div class="text-muted small">Entreprise de Sécurité ABC - Il y a 2h</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="fw-semibold">Nouveau contrat créé</div>
+                                <div class="text-muted small">Contrat avec SBEE - Il y a 5h</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="fw-semibold">Utilisateur activé</div>
+                                <div class="text-muted small">Jean Dupont - Agent - Hier</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</main>
+</div>
 @endsection
 
 @push('scripts')

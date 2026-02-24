@@ -170,249 +170,247 @@
 @endpush
 
 @section('content')
-<main class="app-main">
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <h3 class="mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Mon Dashboard</h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </div>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <h3 class="mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Mon Dashboard</h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                </ol>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="app-content">
-        <div class="container-fluid">
-            {{-- Welcome Banner --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="welcome-banner">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
-                                <p class="mb-0 opacity-75">Voici un aperçu de votre activité</p>
-                            </div>
-                            <div class="d-none d-md-block"><i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i></div>
+<div class="app-content">
+    <div class="container-fluid">
+        {{-- Welcome Banner --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="welcome-banner">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
+                            <p class="mb-0 opacity-75">Voici un aperçu de votre activité</p>
+                        </div>
+                        <div class="d-none d-md-block"><i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Statistics Cards --}}
+        @php $employeId = auth()->user()->employe_id; @endphp
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-briefcase"></i></div>
+                    </div>
+                    <div class="stat-number mb-1">{{ $employeId ? \App\Models\Affectation::where('employe_id', $employeId)->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->count() : 0 }}</div>
+                    <div class="text-muted small">Mes Missions</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-clock"></i></div>
+                    </div>
+                    <div class="stat-number mb-1">{{ $employeId ? \App\Models\Pointage::where('employe_id', $employeId)->whereDate('date_pointage', today())->count() : 0 }}</div>
+                    <div class="text-muted small">Pointages Aujourd'hui</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-calendar-event"></i></div>
+                    </div>
+                    <div class="stat-number mb-1">{{ $employeId ? \App\Models\Conge::where('employe_id', $employeId)->where('statut', 'en_attente')->count() : 0 }}</div>
+                    <div class="text-muted small">Congés en Attente</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-exclamation-triangle"></i></div>
+                    </div>
+                    <div class="stat-number mb-1">{{ $employeId ? \App\Models\Incident::where('employe_id', $employeId)->whereDate('created_at', today())->count() : 0 }}</div>
+                    <div class="text-muted small">Incidents Aujourd'hui</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Quick Actions --}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card p-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <button class="quick-action-btn w-100" data-bs-toggle="modal" data-bs-target="#pointageModal">
+                                <i class="bi bi-check-circle text-success"></i><span>Pointer</span>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button class="quick-action-btn w-100" data-bs-toggle="modal" data-bs-target="#incidentModal">
+                                <i class="bi bi-exclamation-triangle text-danger"></i><span>Signaler Incident</span>
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.agent.conges.index') }}" class="quick-action-btn w-100">
+                                <i class="bi bi-calendar-plus text-warning"></i><span>Demander Congé</span>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <a href="{{ route('dashboard.agent.missions.index') }}" class="quick-action-btn w-100">
+                                <i class="bi bi-list-task text-info"></i><span>Mes Missions</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Statistics Cards --}}
-            @php $employeId = auth()->user()->employe_id; @endphp
-            <div class="row mb-4">
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-briefcase"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Affectation::where('employe_id', $employeId)->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->count() : 0 }}</div>
-                        <div class="text-muted small">Mes Missions</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-clock"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Pointage::where('employe_id', $employeId)->whereDate('date_pointage', today())->count() : 0 }}</div>
-                        <div class="text-muted small">Pointages Aujourd'hui</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-calendar-event"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Conge::where('employe_id', $employeId)->where('statut', 'en_attente')->count() : 0 }}</div>
-                        <div class="text-muted small">Congés en Attente</div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-6">
-                    <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-exclamation-triangle"></i></div>
-                        </div>
-                        <div class="stat-number mb-1">{{ $employeId ? \App\Models\Incident::where('employe_id', $employeId)->whereDate('created_at', today())->count() : 0 }}</div>
-                        <div class="text-muted small">Incidents Aujourd'hui</div>
+        {{-- Charts Row --}}
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-bar-chart me-2 text-success"></i>Mes Pointages (7 derniers jours)</div>
+                    <div class="card-body">
+                        <div id="pointages-chart" class="chart-container"></div>
                     </div>
                 </div>
             </div>
-
-            {{-- Quick Actions --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="dashboard-card p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <button class="quick-action-btn w-100" data-bs-toggle="modal" data-bs-target="#pointageModal">
-                                    <i class="bi bi-check-circle text-success"></i><span>Pointer</span>
-                                </button>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <button class="quick-action-btn w-100" data-bs-toggle="modal" data-bs-target="#incidentModal">
-                                    <i class="bi bi-exclamation-triangle text-danger"></i><span>Signaler Incident</span>
-                                </button>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.agent.conges.index') }}" class="quick-action-btn w-100">
-                                    <i class="bi bi-calendar-plus text-warning"></i><span>Demander Congé</span>
-                                </a>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <a href="{{ route('dashboard.agent.missions.index') }}" class="quick-action-btn w-100">
-                                    <i class="bi bi-list-task text-info"></i><span>Mes Missions</span>
-                                </a>
-                            </div>
-                        </div>
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition des Missions</div>
+                    <div class="card-body">
+                        <div id="missions-chart" class="chart-container"></div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- Charts Row --}}
-            <div class="row mb-4">
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-bar-chart me-2 text-success"></i>Mes Pointages (7 derniers jours)</div>
-                        <div class="card-body">
-                            <div id="pointages-chart" class="chart-container"></div>
-                        </div>
+        {{-- Main Content --}}
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-briefcase me-2 text-primary"></i>Mes Missions en Cours</span>
+                        <a href="{{ route('dashboard.agent.missions.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
                     </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Répartition des Missions</div>
-                        <div class="card-body">
-                            <div id="missions-chart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Main Content --}}
-            <div class="row mb-4">
-                <div class="col-lg-8">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-briefcase me-2 text-primary"></i>Mes Missions en Cours</span>
-                            <a href="{{ route('dashboard.agent.missions.index') }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Site</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Horaire</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($employeId ? \App\Models\Affectation::where('employe_id', $employeId)->with(['siteClient', 'contratPrestation.client'])->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->latest()->take(5)->get() : [] as $affectation)
                                         <tr>
-                                            <th>Site</th>
-                                            <th>Client</th>
-                                            <th>Date</th>
-                                            <th>Horaire</th>
-                                            <th>Statut</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($employeId ? \App\Models\Affectation::where('employe_id', $employeId)->with(['siteClient', 'contratPrestation.client'])->whereDate('date_debut', '<=', now())->whereDate('date_fin', '>=', now())->latest()->take(5)->get() : [] as $affectation)
-                                            <tr>
-                                                <td>{{ $affectation->siteClient->nom_site ?? 'N/A' }}</td>
-                                                <td>{{ $affectation->contratPrestation->client->nom ?? 'N/A' }}</td>
-                                                <td>{{ $affectation->date_debut ? \Carbon\Carbon::parse($affectation->date_debut)->format('d/m/Y') : 'N/A' }}</td>
-                                                <td>{{ $affectation->heure_debut ?? 'N/A' }} - {{ $affectation->heure_fin ?? 'N/A' }}</td>
-                                                <td><span class="status-badge status-active">En cours</span></td>
-                                            </tr>
-                                            @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center py-4">Aucune mission en cours</td>
-                                            </tr>
-                                            @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="dashboard-card mb-4">
-                        <div class="card-header"><i class="bi bi-calendar-check me-2 text-warning"></i>Mon Solde de Congés</div>
-                        <div class="card-body">
-                            @php $employe = auth()->user()->employe; $soldeConge = $employe ? $employe->soldeConge : null; @endphp
-                            <div class="text-center mb-3">
-                                <div class="stat-number text-success">{{ $soldeConge ? $soldeConge->jours_restants : 0 }}</div>
-                                <div class="text-muted small">jours restants</div>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Pris cette année</span>
-                                <span class="fw-bold">{{ $soldeConge ? $soldeConge->jours_pris : 0 }} jours</span>
-                            </div>
-                            <div class="d-grid mt-3">
-                                <a href="{{ route('dashboard.agent.conges.index') }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-plus-circle me-1"></i> Demander un congé
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Pointage History --}}
-            <div class="row">
-                <div class="col-12">
-                    <div class="dashboard-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-clock-history me-2 text-info"></i>Mon Historique de Pointage</span>
-                            <a href="{{ route('dashboard.agent.pointages.index') }}" class="btn btn-sm btn-outline-info">Voir tout</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Site</th>
-                                            <th>Arrivée</th>
-                                            <th>Départ</th>
-                                            <th>Durée</th>
-                                            <th>Statut</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($employeId ? \App\Models\Pointage::where('employe_id', $employeId)->with('affectation.siteClient')->latest()->take(5)->get() : [] as $pointage)
-                                        <tr>
-                                            <td>{{ $pointage->date_pointage ? \Carbon\Carbon::parse($pointage->date_pointage)->format('d/m/Y') : 'N/A' }}</td>
-                                            <td>{{ $pointage->affectation->siteClient->nom_site ?? 'N/A' }}</td>
-                                            <td>{{ $pointage->heure_arrivee ?? 'N/A' }}</td>
-                                            <td>{{ $pointage->heure_depart ?? 'N/A' }}</td>
-                                            <td>{{ $pointage->duree ?? 'N/A' }}</td>
-                                            <td>
-                                                @if($pointage->statut === 'valide')
-                                                <span class="status-badge status-active">Validé</span>
-                                                @elseif($pointage->statut === 'en_attente')
-                                                <span class="status-badge status-pending">En attente</span>
-                                                @else
-                                                <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Rejeté</span>
-                                                @endif
-                                            </td>
+                                            <td>{{ $affectation->siteClient->nom_site ?? 'N/A' }}</td>
+                                            <td>{{ $affectation->contratPrestation->client->nom ?? 'N/A' }}</td>
+                                            <td>{{ $affectation->date_debut ? \Carbon\Carbon::parse($affectation->date_debut)->format('d/m/Y') : 'N/A' }}</td>
+                                            <td>{{ $affectation->heure_debut ?? 'N/A' }} - {{ $affectation->heure_fin ?? 'N/A' }}</td>
+                                            <td><span class="status-badge status-active">En cours</span></td>
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-4">Aucun pointage trouvé</td>
+                                            <td colspan="5" class="text-center py-4">Aucune mission en cours</td>
                                         </tr>
                                         @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card mb-4">
+                    <div class="card-header"><i class="bi bi-calendar-check me-2 text-warning"></i>Mon Solde de Congés</div>
+                    <div class="card-body">
+                        @php $employe = auth()->user()->employe; $soldeConge = $employe ? $employe->soldeConge : null; @endphp
+                        <div class="text-center mb-3">
+                            <div class="stat-number text-success">{{ $soldeConge ? $soldeConge->jours_restants : 0 }}</div>
+                            <div class="text-muted small">jours restants</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Pris cette année</span>
+                            <span class="fw-bold">{{ $soldeConge ? $soldeConge->jours_pris : 0 }} jours</span>
+                        </div>
+                        <div class="d-grid mt-3">
+                            <a href="{{ route('dashboard.agent.conges.index') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Demander un congé
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Pointage History --}}
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-clock-history me-2 text-info"></i>Mon Historique de Pointage</span>
+                        <a href="{{ route('dashboard.agent.pointages.index') }}" class="btn btn-sm btn-outline-info">Voir tout</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Site</th>
+                                        <th>Arrivée</th>
+                                        <th>Départ</th>
+                                        <th>Durée</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($employeId ? \App\Models\Pointage::where('employe_id', $employeId)->with('affectation.siteClient')->latest()->take(5)->get() : [] as $pointage)
+                                    <tr>
+                                        <td>{{ $pointage->date_pointage ? \Carbon\Carbon::parse($pointage->date_pointage)->format('d/m/Y') : 'N/A' }}</td>
+                                        <td>{{ $pointage->affectation->siteClient->nom_site ?? 'N/A' }}</td>
+                                        <td>{{ $pointage->heure_arrivee ?? 'N/A' }}</td>
+                                        <td>{{ $pointage->heure_depart ?? 'N/A' }}</td>
+                                        <td>{{ $pointage->duree ?? 'N/A' }}</td>
+                                        <td>
+                                            @if($pointage->statut === 'valide')
+                                            <span class="status-badge status-active">Validé</span>
+                                            @elseif($pointage->statut === 'en_attente')
+                                            <span class="status-badge status-pending">En attente</span>
+                                            @else
+                                            <span class="status-badge" style="background: rgba(220,53,69,0.1); color: #dc3545;">Rejeté</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">Aucun pointage trouvé</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div>
 
 <!-- Modal Pointage -->
 <div class="modal fade" id="pointageModal" tabindex="-1" aria-labelledby="pointageModalLabel" aria-hidden="true">
