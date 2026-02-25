@@ -5,14 +5,13 @@
 @push('styles')
 <style>
     .profile-header {
-        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
         border-radius: 16px;
         padding: 2rem;
         color: white;
         position: relative;
         overflow: hidden;
     }
-    
+
     .profile-header::before {
         content: '';
         position: absolute;
@@ -23,7 +22,7 @@
         background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
     }
-    
+
     .profile-logo {
         width: 100px;
         height: 100px;
@@ -32,18 +31,18 @@
         border: 3px solid rgba(255, 255, 255, 0.3);
         background: white;
     }
-    
+
     .stat-card {
         border: none;
         border-radius: 12px;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease;
     }
-    
+
     .stat-card:hover {
         transform: translateY(-5px);
     }
-    
+
     .stat-icon {
         width: 50px;
         height: 50px;
@@ -53,71 +52,71 @@
         justify-content: center;
         font-size: 1.25rem;
     }
-    
+
     .info-card {
         border: none;
         border-radius: 12px;
         box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
     }
-    
+
     .info-item {
         padding: 1rem 0;
         border-bottom: 1px solid #e9ecef;
     }
-    
+
     .info-item:last-child {
         border-bottom: none;
     }
-    
+
     .info-label {
         font-size: 0.85rem;
         color: #6c757d;
         margin-bottom: 0.25rem;
     }
-    
+
     .info-value {
         font-weight: 500;
         color: #212529;
     }
-    
+
     .badge-formule {
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-weight: 500;
         font-size: 0.85rem;
     }
-    
+
     .badge-essai {
         background: rgba(255, 193, 7, 0.15);
         color: #ffc107;
     }
-    
+
     .badge-basic {
         background: rgba(13, 110, 253, 0.15);
         color: #0d6efd;
     }
-    
+
     .badge-standard {
         background: rgba(25, 135, 84, 0.15);
         color: #198754;
     }
-    
+
     .badge-premium {
         background: rgba(111, 66, 193, 0.15);
         color: #6f42c1;
     }
-    
+
     .action-btn {
         padding: 0.5rem 1rem;
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.2s ease;
     }
-    
+
     .action-btn:hover {
         transform: translateY(-2px);
     }
-    
+
     .nav-tabs-custom .nav-link {
         border: none;
         color: #6c757d;
@@ -125,7 +124,7 @@
         padding: 1rem 1.5rem;
         position: relative;
     }
-    
+
     .nav-tabs-custom .nav-link::after {
         content: '';
         position: absolute;
@@ -136,29 +135,29 @@
         background: #198754;
         transition: width 0.3s ease;
     }
-    
+
     .nav-tabs-custom .nav-link:hover {
         color: #198754;
     }
-    
+
     .nav-tabs-custom .nav-link.active {
         color: #198754;
         background: transparent;
     }
-    
+
     .nav-tabs-custom .nav-link.active::after {
         width: 100%;
     }
-    
+
     .table-responsive {
         border-radius: 12px;
         overflow: hidden;
     }
-    
+
     .data-table {
         margin-bottom: 0;
     }
-    
+
     .data-table thead th {
         background: #f8f9fa;
         border-bottom: 2px solid #e9ecef;
@@ -168,11 +167,11 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .data-table tbody tr:hover {
         background: #f8f9fa;
     }
-    
+
     .avatar-sm {
         width: 36px;
         height: 36px;
@@ -209,7 +208,7 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
-        
+
         <!-- Messages de session -->
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -225,8 +224,12 @@
         </div>
         @endif
 
-        <!-- En-tête de profil -->
-        <div class="profile-header mb-4">
+        <!-- En-tête de profil avec couleurs dynamiques de l'entreprise -->
+        @php
+        $couleurPrimaire = $entreprise->couleur_primaire ?? '#198754';
+        $couleurSecondaire = $entreprise->couleur_secondaire ?? '#20c997';
+        @endphp
+        <div class="profile-header mb-4" style="background: linear-gradient(135deg, {{ $couleurPrimaire }} 0%, {{ $couleurSecondaire }} 100%);">
             <div class="row align-items-center">
                 <div class="col-auto">
                     @if($entreprise->logo)
@@ -265,8 +268,8 @@
                             </a>
                             @if($entreprise->est_active)
                             <button class="action-btn btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#connectModal"
-                                    data-entreprise-id="{{ $entreprise->id }}"
-                                    data-entreprise-nom="{{ $entreprise->nom_entreprise }}">
+                                data-entreprise-id="{{ $entreprise->id }}"
+                                data-entreprise-nom="{{ $entreprise->nom_entreprise }}">
                                 <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
                             </button>
                             @endif
@@ -380,7 +383,7 @@
             </div>
             <div class="card-body">
                 <div class="tab-content" id="entrepriseTabsContent">
-                    
+
                     <!-- Onglet Informations -->
                     <div class="tab-pane fade show active" id="infos" role="tabpanel" aria-labelledby="infos-tab">
                         <div class="row g-4">
@@ -414,7 +417,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Colonne de droite -->
                             <div class="col-md-6">
                                 <div class="info-card card h-100">
@@ -446,7 +449,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Représentant légal -->
                             <div class="col-md-6">
                                 <div class="info-card card h-100">
@@ -475,7 +478,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Abonnement -->
                             <div class="col-md-6">
                                 <div class="info-card card h-100">
@@ -512,7 +515,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Notes -->
                             @if($entreprise->notes)
                             <div class="col-12">
@@ -528,7 +531,7 @@
                             @endif
                         </div>
                     </div>
-                    
+
                     <!-- Onglet Employés -->
                     <div class="tab-pane fade" id="employes" role="tabpanel" aria-labelledby="employes-tab">
                         @if($entreprise->employes && $entreprise->employes->count() > 0)
@@ -579,7 +582,7 @@
                         </div>
                         @endif
                     </div>
-                    
+
                     <!-- Onglet Clients -->
                     <div class="tab-pane fade" id="clients" role="tabpanel" aria-labelledby="clients-tab">
                         @if($entreprise->clients && $entreprise->clients->count() > 0)
@@ -621,7 +624,7 @@
                         </div>
                         @endif
                     </div>
-                    
+
                     <!-- Onglet Contrats -->
                     <div class="tab-pane fade" id="contrats" role="tabpanel" aria-labelledby="contrats-tab">
                         @if($entreprise->contratsPrestation && $entreprise->contratsPrestation->count() > 0)

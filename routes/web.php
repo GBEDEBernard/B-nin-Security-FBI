@@ -65,6 +65,20 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::post('/{id}/deactivate', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'deactivate'])->name('deactivate');
     });
 
+    // Gestion des contrats (Super Admin - toutes entreprises)
+    Route::prefix('contrats')->name('contrats.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'store'])->name('store');
+        Route::get('/clients', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'getClients'])->name('clients');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/statut', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'changerStatut'])->name('changerStatut');
+        Route::get('/{id}/dupliquer', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'dupliquer'])->name('dupliquer');
+    });
+
     // Gestion des utilisateurs globaux
     Route::prefix('utilisateurs')->name('utilisateurs.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\UtilisateurController::class, 'index'])->name('index');

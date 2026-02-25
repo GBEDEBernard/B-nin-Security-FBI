@@ -83,6 +83,31 @@
           </ul>
         </li>
 
+        {{-- Gestion des Contrats (Super Admin - toutes entreprises) --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-file-earmark-text-fill"></i>
+            <p>
+              Contrats
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.contrats.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Tous les contrats</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.contrats.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouveau contrat</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         {{-- Accès Rapide aux Tableaux de Bord --}}
         @php
         $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();
