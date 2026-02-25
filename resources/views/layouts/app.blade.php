@@ -450,8 +450,421 @@
     });
   </script>
 
+  {{-- ========================================================= --}}
+  {{-- FONCTIONS COMMUNES POUR LES GRAPHIQUES SUPER ADMIN    --}}
+  {{-- ========================================================= --}}
+  <script>
+    // Fonction pour détecter le thème actuel
+    function getThemeColors() {
+      const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+      return {
+        isDark: isDark,
+        text: isDark ? '#e0e0e0' : '#212529',
+        textMuted: isDark ? '#a0a0a0' : '#6c757d',
+        grid: isDark ? '#2d2d2d' : '#e9ecef',
+        bg: isDark ? '#1a1a1a' : '#ffffff',
+        legend: isDark ? '#ffffff' : '#212529'
+      };
+    }
+
+    // Initialisation des graphiques du SuperAdmin
+    function initSuperAdminCharts() {
+      if (typeof ApexCharts === 'undefined') {
+        console.warn('ApexCharts pas encore chargé');
+        return false;
+      }
+
+      const themeColors = getThemeColors();
+
+      // Vérifier si les éléments existent
+      const revenueChartEl = document.getElementById('revenue-chart');
+      const contractsChartEl = document.getElementById('contracts-chart');
+      const distributionChartEl = document.getElementById('distribution-chart');
+      const facturesChartEl = document.getElementById('factures-chart');
+      const contratsStatusChartEl = document.getElementById('contrats-status-chart');
+      const propositionsChartEl = document.getElementById('propositions-chart');
+
+      // 1. Graphique des Revenus Mensuels
+      if (revenueChartEl && typeof REVENUE_DATA !== 'undefined') {
+        new ApexCharts(revenueChartEl, {
+          series: [{
+            name: 'Revenus',
+            data: REVENUE_DATA
+          }],
+          chart: {
+            type: 'area',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            animations: {
+              enabled: true,
+              easing: 'easeinout',
+              speed: 800
+            },
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#198754'],
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 2
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              opacityFrom: 0.4,
+              opacityTo: 0.05,
+              stops: [0, 100]
+            }
+          },
+          xaxis: {
+            categories: REVENUE_LABELS || ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+            labels: {
+              style: {
+                colors: themeColors.textMuted
+              }
+            }
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: themeColors.textMuted
+              },
+              formatter: (val) => val >= 1000 ? (val / 1000).toFixed(0) + 'K' : val
+            }
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light',
+            y: {
+              formatter: (val) => val.toLocaleString() + ' FCA'
+            }
+          },
+          grid: {
+            borderColor: themeColors.grid
+          }
+        }).render();
+      }
+
+      // 2. Graphique Évolution des Contrats
+      if (contractsChartEl && typeof CONTRATS_PAR_MOIS !== 'undefined') {
+        new ApexCharts(contractsChartEl, {
+          series: [{
+              name: 'Contrats Créés',
+              data: CONTRATS_PAR_MOIS
+            },
+            {
+              name: 'Contrats Expirés',
+              data: CONTRATS_EXPIRES_PAR_MOIS || Array(12).fill(0)
+            }
+          ],
+          chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            animations: {
+              enabled: true,
+              easing: 'easeinout',
+              speed: 800
+            },
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#198754', '#dc3545'],
+          plotOptions: {
+            bar: {
+              horizontal: false,
+              columnWidth: '55%',
+              borderRadius: 8
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          stroke: {
+            show: true,
+            width: 2,
+            colors: ['transparent']
+          },
+          xaxis: {
+            categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+            labels: {
+              style: {
+                colors: themeColors.textMuted
+              }
+            }
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: themeColors.textMuted
+              }
+            }
+          },
+          fill: {
+            opacity: 1
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light'
+          },
+          legend: {
+            position: 'top',
+            horizontalAlign: 'right',
+            labels: {
+              colors: themeColors.legend
+            }
+          },
+          grid: {
+            borderColor: themeColors.grid
+          }
+        }).render();
+      }
+
+      // 3. Graphique Répartition par Formule
+      if (distributionChartEl && typeof DISTRIBUTION_PAR_FORMULE !== 'undefined') {
+        const total = DISTRIBUTION_PAR_FORMULE.reduce((a, b) => a + b, 0);
+        let seriesData = DISTRIBUTION_PAR_FORMULE;
+        if (total === 0) seriesData = [1, 1, 1, 1];
+
+        new ApexCharts(distributionChartEl, {
+          series: seriesData,
+          labels: ['Essai', 'Basic', 'Standard', 'Premium'],
+          chart: {
+            type: 'donut',
+            height: 280,
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '65%',
+                labels: {
+                  show: true,
+                  total: {
+                    show: true,
+                    label: 'Total',
+                    color: themeColors.text,
+                    formatter: () => total.toString()
+                  },
+                  value: {
+                    color: themeColors.text
+                  }
+                }
+              }
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              colors: themeColors.legend
+            }
+          },
+          stroke: {
+            width: 0
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light'
+          }
+        }).render();
+      }
+
+      // 4. Graphique Statut des Factures
+      if (facturesChartEl && typeof FACTURES_DATA !== 'undefined') {
+        const totalFactures = FACTURES_DATA.reduce((a, b) => a + b, 0);
+        let seriesFactures = FACTURES_DATA;
+        if (totalFactures === 0) seriesFactures = [1, 1, 1];
+
+        new ApexCharts(facturesChartEl, {
+          series: seriesFactures,
+          labels: ['Payées', 'En attente', 'Impayées'],
+          chart: {
+            type: 'donut',
+            height: 280,
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#198754', '#ffc107', '#dc3545'],
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '65%',
+                labels: {
+                  show: true,
+                  total: {
+                    show: true,
+                    label: 'Total',
+                    color: themeColors.text,
+                    formatter: () => totalFactures.toString()
+                  },
+                  value: {
+                    color: themeColors.text
+                  }
+                }
+              }
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              colors: themeColors.legend
+            }
+          },
+          stroke: {
+            width: 0
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light'
+          }
+        }).render();
+      }
+
+      // 5. Graphique Statut des Contrats
+      if (contratsStatusChartEl && typeof CONTRATS_STATUS_DATA !== 'undefined') {
+        const totalContrats = CONTRATS_STATUS_DATA.reduce((a, b) => a + b, 0);
+        let seriesContrats = CONTRATS_STATUS_DATA;
+        if (totalContrats === 0) seriesContrats = [1, 1, 1, 1];
+
+        new ApexCharts(contratsStatusChartEl, {
+          series: seriesContrats,
+          labels: ['Actifs', 'En cours', 'Expirés', 'Résiliés'],
+          chart: {
+            type: 'donut',
+            height: 280,
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#198754', '#0d6efd', '#dc3545', '#6c757d'],
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '65%',
+                labels: {
+                  show: true,
+                  total: {
+                    show: true,
+                    label: 'Total',
+                    color: themeColors.text,
+                    formatter: () => totalContrats.toString()
+                  },
+                  value: {
+                    color: themeColors.text
+                  }
+                }
+              }
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              colors: themeColors.legend
+            }
+          },
+          stroke: {
+            width: 0
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light'
+          }
+        }).render();
+      }
+
+      // 6. Graphique Propositions
+      if (propositionsChartEl && typeof PROPOSITIONS_DATA !== 'undefined') {
+        const totalPropositions = PROPOSITIONS_DATA.reduce((a, b) => a + b, 0);
+        let seriesPropositions = PROPOSITIONS_DATA;
+        if (totalPropositions === 0) seriesPropositions = [1, 1, 1, 1];
+
+        new ApexCharts(propositionsChartEl, {
+          series: seriesPropositions,
+          labels: ['Soumis', 'En négociation', 'Signé', 'Refusé'],
+          chart: {
+            type: 'donut',
+            height: 280,
+            parentHeightOffset: 0,
+            background: themeColors.bg
+          },
+          colors: ['#ffc107', '#0d6efd', '#198754', '#dc3545'],
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '65%',
+                labels: {
+                  show: true,
+                  total: {
+                    show: true,
+                    label: 'Total',
+                    color: themeColors.text,
+                    formatter: () => totalPropositions.toString()
+                  },
+                  value: {
+                    color: themeColors.text
+                  }
+                }
+              }
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              colors: themeColors.legend
+            }
+          },
+          stroke: {
+            width: 0
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light'
+          }
+        }).render();
+      }
+
+      return true;
+    }
+
+    // Mise à jour des graphiques lors du changement de thème
+    function updateSuperAdminChartsTheme() {
+      // Les graphiques sont recréés automatiquement
+      initSuperAdminCharts();
+    }
+
+    // Écouter les changements de thème
+    document.addEventListener('theme-changed', updateSuperAdminChartsTheme);
+  </script>
+
   {{-- Scripts spécifiques aux pages (injectés APRÈS ApexCharts) --}}
   @stack('scripts')
+
+  {{-- Initialisation des graphiques SuperAdmin si présent --}}
+  @if(request()->routeIs('admin.superadmin') || request()->is('admin/superadmin*'))
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Attendre un peu pour s'assurer que les données sont chargées
+      setTimeout(function() {
+        initSuperAdminCharts();
+      }, 100);
+    });
+  </script>
+  @endif
 
 </body>
 

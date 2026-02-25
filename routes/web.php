@@ -26,8 +26,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-// Page d'accueil publique
+// Page d'accueil - redirige vers le dashboard SuperAdmin si connecté
 Route::get('/', function () {
+    if (Auth::check() && Auth::user()->estSuperAdmin()) {
+        return redirect()->route('admin.superadmin.index');
+    }
     return view('welcome');
 })->name('home');
 

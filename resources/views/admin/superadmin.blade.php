@@ -54,6 +54,10 @@
         background: linear-gradient(135deg, #6f42c1 0%, #9d7df3 100%);
     }
 
+    .bg-gradient-money {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -84,6 +88,14 @@
 
     .stat-card:nth-child(4) {
         animation-delay: 0.4s;
+    }
+
+    .stat-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .stat-card:nth-child(6) {
+        animation-delay: 0.6s;
     }
 
     .dashboard-card {
@@ -187,6 +199,11 @@
         color: #dc3545;
     }
 
+    .status-pending {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+
     .welcome-banner {
         background: linear-gradient(135deg, #6f42c1 0%, #9d7df3 100%);
         border-radius: 16px;
@@ -210,7 +227,6 @@
         font-size: 0.75rem;
     }
 
-    /* ── FIX GRAPHES : conteneur avec hauteur fixe ── */
     .chart-container {
         position: relative;
         width: 100%;
@@ -225,7 +241,22 @@
         height: 280px;
     }
 
-    /* Styles pour mode sombre - texte lisible */
+    #revenue-chart {
+        height: 300px;
+    }
+
+    #factures-chart {
+        height: 280px;
+    }
+
+    #contrats-status-chart {
+        height: 280px;
+    }
+
+    #propositions-chart {
+        height: 280px;
+    }
+
     [data-bs-theme="dark"] .text-muted {
         color: #a0a0a0 !important;
     }
@@ -352,6 +383,7 @@
         {{-- Stats Cards --}}
         @php
         $nbEntreprises = \App\Models\Entreprise::count();
+        $nbEntreprisesActives = \App\Models\Entreprise::where('est_active', true)->count();
         $nbUtilisateurs = \App\Models\User::where('is_superadmin', false)->count();
         $nbClients = \App\Models\Client::count();
         $nbContratsActifs = \App\Models\ContratPrestation::where('statut', 'actif')->count();
@@ -359,548 +391,432 @@
         $nbContrats = \App\Models\ContratPrestation::count();
         $nbFactures = \App\Models\Facture::count();
         $nbIncidents = \App\Models\Incident::count();
-        @endphp
+        $nbPropositions = \App\Models\PropositionContrat::count();
+        $nbPropositionsSignees = \App\Models\PropositionContrat::where('statut', 'signe')->count();
+        $nbPropositionsEnAttente = \App\Models\PropositionContrat::where('statut', 'soumis')->count();
 
-        <div class="row mb-4">
-            <div class="col-lg-3 col-6">
-                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-building"></i></div>
-                    </div>
-                    <div class="stat-number mb-1">{{ $nbEntreprises }}</div>
-                    <div class="text-muted small">Entreprises</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-people"></i></div>
-                    </div>
-                    <div class="stat-number mb-1">{{ $nbUtilisateurs }}</div>
-                    <div class="text-muted small">Utilisateurs</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-person-vcard"></i></div>
-                    </div>
-                    <div class="stat-number mb-1">{{ $nbClients }}</div>
-                    <div class="text-muted small">Clients</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-file-earmark-check"></i></div>
-                    </div>
-                    <div class="stat-number mb-1">{{ $nbContratsActifs }}</div>
-                    <div class="text-muted small">Contrats Actifs</div>
-                </div>
-            </div>
-        </div>
+        // Statut des factures
+        $nbFacturesPayees = \App\Models\Facture::where('statut', 'payee')->count();
+        $nbFacturesEnAttente = \App\Models\Facture::where('statut', 'en_attente')->count();
+        $nbFacturesImpayes = \App\Models\Facture::where('statut', 'impaye')->count();
 
-        {{-- Quick Actions --}}
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="dashboard-card p-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
-                    <div class="row g-3">
-                        <div class="col-6 col-md-3">
-                            <a href="{{ route('admin.superadmin.entreprises.create') }}" class="quick-action-btn">
-                                <i class="bi bi-building-add text-primary"></i><span>Nouvelle Entreprise</span>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="quick-action-btn">
-                                <i class="bi bi-person-plus text-success"></i><span>Nouvel Utilisateur</span>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <a href="{{ route('admin.superadmin.parametres.index') }}" class="quick-action-btn">
-                                <i class="bi bi-gear text-warning"></i><span>Paramètres</span>
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <a href="#" class="quick-action-btn">
-                                <i class="bi bi-bar-chart text-info"></i><span>Rapports</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        // Statut des contrats
+        $nbContratsExpirés = \App\Models\ContratPrestation::where('statut', 'expiré')->count();
+        $nbContratsEnCours = \App\Models\ContratPrestation::where('statut', 'actif')->count();
+        $nbContratsEnNegociation = \App\Models\ContratPrestation::where('statut', 'en_cours')->count();
+        $nbContratsResiliés = \App\Models\ContratPrestation::where('statut', 'resilie')->count();
 
-        {{-- Charts Row --}}
-        <div class="row mb-4">
-            <div class="col-lg-8">
-                <div class="dashboard-card">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Contrats</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <div id="contracts-chart"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="dashboard-card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-pie-chart me-2 text-primary"></i>Répartition
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <div id="distribution-chart"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        // Gains mensuels (revenus des factures payées)
+        $gainsMensuels = [];
+        $gainsMoisNoms = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $gainsMensuels[]=\App\Models\Facture::where('statut', 'payee' )
+            ->whereMonth('date_paiement', $i)
+            ->whereYear('date_paiement', date('Y'))
+            ->sum('montant_paye');
+            $gainsMoisNoms[] = date('M', mktime(0, 0, 0, $i, 1));
+            }
+            $gainTotalAnnée = array_sum($gainsMensuels);
+            $gainCeMois = $gainsMensuels[date('n') - 1] ?? 0;
 
-        {{-- Table & Stats Row --}}
-        <div class="row mb-4">
-            <div class="col-lg-8">
-                <div class="dashboard-card">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <span><i class="bi bi-building me-2" style="color:#6f42c1;"></i>Entreprises de Sécurité</span>
-                        <a href="{{ route('admin.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-secondary">Voir tout</a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Email</th>
-                                        <th>Téléphone</th>
-                                        <th>Statut</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse(\App\Models\Entreprise::latest()->take(8)->get() as $entreprise)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-sm me-2" style="background:rgba(111,66,193,0.1);">
-                                                    {{ substr($entreprise->nom ?? $entreprise->nom_entreprise ?? 'EN', 0, 2) }}
-                                                </div>
-                                                {{ $entreprise->nom ?? $entreprise->nom_entreprise }}
-                                            </div>
-                                        </td>
-                                        <td>{{ $entreprise->email }}</td>
-                                        <td>{{ $entreprise->telephone }}</td>
-                                        <td>
-                                            @if($entreprise->est_active ?? $entreprise->est_actif)
-                                            <span class="status-badge status-active">Actif</span>
-                                            @else
-                                            <span class="status-badge status-inactive">Inactif</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('admin.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                            <a href="{{ route('admin.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4">Aucune entreprise trouvée</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="bi bi-bar-chart me-2 text-info"></i>Statistiques Globales</div>
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <div class="stat-icon bg-gradient-success text-white mx-auto mb-2" style="width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="bi bi-person-badge"></i>
+            // Répartition par formule
+            $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
+            $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
+            $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
+            $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+
+            // Données pour les graphiques - 12 derniers mois
+            $contratsParMois = [];
+            $contratsExpirésParMois = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $contratsParMois[]=\App\Models\ContratPrestation::whereMonth('created_at', $i)->whereYear('created_at', date('Y'))->count();
+                $contratsExpirésParMois[] = \App\Models\ContratPrestation::where('statut', 'expiré')->whereMonth('date_fin', $i)->whereYear('date_fin', date('Y'))->count();
+                }
+                @endphp
+
+                <div class="row mb-4">
+                    {{-- Entreprises --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-building"></i></div>
                             </div>
-                            <div class="fs-2 fw-bold">{{ $nbEmployes }}</div>
+                            <div class="stat-number mb-1">{{ $nbEntreprises }}</div>
+                            <div class="text-muted small">Entreprises</div>
+                        </div>
+                    </div>
+                    {{-- Utilisateurs --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-people"></i></div>
+                            </div>
+                            <div class="stat-number mb-1">{{ $nbUtilisateurs }}</div>
+                            <div class="text-muted small">Utilisateurs</div>
+                        </div>
+                    </div>
+                    {{-- Clients --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-warning text-dark"><i class="bi bi-person-vcard"></i></div>
+                            </div>
+                            <div class="stat-number mb-1">{{ $nbClients }}</div>
+                            <div class="text-muted small">Clients</div>
+                        </div>
+                    </div>
+                    {{-- Contrats Actifs --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-file-earmark-check"></i></div>
+                            </div>
+                            <div class="stat-number mb-1">{{ $nbContratsActifs }}</div>
+                            <div class="textContrats Actifs-muted small"></div>
+                        </div>
+                    </div>
+                    {{-- Employés --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-info text-white"><i class="bi bi-person-badge"></i></div>
+                            </div>
+                            <div class="stat-number mb-1">{{ $nbEmployes }}</div>
                             <div class="text-muted small">Employés</div>
                         </div>
-                        <div class="text-center mb-4">
-                            <div class="stat-icon bg-gradient-warning text-dark mx-auto mb-2" style="width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    {{-- Gains du mois --}}
+                    <div class="col-lg-2 col-6">
+                        <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="stat-icon bg-gradient-money text-white"><i class="bi bi-cash-stack"></i></div>
                             </div>
-                            <div class="fs-2 fw-bold">{{ $nbContrats }}</div>
-                            <div class="text-muted small">Contrats</div>
-                        </div>
-                        <div class="text-center mb-4">
-                            <div class="stat-icon bg-gradient-info text-white mx-auto mb-2" style="width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="bi bi-receipt"></i>
-                            </div>
-                            <div class="fs-2 fw-bold">{{ $nbFactures }}</div>
-                            <div class="text-muted small">Factures</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="stat-icon bg-gradient-danger text-white mx-auto mb-2" style="width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div class="fs-2 fw-bold">{{ $nbIncidents }}</div>
-                            <div class="text-muted small">Incidents</div>
+                            <div class="stat-number mb-1">{{ number_format($gainCeMois, 0, ',', ' ') }}</div>
+                            <div class="text-muted small">FCFA Ce Mois</div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        {{-- Activity Timeline --}}
-        <div class="row">
-            <div class="col-12">
-                <div class="dashboard-card">
-                    <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Activité Récente</div>
-                    <div class="card-body">
-                        <div class="activity-timeline">
-                            <div class="activity-item">
-                                <div class="fw-semibold">Nouvelle entreprise ajoutée</div>
-                                <div class="text-muted small">Entreprise de Sécurité ABC - Il y a 2h</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="fw-semibold">Nouveau contrat créé</div>
-                                <div class="text-muted small">Contrat avec SBEE - Il y a 5h</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="fw-semibold">Utilisateur activé</div>
-                                <div class="text-muted small">Jean Dupont - Agent - Hier</div>
+                {{-- Quick Actions --}}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="dashboard-card p-4">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <a href="{{ route('admin.superadmin.entreprises.create') }}" class="quick-action-btn">
+                                        <i class="bi bi-building-add text-primary"></i><span>Nouvelle Entreprise</span>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="quick-action-btn">
+                                        <i class="bi bi-person-plus text-success"></i><span>Nouvel Utilisateur</span>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="{{ route('admin.superadmin.parametres.index') }}" class="quick-action-btn">
+                                        <i class="bi bi-gear text-warning"></i><span>Paramètres</span>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <a href="{{ route('admin.superadmin.rapports.index') }}" class="quick-action-btn">
+                                        <i class="bi bi-bar-chart text-info"></i><span>Rapports</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-    </div>{{-- /container-fluid --}}
-</div>{{-- /app-content --}}
+                {{-- Charts Row 1: Revenue & Contracts --}}
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="dashboard-card">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-cash-stack me-2 text-success"></i>Revenus Mensuels ({{ date('Y') }})</span>
+                                <span class="badge bg-success">{{ number_format($gainTotalAnnée, 0, ',', ' ') }} FCA/an</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="revenue-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="dashboard-card h-100">
+                            <div class="card-header">
+                                <i class="bi bi-pie-chart me-2 text-primary"></i>Répartition par Formule
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="distribution-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Charts Row 2: Contracts Evolution & Status --}}
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="dashboard-card">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Contrats ({{ date('Y') }})</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="contracts-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="dashboard-card h-100">
+                            <div class="card-header">
+                                <i class="bi bi-pie-chart me-2 text-warning"></i>Statut des Contrats
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="contrats-status-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Charts Row 3: Factures & Propositions --}}
+                <div class="row mb-4">
+                    <div class="col-lg-6">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <i class="bi bi-receipt me-2 text-info"></i>Statut des Factures
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="factures-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <i class="bi bi-file-earmark-ruled me-2 text-purple"></i>Propositions
+                                @if($nbPropositionsEnAttente > 0)
+                                <span class="badge bg-danger ms-2">{{ $nbPropositionsEnAttente }} en attente</span>
+                                @endif
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="propositions-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Table & Stats Row --}}
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="dashboard-card">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-building me-2" style="color:#6f42c1;"></i>Entreprises de Sécurité</span>
+                                <a href="{{ route('admin.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Email</th>
+                                                <th>Téléphone</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse(\App\Models\Entreprise::latest()->take(8)->get() as $entreprise)
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm me-2" style="background:rgba(111,66,193,0.1);">
+                                                            {{ substr($entreprise->nom ?? $entreprise->nom_entreprise ?? 'EN', 0, 2) }}
+                                                        </div>
+                                                        {{ $entreprise->nom ?? $entreprise->nom_entreprise }}
+                                                    </div>
+                                                </td>
+                                                <td>{{ $entreprise->email }}</td>
+                                                <td>{{ $entreprise->telephone }}</td>
+                                                <td>
+                                                    @if($entreprise->est_active ?? $entreprise->est_actif)
+                                                    <span class="status-badge status-active">Actif</span>
+                                                    @else
+                                                    <span class="status-badge status-inactive">Inactif</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <a href="{{ route('admin.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+                                                    <a href="{{ route('admin.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4">Aucune entreprise trouvée</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="dashboard-card">
+                            <div class="card-header"><i class="bi bi-bar-chart me-2 text-info"></i>Autres Statistiques</div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                    <div>
+                                        <div class="text-muted small">Factures</div>
+                                        <div class="fw-bold">{{ $nbFactures }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Payées: {{ $nbFacturesPayees }}</div>
+                                        <div class="text-warning small">En attente: {{ $nbFacturesEnAttente }}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                    <div>
+                                        <div class="text-muted small">Contrats</div>
+                                        <div class="fw-bold">{{ $nbContrats }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Actifs: {{ $nbContratsEnCours }}</div>
+                                        <div class="text-danger small">Expirés: {{ $nbContratsExpirés }}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                    <div>
+                                        <div class="text-muted small">Propositions</div>
+                                        <div class="fw-bold">{{ $nbPropositions }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success small">Signées: {{ $nbPropositionsSignees }}</div>
+                                        <div class="text-warning small">En attente: {{ $nbPropositionsEnAttente }}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted small">Incidents</div>
+                                        <div class="fw-bold">{{ $nbIncidents }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-muted small">Total enregistré</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Activity Timeline --}}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="dashboard-card">
+                            <div class="card-header"><i class="bi bi-activity me-2 text-danger"></i>Activité Récente</div>
+                            <div class="card-body">
+                                <div class="activity-timeline">
+                                    <div class="activity-item">
+                                        <div class="fw-semibold">Nouvelle entreprise ajoutée</div>
+                                        <div class="text-muted small">Entreprise de Sécurité ABC - Il y a 2h</div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="fw-semibold">Nouveau contrat créé</div>
+                                        <div class="text-muted small">Contrat avec SBEE - Il y a 5h</div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="fw-semibold">Utilisateur activé</div>
+                                        <div class="text-muted small">Jean Dupont - Agent - Hier</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    </div>
+</div>
 @endsection
 
-{{--
-    ══════════════════════════════════════════════════════
-    SCRIPTS — Les données PHP sont passées via des
-    variables JS propres (pas de Blade dans le JS inline)
-    ══════════════════════════════════════════════════════
---}}
-@push('scripts')
-<script>
-    /**
-     * ── DONNÉES PASSÉES DEPUIS PHP ─────────────────────────────────────────
-     * On récupère les valeurs AVANT le DOMContentLoaded, mais on
-     * ne crée les graphes QU'APRÈS (dans le listener).
-     */
-    var DASHBOARD_DATA = {
-        entreprises: parseInt("{{ $nbEntreprises }}"),
-        clients: parseInt("{{ $nbClients }}"),
-        contrats: parseInt("{{ $nbContrats }}"),
-        employes: parseInt("{{ $nbEmployes }}")
-    };
-
-    /**
-     * ── FONCTION POUR DÉTECTER LE THÈME ACTUEL ──────────────────────────
-     */
-    function getThemeColors() {
-        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-        return {
-            isDark: isDark,
-            text: isDark ? '#e0e0e0' : '#212529',
-            textMuted: isDark ? '#a0a0a0' : '#6c757d',
-            grid: isDark ? '#2d2d2d' : '#e9ecef',
-            bg: isDark ? '#1a1a1a' : '#ffffff',
-            legend: isDark ? '#ffffff' : '#212529'
-        };
+{{-- Données JavaScript pour les graphiques --}}
+@php
+$revenueData = array_fill(0, 12, 0);
+$revenueLabels = [];
+for ($i = 1; $i <= 12; $i++) {
+    $revenueData[$i-1]=\App\Models\Facture::where('statut', 'payee' )
+    ->whereMonth('date_paiement', $i)
+    ->whereYear('date_paiement', date('Y'))
+    ->sum('montant_paye');
+    $revenueLabels[] = date('M', mktime(0, 0, 0, $i, 1));
     }
 
-    /**
-     * ── INITIALISATION DES GRAPHES ─────────────────────────────────────────
-     * On attend que le DOM soit chargé ET qu'ApexCharts soit disponible.
-     * Si ApexCharts n'est pas encore disponible (rare), on retente toutes
-     * les 100ms pendant 5 secondes.
-     */
-    function initCharts() {
-        if (typeof ApexCharts === 'undefined') {
-            console.warn('ApexCharts pas encore chargé, nouvelle tentative...');
-            return false;
+    // Données pour les graphiques - 12 derniers mois
+    $contratsParMois = [];
+    $contratsExpirésParMois = [];
+    for ($i = 1; $i <= 12; $i++) {
+        $contratsParMois[]=\App\Models\ContratPrestation::whereMonth('created_at', $i)->whereYear('created_at', date('Y'))->count();
+        $contratsExpirésParMois[] = \App\Models\ContratPrestation::where('statut', 'expiré')->whereMonth('date_fin', $i)->whereYear('date_fin', date('Y'))->count();
         }
 
-        var contractsEl = document.getElementById('contracts-chart');
-        var distributionEl = document.getElementById('distribution-chart');
+        // Répartition par formule
+        $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
+        $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
+        $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
+        $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+        $distributionParFormule = [$formuleEssai, $formuleBasic, $formuleStandard, $formulePremium];
 
-        if (!contractsEl || !distributionEl) {
-            console.warn('Éléments DOM des graphes introuvables.');
-            return false;
-        }
+        // Statut des factures
+        $facturesPayees = \App\Models\Facture::where('statut', 'payee')->count();
+        $facturesEnAttente = \App\Models\Facture::where('statut', 'en_attente')->count();
+        $facturesImpayees = \App\Models\Facture::where('statut', 'impaye')->count();
+        $facturesData = [$facturesPayees, $facturesEnAttente, $facturesImpayees];
 
-        // Obtenir les couleurs selon le thème
-        var themeColors = getThemeColors();
+        // Statut des contrats
+        $contratsActifs = \App\Models\ContratPrestation::where('statut', 'actif')->count();
+        $contratsEnCours = \App\Models\ContratPrestation::where('statut', 'en_cours')->count();
+        $contratsExpirés = \App\Models\ContratPrestation::where('statut', 'expiré')->count();
+        $contratsResiliés = \App\Models\ContratPrestation::where('statut', 'resilie')->count();
+        $contratsStatusData = [$contratsActifs, $contratsEnCours, $contratsExpirés, $contratsResiliés ?? 0];
 
-        // ── 1. Graphe Barres — Évolution des contrats ──────────────────────
-        var contractsChart = new ApexCharts(contractsEl, {
-            series: [{
-                    name: 'Contrats Actifs',
-                    data: [12, 15, 18, 22, 25, 28, 32, 35, 38, 42, 45, 48]
-                },
-                {
-                    name: 'Contrats Expirés',
-                    data: [3, 4, 5, 4, 6, 5, 7, 8, 6, 9, 7, 10]
-                }
-            ],
-            chart: {
-                type: 'bar',
-                height: 300,
-                toolbar: {
-                    show: false
-                },
-                animations: {
-                    enabled: true,
-                    easing: 'easeinout',
-                    speed: 800
-                },
-                parentHeightOffset: 0,
-                redrawOnWindowResize: true,
-                redrawOnParentResize: true,
-                background: themeColors.bg
-            },
-            colors: ['#198754', '#dc3545'],
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '55%',
-                    borderRadius: 8
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                show: true,
-                width: 2,
-                colors: ['transparent']
-            },
-            xaxis: {
-                categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
-                labels: {
-                    style: {
-                        colors: themeColors.textMuted
-                    }
-                }
-            },
-            yaxis: {
-                labels: {
-                    style: {
-                        colors: themeColors.textMuted
-                    }
-                }
-            },
-            fill: {
-                opacity: 1
-            },
-            tooltip: {
-                theme: themeColors.isDark ? 'dark' : 'light',
-                y: {
-                    formatter: function(val) {
-                        return val + ' contrats';
-                    }
-                }
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'right',
-                labels: {
-                    colors: themeColors.legend
-                }
-            },
-            grid: {
-                borderColor: themeColors.grid
-            }
-        });
-        contractsChart.render();
+        // Statut des propositions
+        $propositionsSoumis = \App\Models\PropositionContrat::where('statut', 'soumis')->count();
+        $propositionsNegociation = \App\Models\PropositionContrat::where('statut', 'en_negociation')->count();
+        $propositionsSignees = \App\Models\PropositionContrat::where('statut', 'signe')->count();
+        $propositionsRefusees = \App\Models\PropositionContrat::where('statut', 'refuse')->count();
+        $propositionsData = [$propositionsSoumis, $propositionsNegociation, $propositionsSignees, $propositionsRefusees ?? 0];
+        @endphp
 
-        // ── 2. Graphe Donut — Répartition ─────────────────────────────────
-        var total = DASHBOARD_DATA.entreprises +
-            DASHBOARD_DATA.clients +
-            DASHBOARD_DATA.contrats +
-            DASHBOARD_DATA.employes;
+        @push('scripts')
+        <script>
+            // Données pour les graphiques - Revenus mensuels
+            var REVENUE_DATA = @json($revenueData);
+            var REVENUE_LABELS = @json($revenueLabels);
 
-        /* Éviter un donut vide si toutes les valeurs sont à 0 */
-        var seriesData = [
-            DASHBOARD_DATA.entreprises,
-            DASHBOARD_DATA.clients,
-            DASHBOARD_DATA.contrats,
-            DASHBOARD_DATA.employes
-        ];
-        if (total === 0) {
-            seriesData = [1, 1, 1, 1]; /* valeurs fictives pour afficher le donut */
-        }
+            // Données pour les graphiques - Contrats
+            var CONTRATS_PAR_MOIS = @json($contratsParMois);
+            var CONTRATS_EXPIRES_PAR_MOIS = @json($contratsExpirésParMois);
 
-        var distributionChart = new ApexCharts(distributionEl, {
-            series: seriesData,
-            labels: ['Entreprises', 'Clients', 'Contrats', 'Employés'],
-            chart: {
-                type: 'donut',
-                height: 280,
-                parentHeightOffset: 0,
-                redrawOnWindowResize: true,
-                redrawOnParentResize: true,
-                background: themeColors.bg
-            },
-            colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '65%',
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: 'Total',
-                                color: themeColors.text,
-                                formatter: function() {
-                                    return total === 0 ? '0' : total.toString();
-                                }
-                            },
-                            value: {
-                                color: themeColors.text
-                            }
-                        }
-                    }
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            legend: {
-                position: 'bottom',
-                labels: {
-                    colors: themeColors.legend
-                }
-            },
-            stroke: {
-                width: 0
-            },
-            tooltip: {
-                theme: themeColors.isDark ? 'dark' : 'light'
-            }
-        });
-        distributionChart.render();
+            // Données pour la distribution par formule
+            var DISTRIBUTION_PAR_FORMULE = @json($distributionParFormule);
 
-        return true;
-    }
+            // Données pour les factures
+            var FACTURES_DATA = @json($facturesData);
 
-    /**
-     * ── MISE À JOUR DES GRAPHES LORS DU CHANGEMENT DE THÈME ─────────────
-     */
-    function updateChartsTheme() {
-        // Recharger les graphiques quand le thème change
-        const themeColors = getThemeColors();
+            // Données pour le statut des contrats
+            var CONTRATS_STATUS_DATA = @json($contratsStatusData);
 
-        // Appliquer les nouvelles couleurs aux graphiques existants
-        const contractsChart = ApexCharts.getChartByID('contracts-chart');
-        const distributionChart = ApexCharts.getChartByID('distribution-chart');
-
-        if (contractsChart) {
-            contractsChart.updateOptions({
-                chart: {
-                    background: themeColors.bg
-                },
-                xaxis: {
-                    labels: {
-                        style: {
-                            colors: themeColors.textMuted
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: themeColors.textMuted
-                        }
-                    }
-                },
-                grid: {
-                    borderColor: themeColors.grid
-                },
-                legend: {
-                    labels: {
-                        colors: themeColors.legend
-                    }
-                },
-                tooltip: {
-                    theme: themeColors.isDark ? 'dark' : 'light'
-                }
-            });
-        }
-
-        if (distributionChart) {
-            distributionChart.updateOptions({
-                chart: {
-                    background: themeColors.bg
-                },
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            labels: {
-                                total: {
-                                    color: themeColors.text,
-                                    formatter: function() {
-                                        return 'Total';
-                                    }
-                                },
-                                value: {
-                                    color: themeColors.text
-                                }
-                            }
-                        }
-                    }
-                },
-                legend: {
-                    labels: {
-                        colors: themeColors.legend
-                    }
-                },
-                tooltip: {
-                    theme: themeColors.isDark ? 'dark' : 'light'
-                }
-            });
-        }
-    }
-
-    // Écouter les changements de thème
-    document.addEventListener('theme-changed', updateChartsTheme);
-
-    // También escuchar cambios en localStorage
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'theme') {
-            setTimeout(updateChartsTheme, 100);
-        }
-    });
-
-    /**
-     * Attendre que le DOM soit prêt, puis tenter d'initialiser.
-     * Retente si ApexCharts n'est pas encore disponible.
-     */
-    document.addEventListener('DOMContentLoaded', function() {
-        var maxAttempts = 50; /* 50 × 100ms = 5 secondes max */
-        var attempts = 0;
-
-        var tryInit = function() {
-            attempts++;
-            if (initCharts()) {
-                return; /* succès */
-            }
-            if (attempts < maxAttempts) {
-                setTimeout(tryInit, 100);
-            } else {
-                console.error('Impossible d\'initialiser les graphes après 5 secondes.');
-            }
-        };
-
-        tryInit();
-    });
-</script>
-@endpush
+            // Données pour les propositions
+            var PROPOSITIONS_DATA = @json($propositionsData);
+        </script>
+        @endpush
