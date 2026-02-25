@@ -54,17 +54,46 @@
       --bs-primary: #198754;
       --bs-success: #198754;
     }
-    .text-primary { color: #198754 !important; }
-    .bg-primary   { background-color: #198754 !important; }
-    .btn-primary  { background-color: #198754; border-color: #198754; }
-    .btn-primary:hover { background-color: #146c43; border-color: #146c43; }
 
-    .app-wrapper { transition: all 0.3s ease; }
+    .text-primary {
+      color: #198754 !important;
+    }
 
-    ::-webkit-scrollbar       { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #198754; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #146c43; }
+    .bg-primary {
+      background-color: #198754 !important;
+    }
+
+    .btn-primary {
+      background-color: #198754;
+      border-color: #198754;
+    }
+
+    .btn-primary:hover {
+      background-color: #146c43;
+      border-color: #146c43;
+    }
+
+    .app-wrapper {
+      transition: all 0.3s ease;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #198754;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #146c43;
+    }
   </style>
 </head>
 
@@ -75,10 +104,10 @@
     @include('layouts.sidebar')
 
     @if(session('error'))
-      <div class="alert alert-danger m-3">{{ session('error') }}</div>
+    <div class="alert alert-danger m-3">{{ session('error') }}</div>
     @endif
     @if(session('success'))
-      <div class="alert alert-success m-3">{{ session('success') }}</div>
+    <div class="alert alert-success m-3">{{ session('success') }}</div>
     @endif
 
     <main class="app-main">
@@ -109,29 +138,29 @@
             <div class="text-center mb-4">
               <div class="mb-3">
                 <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width:80px;height:80px;">
-                  <i class="bi bi-box-arrow-in-right fs-1 text-success"></i>
+                  <i class="bi bi-box-arrow-in-right fs-1" style="color: var(--bs-success);"></i>
                 </div>
               </div>
-              <h6 class="text-muted mb-2">Vous allez accéder au tableau de bord de :</h6>
-              <h4 class="fw-bold text-success mb-3" id="entrepriseNom"></h4>
-              <div class="alert alert-info d-flex align-items-center justify-content-center py-2 px-3" style="border-radius:8px;">
-                <i class="bi bi-info-circle me-2"></i>
-                <small>Vous pourrez retourner au Super Admin à tout moment</small>
+              <h6 class="mb-2" style="color: var(--bs-secondary-color);">Vous allez accéder au tableau de bord de :</h6>
+              <h4 class="fw-bold mb-3" style="color: var(--bs-success);" id="entrepriseNom"></h4>
+              <div class="d-flex align-items-center justify-content-center py-2 px-3" style="border-radius:8px; background: var(--bs-info-bg-subtle); border: 1px solid var(--bs-info-border-subtle);">
+                <i class="bi bi-info-circle me-2" style="color: var(--bs-info-text-emphasis);"></i>
+                <small style="color: var(--bs-body-color);">Vous pourrez retourner au Super Admin à tout moment</small>
               </div>
             </div>
-            <div class="bg-light rounded-3 p-3">
-              <h6 class="fw-bold text-muted mb-2"><i class="bi bi-list-check me-2"></i>Accès disponibles :</h6>
+            <div class="p-3" style="border-radius:12px; background: var(--bs-tertiary-bg);">
+              <h6 class="fw-bold mb-2"><i class="bi bi-list-check me-2"></i>Accès disponibles :</h6>
               <div class="row text-center small">
-                <div class="col-6 mb-2"><i class="bi bi-people text-primary me-1"></i> Employés</div>
-                <div class="col-6 mb-2"><i class="bi bi-person-badge text-info me-1"></i> Clients</div>
-                <div class="col-6 mb-2"><i class="bi bi-file-earmark-text text-warning me-1"></i> Contrats</div>
-                <div class="col-6 mb-2"><i class="bi bi-calendar-check text-success me-1"></i> Affectations</div>
-                <div class="col-6 mb-0"><i class="bi bi-receipt text-danger me-1"></i> Facturation</div>
-                <div class="col-6 mb-0"><i class="bi bi-graph-up" style="color:#6f42c1;"></i> Rapports</div>
+                <div class="col-6 mb-2"><i class="bi bi-people me-1" style="color: var(--bs-primary-text-emphasis);"></i> <span style="color: var(--bs-body-color);">Employés</span></div>
+                <div class="col-6 mb-2"><i class="bi bi-person-badge me-1" style="color: #0dcaf0;"></i> <span style="color: var(--bs-body-color);">Clients</span></div>
+                <div class="col-6 mb-2"><i class="bi bi-file-earmark-text me-1" style="color: #ffc107;"></i> <span style="color: var(--bs-body-color);">Contrats</span></div>
+                <div class="col-6 mb-2"><i class="bi bi-calendar-check me-1" style="color: var(--bs-success);"></i> <span style="color: var(--bs-body-color);">Affectations</span></div>
+                <div class="col-6 mb-0"><i class="bi bi-receipt me-1" style="color: #dc3545;"></i> <span style="color: var(--bs-body-color);">Facturation</span></div>
+                <div class="col-6 mb-0"><i class="bi bi-graph-up me-1" style="color: #6f42c1;"></i> <span style="color: var(--bs-body-color);">Rapports</span></div>
               </div>
             </div>
           </div>
-          <div class="modal-footer bg-light border-0 px-4 pb-4">
+          <div class="modal-footer border-0 px-4 pb-4" style="background: var(--bs-tertiary-bg);">
             <button type="button" class="btn btn-outline-secondary btn-lg px-4" data-bs-dismiss="modal" style="border-radius:8px;">
               <i class="bi bi-x-circle me-2"></i>Annuler
             </button>
@@ -174,7 +203,11 @@
       const sidebarWrapper = document.querySelector('.sidebar-wrapper');
       if (sidebarWrapper && OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined && window.innerWidth > 992) {
         OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-          scrollbars: { theme: 'os-theme-light', autoHide: 'leave', clickScroll: true }
+          scrollbars: {
+            theme: 'os-theme-light',
+            autoHide: 'leave',
+            clickScroll: true
+          }
         });
       }
     });
@@ -229,26 +262,26 @@
           confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Connexion...';
 
           fetch(`/admin/superadmin/entreprises/${entrepriseId}/connect`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': csrfToken,
-              'Accept': 'application/json'
-            }
-          })
-          .then(response => {
-            if (response.redirected) {
-              window.location.href = response.url;
-            } else {
-              return response.json().then(data => {
-                window.location.href = data.redirect || '/admin/entreprise';
-              });
-            }
-          })
-          .catch(() => {
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Confirmer';
-          });
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+              }
+            })
+            .then(response => {
+              if (response.redirected) {
+                window.location.href = response.url;
+              } else {
+                return response.json().then(data => {
+                  window.location.href = data.redirect || '/admin/entreprise';
+                });
+              }
+            })
+            .catch(() => {
+              confirmBtn.disabled = false;
+              confirmBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Confirmer';
+            });
         });
       }
     });
@@ -258,4 +291,5 @@
   @stack('scripts')
 
 </body>
+
 </html>

@@ -104,8 +104,8 @@
                 data-bs-target="#connectModal"
                 data-entreprise-id="{{ $entreprise->id }}"
                 data-entreprise-nom="{{ $entreprise->nom_entreprise ?? $entreprise->nom }}">
-                <i class="nav-icon bi bi-box-arrow-in-right text-success"></i>
-                <p>{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</p>
+                <i class="nav-icon bi bi-box-arrow-in-right" style="color: var(--bs-success);"></i>
+                <p style="color: var(--bs-body-color);">{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</p>
               </button>
             </li>
             @endforeach
@@ -180,9 +180,9 @@
 
         {{-- Indicateur de l'entreprise courante --}}
         <li class="nav-item">
-          <a href="#" class="nav-link bg-info bg-opacity-25">
-            <i class="nav-icon bi bi-building text-info"></i>
-            <p class="text-info">
+          <a href="#" class="nav-link" style="background: var(--bs-info-bg-subtle); border: 1px solid var(--bs-info-border-subtle);">
+            <i class="nav-icon bi bi-building" style="color: var(--bs-info-text-emphasis);"></i>
+            <p style="color: var(--bs-body-color);">
               <strong>{{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}</strong>
             </p>
           </a>
