@@ -44,11 +44,55 @@ class SuperAdminController extends Controller
     /**
      * Liste des entreprises (vue dédiée)
      */
-    public function entreprisesIndex()
+    public function entreprisesIndex(Request $request)
     {
-        $entreprises = Entreprise::withCount(['employes', 'clients', 'contratsPrestation'])
-            ->orderBy('nom_entreprise')
-            ->paginate(10);
+        $query = Entreprise::withCount(['employes', 'clients', 'contratsPrestation']);
+
+        // Recherche par nom, email ou téléphone
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nom_entreprise', 'like', "%{$search}%")
+                    ->orWhere('nom_commercial', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('telephone', 'like', "%{$search}%")
+                    ->orWhere('ville', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtre par statut (actif, inactif, essai)
+        if ($request->has('statut') && $request->statut) {
+            switch ($request->statut) {
+                case 'actif':
+                    $query->where('est_active', true);
+                    break;
+                case 'inactif':
+                    $query->where('est_active', false);
+                    break;
+                case 'essai':
+                    $query->where('est_en_essai', true);
+                    break;
+            }
+        }
+
+        // Filtre par formule
+        if ($request->has('formule') && $request->formule) {
+            $query->where('formule', $request->formule);
+        }
+
+        // Tri
+        $sortBy = $request->get('sort', 'nom_entreprise');
+        $sortOrder = $request->get('order', 'asc');
+
+        // Colonnes autorisées pour le tri
+        $allowedSorts = ['nom_entreprise', 'created_at', 'updated_at', 'formule', 'est_active'];
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortOrder === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy('nom_entreprise');
+        }
+
+        $entreprises = $query->paginate(10)->appends($request->query());
 
         return view('admin.superadmin.entreprises.index', compact('entreprises'));
     }

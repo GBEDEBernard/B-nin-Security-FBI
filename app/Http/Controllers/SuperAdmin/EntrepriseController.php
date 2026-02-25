@@ -7,7 +7,6 @@ use App\Models\Entreprise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class EntrepriseController extends Controller
 {
@@ -112,7 +111,7 @@ class EntrepriseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Gérer le logo
+        // Gérer le logo - préserver l'ancien si pas de nouveau
         if ($request->hasFile('logo')) {
             // Supprimer l'ancien logo
             if ($entreprise->logo) {
@@ -120,6 +119,9 @@ class EntrepriseController extends Controller
             }
             $path = $request->file('logo')->store('logos', 'public');
             $validated['logo'] = $path;
+        } else {
+            // Préserver l'ancien logo
+            unset($validated['logo']);
         }
 
         $entreprise->update($validated);
