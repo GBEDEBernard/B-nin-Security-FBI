@@ -69,6 +69,41 @@ Route::middleware(['auth', 'tenant'])->prefix('admin/superadmin')->name('admin.s
         Route::get('/', [SuperAdminController::class, 'parametresIndex'])->name('index');
     });
 
+    // Abonnements
+    Route::prefix('abonnements')->name('abonnements.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'abonnementsIndex'])->name('index');
+    });
+
+    // Facturation globale
+    Route::prefix('facturation')->name('facturation.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'facturationIndex'])->name('index');
+    });
+
+    // Rapports globaux
+    Route::prefix('rapports')->name('rapports.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'rapportsIndex'])->name('index');
+    });
+
+    // Gestion APK
+    Route::prefix('apk')->name('apk.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'apkIndex'])->name('index');
+    });
+
+    // Notifications Push
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'notificationsIndex'])->name('index');
+    });
+
+    // Journal d'activité
+    Route::prefix('journal')->name('journal.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'journalIndex'])->name('index');
+    });
+
+    // Modèles
+    Route::prefix('modeles')->name('modeles.')->group(function () {
+        Route::get('/', [SuperAdminController::class, 'modelesIndex'])->name('index');
+    });
+
     // Route pour retourner au dashboard superadmin
     Route::get('/return', [SuperAdminController::class, 'returnToSuperAdmin'])->name('return');
 });
