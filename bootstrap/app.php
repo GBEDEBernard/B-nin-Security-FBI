@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'role.redirect' => \App\Http\Middleware\RoleBasedRedirect::class,
+            // Middleware de rôle
+            'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+            'entreprise' => \App\Http\Middleware\EntrepriseMiddleware::class,
+            'client' => \App\Http\Middleware\ClientMiddleware::class,
         ]);
 
         // Middleware global pour la redirection par rôle

@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class TenantMiddleware
+class ClientMiddleware
 {
     /**
      * Handle an incoming request.
-     * Vérifie que l'utilisateur appartient à un tenant actif
+     * Vérifie que l'utilisateur est un client
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
@@ -19,27 +19,26 @@ class TenantMiddleware
     {
         $user = Auth::user();
 
-        // Les super admins ont accès à tout
-        if ($user && $user->estSuperAdmin()) {
-            return $next($request);
+        // Vérifier que l'utilisateur est connecté
+        if (!$user) {
+            return redirect('/login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
         }
 
-        // Pour les autres utilisateurs, vérifier le contexte entreprise
-        // Vérifier si le superadmin est en contexte d'entreprise temporaire
-        if ($user && $user->estEnContexteEntreprise()) {
-            $entrepriseId = $user->getEntrepriseContexteId();
-            $entreprise = \App\Models\Entreprise::find($entrepriseId);
+        // Les super admins ne devraient pas utiliser ce middleware (ils ont leur propre section)
+        if ($user->estSuperAdmin()) {
+            return redirect()->route('admin.superadmin.index')
+                ->with('error', 'Veuillez utiliser le panneau d\'administration Super Admin.');
+        }
 
-            // Vérifier que l'entreprise temporaire est active
-            if (!$entreprise || !$entreprise->est_active) {
-                // Retourner au dashboard superadmin si l'entreprise est inactive
-                return redirect()->route('admin.superadmin.return')
-                    ->with('error', 'L\'entreprise temporaire est inactive.');
-            }
+        // Vérifier que l'utilisateur est un client
+        if (!$user->estClient()) {
+            // Rediriger vers le dashboard approprié selon le rôle
+            return redirect()->route($user->getAdminRoute())
+                ->with('error', 'Vous n\'avez pas accès à cette section. Cette zone est réservée aux clients.');
         }
 
         // Vérifier que l'utilisateur a une entreprise
-        if (!$user || !$user->entreprise_id) {
+        if (!$user->entreprise_id) {
             Auth::logout();
             return redirect('/login')->with('error', 'Votre compte n\'est pas lié à une entreprise.');
         }
@@ -51,8 +50,8 @@ class TenantMiddleware
             return redirect('/login')->with('error', 'Votre entreprise est inactive. Veuillez contacter l\'administrateur.');
         }
 
-        // Pour les utilisateurs de type client, vérifier que le client est actif
-        if ($user->estClient() && $user->client_id) {
+        // Vérifier que le client est actif
+        if ($user->client_id) {
             $client = $user->client;
             if (!$client || !$client->est_actif) {
                 Auth::logout();

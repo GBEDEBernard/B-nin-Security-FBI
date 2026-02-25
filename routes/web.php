@@ -47,7 +47,7 @@ Route::get('/admin', function () {
 // ADMIN SUPER ADMIN
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
+Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
     // Dashboard
     Route::get('/', [SuperAdminController::class, 'index'])->name('index');
 
@@ -183,7 +183,7 @@ Route::middleware(['auth', 'tenant'])->prefix('admin/superadmin')->name('admin.s
 // ADMIN ENTREPRISE (Direction, Superviseur, Contrôleur)
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
+Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Entreprise\DashboardController::class, 'index'])->name('index');
     Route::get('/statistiques', [\App\Http\Controllers\Entreprise\DashboardController::class, 'statistiques'])->name('statistiques');
@@ -262,7 +262,7 @@ Route::middleware(['auth', 'tenant'])->prefix('admin/entreprise')->name('admin.e
 // ADMIN AGENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
+Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.agent');
@@ -302,7 +302,7 @@ Route::middleware(['auth', 'tenant'])->prefix('admin/agent')->name('admin.agent.
 // ADMIN CLIENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant'])->prefix('admin/client')->name('admin.client.')->group(function () {
+Route::middleware(['auth', 'tenant', 'client'])->prefix('admin/client')->name('admin.client.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.client');
