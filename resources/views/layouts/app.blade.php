@@ -505,7 +505,7 @@
             parentHeightOffset: 0,
             background: themeColors.bg
           },
-          colors: ['#198754'],
+          colors: ['#0d6efd'],
           dataLabels: {
             enabled: false
           },
@@ -546,6 +546,132 @@
           },
           grid: {
             borderColor: themeColors.grid
+          }
+        }).render();
+      }
+
+      // 1b. Graphique des Entreprises Créées par Mois (Courbe)
+      if (document.getElementById('entreprises-chart') && typeof ENTREPRISES_PAR_MOIS !== 'undefined') {
+        new ApexCharts(document.getElementById('entreprises-chart'), {
+          series: [{
+            name: 'Entreprises',
+            data: ENTREPRISES_PAR_MOIS
+          }],
+          chart: {
+            type: 'line',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            animations: {
+              enabled: true,
+              easing: 'easeinout',
+              speed: 800,
+              animateGradually: {
+                enabled: true,
+                delay: 150
+              },
+              dynamicAnimation: {
+                enabled: true,
+                speed: 350
+              }
+            },
+            parentHeightOffset: 0,
+            background: themeColors.bg,
+            zoom: {
+              enabled: false
+            }
+          },
+          colors: ['#0d6efd'],
+          dataLabels: {
+            enabled: true,
+            style: {
+              colors: ['#fff'],
+              fontWeight: 'bold',
+              fontSize: '12px'
+            },
+            background: {
+              enabled: true,
+              foreColor: '#e83e8c',
+              borderRadius: 4,
+              padding: 4,
+              opacity: 0.9
+            },
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 4,
+            lineCap: 'round'
+          },
+          markers: {
+            size: 8,
+            colors: ['#e83e8c'],
+            strokeColors: '#fff',
+            strokeWidth: 3,
+            hover: {
+              size: 10
+            }
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              opacityFrom: 0.4,
+              opacityTo: 0.15,
+              stops: [0, 100],
+              colorStops: [{
+                offset: 0,
+                color: '#0d6efd',
+                opacity: 0.4
+              }, {
+                offset: 100,
+                color: '#0d6efd',
+                opacity: 0
+              }]
+            }
+          },
+          xaxis: {
+            categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+            labels: {
+              style: {
+                colors: themeColors.textMuted,
+                fontSize: '11px'
+              }
+            },
+            axisBorder: {
+              color: themeColors.grid
+            },
+            axisTicks: {
+              color: themeColors.grid
+            }
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: themeColors.textMuted,
+                fontSize: '11px'
+              },
+              min: 0
+            },
+            min: 0
+          },
+          tooltip: {
+            theme: themeColors.isDark ? 'dark' : 'light',
+            y: {
+              formatter: (val) => val + ' entreprises'
+            }
+          },
+          grid: {
+            borderColor: themeColors.grid,
+            strokeDashArray: 4
+          },
+          legend: {
+            show: true,
+            position: 'top',
+            horizontalAlign: 'right',
+            labels: {
+              colors: themeColors.legend
+            }
           }
         }).render();
       }

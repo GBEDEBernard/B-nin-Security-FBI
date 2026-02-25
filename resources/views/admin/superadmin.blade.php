@@ -257,6 +257,10 @@
         height: 280px;
     }
 
+    #entreprises-chart {
+        height: 300px;
+    }
+
     [data-bs-theme="dark"] .text-muted {
         color: #a0a0a0 !important;
     }
@@ -528,17 +532,17 @@
                     </div>
                 </div>
 
-                {{-- Charts Row 1: Revenue & Contracts --}}
+                {{-- Charts Row 1: Revenue & Enterprises Created --}}
                 <div class="row mb-4">
                     <div class="col-lg-8">
                         <div class="dashboard-card">
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <span><i class="bi bi-cash-stack me-2 text-success"></i>Revenus Mensuels ({{ date('Y') }})</span>
-                                <span class="badge bg-success">{{ number_format($gainTotalAnnée, 0, ',', ' ') }} FCA/an</span>
+                                <span><i class="bi bi-building-add me-2" style="color: #6f42c1;"></i>Évolution des Entreprises Créées ({{ date('Y') }})</span>
+                                <span class="badge" style="background: #6f42c1;">{{ $nbEntreprises }} total</span>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
-                                    <div id="revenue-chart"></div>
+                                    <div id="entreprises-chart"></div>
                                 </div>
                             </div>
                         </div>
@@ -551,6 +555,23 @@
                             <div class="card-body">
                                 <div class="chart-container">
                                     <div id="distribution-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Charts Row 2: Revenue --}}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="dashboard-card">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-cash-stack me-2 text-success"></i>Revenus Mensuels ({{ date('Y') }})</span>
+                                <span class="badge bg-success">{{ number_format($gainTotalAnnée, 0, ',', ' ') }} FCA/an</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <div id="revenue-chart"></div>
                                 </div>
                             </div>
                         </div>
@@ -769,54 +790,63 @@ for ($i = 1; $i <= 12; $i++) {
         $contratsExpirésParMois[] = \App\Models\ContratPrestation::where('statut', 'expiré')->whereMonth('date_fin', $i)->whereYear('date_fin', date('Y'))->count();
         }
 
-        // Répartition par formule
-        $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
-        $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
-        $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
-        $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
-        $distributionParFormule = [$formuleEssai, $formuleBasic, $formuleStandard, $formulePremium];
+        // Entreprises créées par mois
+        $entreprisesParMois = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $entreprisesParMois[]=\App\Models\Entreprise::whereMonth('created_at', $i)->whereYear('created_at', date('Y'))->count();
+            }
 
-        // Statut des factures
-        $facturesPayees = \App\Models\Facture::where('statut', 'payee')->count();
-        $facturesEnAttente = \App\Models\Facture::where('statut', 'en_attente')->count();
-        $facturesImpayees = \App\Models\Facture::where('statut', 'impaye')->count();
-        $facturesData = [$facturesPayees, $facturesEnAttente, $facturesImpayees];
+            // Répartition par formule
+            $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
+            $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
+            $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
+            $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+            $distributionParFormule = [$formuleEssai, $formuleBasic, $formuleStandard, $formulePremium];
 
-        // Statut des contrats
-        $contratsActifs = \App\Models\ContratPrestation::where('statut', 'actif')->count();
-        $contratsEnCours = \App\Models\ContratPrestation::where('statut', 'en_cours')->count();
-        $contratsExpirés = \App\Models\ContratPrestation::where('statut', 'expiré')->count();
-        $contratsResiliés = \App\Models\ContratPrestation::where('statut', 'resilie')->count();
-        $contratsStatusData = [$contratsActifs, $contratsEnCours, $contratsExpirés, $contratsResiliés ?? 0];
+            // Statut des factures
+            $facturesPayees = \App\Models\Facture::where('statut', 'payee')->count();
+            $facturesEnAttente = \App\Models\Facture::where('statut', 'en_attente')->count();
+            $facturesImpayees = \App\Models\Facture::where('statut', 'impaye')->count();
+            $facturesData = [$facturesPayees, $facturesEnAttente, $facturesImpayees];
 
-        // Statut des propositions
-        $propositionsSoumis = \App\Models\PropositionContrat::where('statut', 'soumis')->count();
-        $propositionsNegociation = \App\Models\PropositionContrat::where('statut', 'en_negociation')->count();
-        $propositionsSignees = \App\Models\PropositionContrat::where('statut', 'signe')->count();
-        $propositionsRefusees = \App\Models\PropositionContrat::where('statut', 'refuse')->count();
-        $propositionsData = [$propositionsSoumis, $propositionsNegociation, $propositionsSignees, $propositionsRefusees ?? 0];
-        @endphp
+            // Statut des contrats
+            $contratsActifs = \App\Models\ContratPrestation::where('statut', 'actif')->count();
+            $contratsEnCours = \App\Models\ContratPrestation::where('statut', 'en_cours')->count();
+            $contratsExpirés = \App\Models\ContratPrestation::where('statut', 'expiré')->count();
+            $contratsResiliés = \App\Models\ContratPrestation::where('statut', 'resilie')->count();
+            $contratsStatusData = [$contratsActifs, $contratsEnCours, $contratsExpirés, $contratsResiliés ?? 0];
 
-        @push('scripts')
-        <script>
-            // Données pour les graphiques - Revenus mensuels
-            var REVENUE_DATA = @json($revenueData);
-            var REVENUE_LABELS = @json($revenueLabels);
+            // Statut des propositions
+            $propositionsSoumis = \App\Models\PropositionContrat::where('statut', 'soumis')->count();
+            $propositionsNegociation = \App\Models\PropositionContrat::where('statut', 'en_negociation')->count();
+            $propositionsSignees = \App\Models\PropositionContrat::where('statut', 'signe')->count();
+            $propositionsRefusees = \App\Models\PropositionContrat::where('statut', 'refuse')->count();
+            $propositionsData = [$propositionsSoumis, $propositionsNegociation, $propositionsSignees, $propositionsRefusees ?? 0];
+            @endphp
 
-            // Données pour les graphiques - Contrats
-            var CONTRATS_PAR_MOIS = @json($contratsParMois);
-            var CONTRATS_EXPIRES_PAR_MOIS = @json($contratsExpirésParMois);
+            @push('scripts')
+            <script>
+                // Données pour les graphiques - Revenus mensuels
+                var REVENUE_DATA = @json($revenueData);
+                var REVENUE_LABELS = @json($revenueLabels);
 
-            // Données pour la distribution par formule
-            var DISTRIBUTION_PAR_FORMULE = @json($distributionParFormule);
+                // Données pour les graphiques - Entreprises créées par mois
+                var ENTREPRISES_PAR_MOIS = @json($entreprisesParMois);
 
-            // Données pour les factures
-            var FACTURES_DATA = @json($facturesData);
+                // Données pour les graphiques - Contrats
+                var CONTRATS_PAR_MOIS = @json($contratsParMois);
+                var CONTRATS_EXPIRES_PAR_MOIS = @json($contratsExpirésParMois);
 
-            // Données pour le statut des contrats
-            var CONTRATS_STATUS_DATA = @json($contratsStatusData);
+                // Données pour la distribution par formule
+                var DISTRIBUTION_PAR_FORMULE = @json($distributionParFormule);
 
-            // Données pour les propositions
-            var PROPOSITIONS_DATA = @json($propositionsData);
-        </script>
-        @endpush
+                // Données pour les factures
+                var FACTURES_DATA = @json($facturesData);
+
+                // Données pour le statut des contrats
+                var CONTRATS_STATUS_DATA = @json($contratsStatusData);
+
+                // Données pour les propositions
+                var PROPOSITIONS_DATA = @json($propositionsData);
+            </script>
+            @endpush
