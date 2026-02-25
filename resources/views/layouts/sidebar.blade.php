@@ -149,6 +149,241 @@
         {{-- Abonnements --}}
         <li class="nav-item">
           <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-credit-card-fill"></i>
+            <p>
+              Abonnements
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.abonnements.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des abonnements</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.abonnements.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouvel abonnement</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Facturation Globale --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-cash-stack"></i>
+            <p>
+              Facturation
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.facturation.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Toutes les factures</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.facturation.paiements') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Paiements</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.facturation.creances') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Créances</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.facturation.statistiques') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Statistiques</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Rapports Globaux --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-graph-up"></i>
+            <p>
+              Rapports
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Tableau de bord</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.par-entreprise') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Par entreprise</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.financier') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Financier</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.employes') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Employés</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.clients') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Clients</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.rapports.contrats') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Contrats</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Gestion APK --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-android"></i>
+            <p>
+              Application Mobile
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.apk.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Versions APK</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.apk.configurations') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Configurations</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.apk.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouvelle version</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Notifications Push --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-bell-fill"></i>
+            <p>
+              Notifications
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.notifications.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Historique</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.notifications.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouvelle notification</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.notifications.statistiques') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Statistiques</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Journal d'Activité --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-journal-text"></i>
+            <p>
+              Journal d'Activité
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.journal.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Historique</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.journal.par-utilisateur') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Par utilisateur</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.journal.par-module') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Par module</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.journal.statistiques') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Statistiques</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Modèles --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-file-earmark-text-fill"></i>
+            <p>
+              Modèles
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.modeles.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des modèles</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.modeles.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouveau modèle</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Abonnements --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
             <i class="nav-icon bi bi-file-contract-fill"></i>
             <p>
               Abonnements
