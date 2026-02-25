@@ -31,6 +31,15 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Route publique pour le formulaire de devis
+Route::get('/devis', function () {
+    return view('public.devis');
+})->name('devis');
+
+// Route publique pour soumettre une proposition (accessible sans authentification)
+Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])
+    ->name('devis.soumettre');
+
 // ═══════════════════════════════════════════════════════════════════════════
 // ROUTES DES ADMINISTRATIONS PAR RÔLE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -77,6 +86,22 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/statut', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'changerStatut'])->name('changerStatut');
         Route::get('/{id}/dupliquer', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'dupliquer'])->name('dupliquer');
+    });
+
+    // Gestion des propositions de contrat
+    Route::prefix('propositions')->name('propositions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])->name('soumettre');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/telecharger', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'telechargerContrat'])->name('telecharger');
+        Route::post('/{id}/envoyer', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'envoyerContrat'])->name('envoyer');
+        Route::post('/{id}/soumettre-signe', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettreSigne'])->name('soumettreSigne');
+        Route::post('/{id}/creer-entreprise', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'creerEntreprise'])->name('creerEntreprise');
+        Route::post('/{id}/rejeter', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'rejeter'])->name('rejeter');
     });
 
     // Gestion des utilisateurs globaux

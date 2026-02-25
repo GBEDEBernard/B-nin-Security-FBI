@@ -108,6 +108,22 @@
           </ul>
         </li>
 
+        {{-- Propositions de contrat (Super Admin) --}}
+        <li class="nav-item">
+          <a href="{{ route('admin.superadmin.propositions.index') }}" class="nav-link {{ request()->is('admin/superadmin/propositions*') ? 'active' : '' }}">
+            <i class="nav-icon bi bi-file-earmark-ruled"></i>
+            <p>
+              Propositions
+              @php
+              $nouvelles = \App\Models\PropositionContrat::where('statut', 'soumis')->count();
+              @endphp
+              @if($nouvelles > 0)
+              <span class="nav-badge bg-danger">{{ $nouvelles }}</span>
+              @endif
+            </p>
+          </a>
+        </li>
+
         {{-- Accès Rapide aux Tableaux de Bord --}}
         @php
         $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();

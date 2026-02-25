@@ -435,6 +435,12 @@
             </h6>
             <div class="row g-3">
               <div class="col-6 col-md-3">
+                <a href="{{ route('devis') }}" class="quick-action-btn">
+                  <i class="bi bi-file-earmark-plus text-warning"></i>
+                  <span>Demande Devis</span>
+                </a>
+              </div>
+              <div class="col-6 col-md-3">
                 <a href="#" class="quick-action-btn">
                   <i class="bi bi-person-plus text-primary"></i>
                   <span>Nouveau Client</span>

@@ -1,0 +1,342 @@
+
+@extends('layouts.app')
+
+@section('title', 'Demander un devis - Benin Security')
+
+@push('styles')
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+    }
+    
+    .service-card {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .service-card:hover {
+        border-color: #198754;
+        transform: translateY(-3px);
+    }
+    
+    .service-card.selected {
+        border-color: #198754;
+        background: linear-gradient(135deg, rgba(25, 135, 84, 0.05) 0%, rgba(32, 201, 151, 0.05) 100%);
+    }
+    
+    .service-card .service-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .required-indicator {
+        color: #dc3545;
+    }
+    
+    .btn-submit {
+        padding: 0.8rem 2.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+</style>
+@endpush
+
+@section('content')
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="text-white mb-3">Demandez un devis</h1>
+                <p class="text-white-50 lead">
+                    Protégez votre entreprise avec nos services de sécurité professionnelle. 
+                    Remplissez le formulaire ci-dessous et nous vous contacterons rapidement.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Section -->
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card">
+                <div class="card-body p-5">
+                    
+                    @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Merci !</strong> Votre demande a été soumise avec succès. Nous vous contacterons dans les plus brefs délais.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @else
+                    
+                    <form action="{{ route('propositions.soumettre') }}" method="POST" class="needs-validation" novalidate>
+                        @csrf
+                        
+                        <h5 class="mb-4 text-success"><i class="bi bi-building me-2"></i>Informations de l'entreprise</h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="nom_entreprise" class="form-label">
+                                    Dénomination sociale <span class="required-indicator">*</span>
+                                </label>
+                                <input type="text" class="form-control @error('nom_entreprise') is-invalid @enderror" 
+                                       id="nom_entreprise" name="nom_entreprise" 
+                                       value="{{ old('nom_entreprise') }}" required>
+                                @error('nom_entreprise')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="nom_commercial" class="form-label">Nom commercial</label>
+                                <input type="text" class="form-control" id="nom_commercial" name="nom_commercial" 
+                                       value="{{ old('nom_commercial') }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">
+                                    Email <span class="required-indicator">*</span>
+                                </label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                       id="email" name="email" value="{{ old('email') }}" required>
+                                @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="telephone" class="form-label">
+                                    Téléphone <span class="required-indicator">*</span>
+                                </label>
+                                <input type="tel" class="form-control @error('telephone') is-invalid @enderror" 
+                                       id="telephone" name="telephone" value="{{ old('telephone') }}" required>
+                                @error('telephone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="adresse" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="adresse" name="adresse" rows="2">{{ old('adresse') }}</textarea>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="ville" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="ville" name="ville" value="{{ old('ville') }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="pays" class="form-label">Pays</label>
+                                <select class="form-select" id="pays" name="pays">
+                                    <option value="Bénin" {{ old('pays', 'Bénin') == 'Bénin' ? 'selected' : '' }}>Bénin</option>
+                                    <option value="Togo" {{ old('pays') == 'Togo' ? 'selected' : '' }}>Togo</option>
+                                    <option value="Nigeria" {{ old('pays') == 'Nigeria' ? 'selected' : '' }}>Nigeria</option>
+                                    <option value="Ghana" {{ old('pays') == 'Ghana' ? 'selected' : '' }}>Ghana</option>
+                                    <option value="Côte d'Ivoire" {{ old('pays') == "Côte d'Ivoire" ? 'selected' : '' }}>Côte d'Ivoire</option>
+                                    <option value="France" {{ old('pays') == 'France' ? 'selected' : '' }}>France</option>
+                                    <option value="Autre" {{ old('pays') == 'Autre' ? 'selected' : '' }}>Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-5">
+                        
+                        <h5 class="mb-4 text-success"><i class="bi bi-people me-2"></i>Vos besoins</h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Type de service souhaité <span class="required-indicator">*</span></label>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'garde_renforcee' ? 'selected' : '' }}" onclick="selectService('garde_renforcee')">
+                                            <div class="service-icon bg-danger bg-opacity-10 text-danger">
+                                                <i class="bi bi-shield-fill-check"></i>
+                                            </div>
+                                            <h6 class="mb-1">Garde renforcée</h6>
+                                            <small class="text-muted">Protection rapprochée</small>
+                                            <input type="radio" name="type_service" value="garde_renforcee" 
+                                                   id="type_garde_renforcee" {{ old('type_service') == 'garde_renforcee' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'garde_simple' ? 'selected' : '' }}" onclick="selectService('garde_simple')">
+                                            <div class="service-icon bg-primary bg-opacity-10 text-primary">
+                                                <i class="bi bi-shield"></i>
+                                            </div>
+                                            <h6 class="mb-1">Garde simple</h6>
+                                            <small class="text-muted">Surveillance classique</small>
+                                            <input type="radio" name="type_service" value="garde_simple" 
+                                                   id="type_garde_simple" {{ old('type_service') == 'garde_simple' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'surveillance_electronique' ? 'selected' : '' }}" onclick="selectService('surveillance_electronique')">
+                                            <div class="service-icon bg-info bg-opacity-10 text-info">
+                                                <i class="bi bi-camera-video"></i>
+                                            </div>
+                                            <h6 class="mb-1">Surveillance électronique</h6>
+                                            <small class="text-muted">Caméras, alarmes</small>
+                                            <input type="radio" name="type_service" value="surveillance_electronique" 
+                                                   id="type_surveillance_electronique" {{ old('type_service') == 'surveillance_electronique' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'garde_evenementiel' ? 'selected' : '' }}" onclick="selectService('garde_evenementiel')">
+                                            <div class="service-icon bg-warning bg-opacity-10 text-warning">
+                                                <i class="bi bi-calendar-event"></i>
+                                            </div>
+                                            <h6 class="mb-1">Garde événementiel</h6>
+                                            <small class="text-muted">Événements, conférences</small>
+                                            <input type="radio" name="type_service" value="garde_evenementiel" 
+                                                   id="type_garde_evenementiel" {{ old('type_service') == 'garde_evenementiel' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'conseil' ? 'selected' : '' }}" onclick="selectService('conseil')">
+                                            <div class="service-icon bg-purple bg-opacity-10" style="color: #6f42c1;">
+                                                <i class="bi bi-lightbulb"></i>
+                                            </div>
+                                            <h6 class="mb-1">Conseil</h6>
+                                            <small class="text-muted">Audit sécurité</small>
+                                            <input type="radio" name="type_service" value="conseil" 
+                                                   id="type_conseil" {{ old('type_service') == 'conseil' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="service-card {{ old('type_service') == 'autre' ? 'selected' : '' }}" onclick="selectService('autre')">
+                                            <div class="service-icon bg-secondary bg-opacity-10 text-secondary">
+                                                <i class="bi bi-question-circle"></i>
+                                            </div>
+                                            <h6 class="mb-1">Autre</h6>
+                                            <small class="text-muted">À préciser</small>
+                                            <input type="radio" name="type_service" value="autre" 
+                                                   id="type_autre" {{ old('type_service') == 'autre' ? 'checked' : '' }}
+                                                   class="d-none">
+                                        </div>
+                                    </div>
+                                </div>
+                                @error('type_service')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="nombre_agents" class="form-label">
+                                    Nombre d'agents souhaité <span class="required-indicator">*</span>
+                                </label>
+                                <input type="number" class="form-control @error('nombre_agents') is-invalid @enderror" 
+                                       id="nombre_agents" name="nombre_agents" 
+                                       value="{{ old('nombre_agents') }}" min="1" required>
+                                @error('nombre_agents')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="budget_approx" class="form-label">Budget approximatif (FCFA)</label>
+                                <input type="number" class="form-control" id="budget_approx" name="budget_approx" 
+                                       value="{{ old('budget_approx') }}" min="0" step="10000">
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="description_besoins" class="form-label">Description de vos besoins</label>
+                                <textarea class="form-control" id="description_besoins" name="description_besoins" rows="4" 
+                                          placeholder="Décrivez votre projet, vos installations, vos exigences particulières...">{{ old('description_besoins') }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-success btn-submit">
+                                <i class="bi bi-send me-2"></i> Soumettre ma demande
+                            </button>
+                        </div>
+                    </form>
+                    
+                    @endif
+                </div>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="bi bi-phone me-2"></i>Vous préférez nous appeler ? 
+                    <a href="tel:+22900000000" class="text-success">+229 XX XX XX XX</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function selectService(serviceName précédente
+        document Retirer la sélection) {
+        //.querySelectorAll('.service-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Ajouter la sélection
+        const radio = document.getElementById('type_' + serviceName);
+        if (radio) {
+            radio.checked = true;
+            radio.closest('.service-card').classList.add('selected');
+        }
+    }
+    
+    // Initialiser la sélection
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedService = document.querySelector('input[name="type_service"]:checked');
+        if (selectedService) {
+            selectedService.closest('.service-card').classList.add('selected');
+        }
+    });
+</script>
+@endpush
+@endsection
+
+
