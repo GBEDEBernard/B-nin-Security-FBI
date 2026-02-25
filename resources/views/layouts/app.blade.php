@@ -382,6 +382,9 @@
       const setTheme = (theme) => {
         document.documentElement.setAttribute("data-bs-theme",
           theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : theme);
+
+        // Émettre un événement pour notifier les composants (comme les graphiques)
+        window.dispatchEvent(new Event('theme-changed'));
       };
       setTheme(getPreferredTheme());
       window.addEventListener("DOMContentLoaded", () => {

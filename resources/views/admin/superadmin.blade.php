@@ -249,6 +249,63 @@
     [data-bs-theme="dark"] .activity-item .text-muted {
         color: #a0a0a0 !important;
     }
+
+    [data-bs-theme="dark"] .stat-card {
+        background-color: #1a1a1a !important;
+        border: 1px solid #2d2d2d !important;
+    }
+
+    [data-bs-theme="dark"] .stat-card .stat-number {
+        color: #ffffff !important;
+    }
+
+    [data-bs-theme="dark"] .stat-card .text-muted {
+        color: #a0a0a0 !important;
+    }
+
+    [data-bs-theme="dark"] .quick-action-btn {
+        background-color: #1a1a1a !important;
+        border-color: #2d2d2d !important;
+        color: #e0e0e0 !important;
+    }
+
+    [data-bs-theme="dark"] .quick-action-btn:hover {
+        background-color: #2d2d2d !important;
+        color: #198754 !important;
+    }
+
+    [data-bs-theme="dark"] .quick-action-btn i {
+        color: #198754 !important;
+    }
+
+    [data-bs-theme="dark"] .breadcrumb-item a {
+        color: #198754 !important;
+    }
+
+    [data-bs-theme="dark"] .breadcrumb-item.active {
+        color: #a0a0a0 !important;
+    }
+
+    [data-bs-theme="dark"] .btn-outline-secondary {
+        border-color: #6c757d !important;
+        color: #e0e0e0 !important;
+    }
+
+    [data-bs-theme="dark"] .btn-outline-secondary:hover {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+    }
+
+    [data-bs-theme="dark"] h3,
+    [data-bs-theme="dark"] h4,
+    [data-bs-theme="dark"] h5,
+    [data-bs-theme="dark"] h6 {
+        color: #e0e0e0 !important;
+    }
+
+    [data-bs-theme="dark"] .welcome-banner {
+        color: #ffffff !important;
+    }
 </style>
 @endpush
 
@@ -545,6 +602,21 @@
     };
 
     /**
+     * ── FONCTION POUR DÉTECTER LE THÈME ACTUEL ──────────────────────────
+     */
+    function getThemeColors() {
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        return {
+            isDark: isDark,
+            text: isDark ? '#e0e0e0' : '#212529',
+            textMuted: isDark ? '#a0a0a0' : '#6c757d',
+            grid: isDark ? '#2d2d2d' : '#e9ecef',
+            bg: isDark ? '#1a1a1a' : '#ffffff',
+            legend: isDark ? '#ffffff' : '#212529'
+        };
+    }
+
+    /**
      * ── INITIALISATION DES GRAPHES ─────────────────────────────────────────
      * On attend que le DOM soit chargé ET qu'ApexCharts soit disponible.
      * Si ApexCharts n'est pas encore disponible (rare), on retente toutes
@@ -563,6 +635,9 @@
             console.warn('Éléments DOM des graphes introuvables.');
             return false;
         }
+
+        // Obtenir les couleurs selon le thème
+        var themeColors = getThemeColors();
 
         // ── 1. Graphe Barres — Évolution des contrats ──────────────────────
         var contractsChart = new ApexCharts(contractsEl, {
@@ -586,14 +661,10 @@
                     easing: 'easeinout',
                     speed: 800
                 },
-                /**
-                 * FIX PRINCIPAL : parentHeightOffset: 0 + redrawOnWindowResize
-                 * empêche le graphe de disparaître quand l'URL change ou que
-                 * le layout AdminLTE recalcule ses dimensions.
-                 */
                 parentHeightOffset: 0,
                 redrawOnWindowResize: true,
-                redrawOnParentResize: true
+                redrawOnParentResize: true,
+                background: themeColors.bg
             },
             colors: ['#198754', '#dc3545'],
             plotOptions: {
@@ -615,14 +686,14 @@
                 categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
                 labels: {
                     style: {
-                        colors: '#6c757d'
+                        colors: themeColors.textMuted
                     }
                 }
             },
             yaxis: {
                 labels: {
                     style: {
-                        colors: '#6c757d'
+                        colors: themeColors.textMuted
                     }
                 }
             },
@@ -630,6 +701,7 @@
                 opacity: 1
             },
             tooltip: {
+                theme: themeColors.isDark ? 'dark' : 'light',
                 y: {
                     formatter: function(val) {
                         return val + ' contrats';
@@ -638,10 +710,13 @@
             },
             legend: {
                 position: 'top',
-                horizontalAlign: 'right'
+                horizontalAlign: 'right',
+                labels: {
+                    colors: themeColors.legend
+                }
             },
             grid: {
-                borderColor: '#e9ecef'
+                borderColor: themeColors.grid
             }
         });
         contractsChart.render();
@@ -671,7 +746,8 @@
                 height: 280,
                 parentHeightOffset: 0,
                 redrawOnWindowResize: true,
-                redrawOnParentResize: true
+                redrawOnParentResize: true,
+                background: themeColors.bg
             },
             colors: ['#0d6efd', '#ffc107', '#198754', '#6f42c1'],
             plotOptions: {
@@ -683,9 +759,13 @@
                             total: {
                                 show: true,
                                 label: 'Total',
+                                color: themeColors.text,
                                 formatter: function() {
                                     return total === 0 ? '0' : total.toString();
                                 }
+                            },
+                            value: {
+                                color: themeColors.text
                             }
                         }
                     }
@@ -695,16 +775,110 @@
                 enabled: false
             },
             legend: {
-                position: 'bottom'
+                position: 'bottom',
+                labels: {
+                    colors: themeColors.legend
+                }
             },
             stroke: {
                 width: 0
+            },
+            tooltip: {
+                theme: themeColors.isDark ? 'dark' : 'light'
             }
         });
         distributionChart.render();
 
         return true;
     }
+
+    /**
+     * ── MISE À JOUR DES GRAPHES LORS DU CHANGEMENT DE THÈME ─────────────
+     */
+    function updateChartsTheme() {
+        // Recharger les graphiques quand le thème change
+        const themeColors = getThemeColors();
+
+        // Appliquer les nouvelles couleurs aux graphiques existants
+        const contractsChart = ApexCharts.getChartByID('contracts-chart');
+        const distributionChart = ApexCharts.getChartByID('distribution-chart');
+
+        if (contractsChart) {
+            contractsChart.updateOptions({
+                chart: {
+                    background: themeColors.bg
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: themeColors.textMuted
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: themeColors.textMuted
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: themeColors.grid
+                },
+                legend: {
+                    labels: {
+                        colors: themeColors.legend
+                    }
+                },
+                tooltip: {
+                    theme: themeColors.isDark ? 'dark' : 'light'
+                }
+            });
+        }
+
+        if (distributionChart) {
+            distributionChart.updateOptions({
+                chart: {
+                    background: themeColors.bg
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                total: {
+                                    color: themeColors.text,
+                                    formatter: function() {
+                                        return 'Total';
+                                    }
+                                },
+                                value: {
+                                    color: themeColors.text
+                                }
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        colors: themeColors.legend
+                    }
+                },
+                tooltip: {
+                    theme: themeColors.isDark ? 'dark' : 'light'
+                }
+            });
+        }
+    }
+
+    // Écouter les changements de thème
+    document.addEventListener('theme-changed', updateChartsTheme);
+
+    // También escuchar cambios en localStorage
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'theme') {
+            setTimeout(updateChartsTheme, 100);
+        }
+    });
 
     /**
      * Attendre que le DOM soit prêt, puis tenter d'initialiser.
