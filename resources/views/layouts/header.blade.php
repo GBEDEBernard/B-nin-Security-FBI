@@ -1,5 +1,5 @@
  <!--begin::Header-->
- <nav class="app-header navbar navbar-expand bg-dark shadow-sm" data-bs-theme="dark" style="min-height: 60px;">
+ <nav class="app-header navbar navbar-expand shadow-sm" data-bs-theme="dark" style="min-height: 60px; background-color: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color);">
    <!--begin::Container-->
    <div class="container-fluid">
      <!--begin::Start Navbar Links-->
