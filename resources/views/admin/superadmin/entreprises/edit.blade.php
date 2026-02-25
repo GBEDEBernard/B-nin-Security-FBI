@@ -8,7 +8,7 @@
         border-bottom: 2px solid #e9ecef;
         margin-bottom: 2rem;
     }
-    
+
     .form-wizard .nav-tabs .nav-link {
         border: none;
         color: #6c757d;
@@ -17,7 +17,7 @@
         position: relative;
         transition: all 0.3s ease;
     }
-    
+
     .form-wizard .nav-tabs .nav-link::after {
         content: '';
         position: absolute;
@@ -28,34 +28,41 @@
         background: #198754;
         transition: width 0.3s ease;
     }
-    
+
     .form-wizard .nav-tabs .nav-link:hover {
         color: #198754;
     }
-    
+
     .form-wizard .nav-tabs .nav-link.active {
         color: #198754;
         background: transparent;
     }
-    
+
     .form-wizard .nav-tabs .nav-link.active::after {
         width: 100%;
     }
-    
+
     .form-section {
         display: none;
         animation: fadeIn 0.4s ease;
     }
-    
+
     .form-section.active {
         display: block;
     }
-    
+
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
+
     .preview-logo {
         width: 120px;
         height: 120px;
@@ -69,76 +76,78 @@
         cursor: pointer;
         transition: all 0.3s ease;
     }
-    
+
     .preview-logo:hover {
         border-color: #198754;
         background: #e9f7ef;
     }
-    
+
     .preview-logo img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         border-radius: 10px;
     }
-    
+
     .preview-logo.has-image {
         border-style: solid;
     }
-    
+
     .color-picker-wrapper {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    
+
     .color-preview {
         width: 40px;
         height: 40px;
         border-radius: 8px;
         border: 2px solid #dee2e6;
     }
-    
+
     .form-card {
         border: none;
         border-radius: 16px;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
     }
-    
+
     .form-label {
         font-weight: 500;
         color: #495057;
         margin-bottom: 0.4rem;
     }
-    
-    .form-control, .form-select {
+
+    .form-control,
+    .form-select {
         border-radius: 10px;
         padding: 0.6rem 1rem;
         border: 1.5px solid #e9ecef;
         transition: all 0.2s ease;
     }
-    
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
         border-color: #198754;
         box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
     }
-    
+
     .btn-update {
         padding: 0.7rem 2rem;
         border-radius: 10px;
         font-weight: 500;
         transition: all 0.3s ease;
     }
-    
+
     .btn-update:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
     }
-    
+
     .required-indicator {
         color: #dc3545;
     }
-    
+
     .wizard-buttons {
         display: flex;
         justify-content: space-between;
@@ -146,12 +155,12 @@
         padding-top: 1.5rem;
         border-top: 1px solid #e9ecef;
     }
-    
+
     .form-check-input:checked {
         background-color: #198754;
         border-color: #198754;
     }
-    
+
     .package-card {
         border: 2px solid #e9ecef;
         border-radius: 12px;
@@ -160,17 +169,17 @@
         transition: all 0.3s ease;
         text-align: center;
     }
-    
+
     .package-card:hover {
         border-color: #198754;
         transform: translateY(-3px);
     }
-    
+
     .package-card.selected {
         border-color: #198754;
         background: linear-gradient(135deg, rgba(25, 135, 84, 0.05) 0%, rgba(32, 201, 151, 0.05) 100%);
     }
-    
+
     .package-card .package-icon {
         width: 50px;
         height: 50px;
@@ -181,14 +190,14 @@
         margin: 0 auto 0.75rem;
         font-size: 1.25rem;
     }
-    
+
     .statut-badge {
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 500;
     }
-    
+
     .current-logo {
         max-width: 100%;
         max-height: 100px;
@@ -237,7 +246,7 @@
         <form action="{{ route('admin.superadmin.entreprises.update', $entreprise->id) }}" method="POST" enctype="multipart/form-data" class="form-wizard">
             @csrf
             @method('PUT')
-            
+
             <div class="card form-card">
                 <div class="card-body p-4">
                     <!-- En-tête avec infos rapides -->
@@ -265,7 +274,7 @@
                                 <i class="bi bi-x-circle me-1"></i> Inactive
                             </span>
                             @endif
-                            
+
                             @if($entreprise->est_en_essai)
                             <span class="statut-badge bg-warning bg-opacity-10 text-warning ms-2">
                                 <i class="bi bi-clock me-1"></i> Essai
@@ -300,7 +309,7 @@
 
                     <!-- Contenu des onglets -->
                     <div class="tab-content" id="entrepriseTabsContent">
-                        
+
                         <!-- Onglet 1: Informations générales -->
                         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                             <div class="row g-4">
@@ -309,9 +318,9 @@
                                     <label for="nom_entreprise" class="form-label">
                                         Nom de l'entreprise <span class="required-indicator">*</span>
                                     </label>
-                                    <input type="text" class="form-control @error('nom_entreprise') is-invalid @enderror" 
-                                           id="nom_entreprise" name="nom_entreprise" 
-                                           value="{{ old('nom_entreprise', $entreprise->nom_entreprise) }}" required>
+                                    <input type="text" class="form-control @error('nom_entreprise') is-invalid @enderror"
+                                        id="nom_entreprise" name="nom_entreprise"
+                                        value="{{ old('nom_entreprise', $entreprise->nom_entreprise) }}" required>
                                     @error('nom_entreprise')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -320,8 +329,8 @@
                                 <!-- Nom commercial -->
                                 <div class="col-md-6">
                                     <label for="nom_commercial" class="form-label">Nom commercial</label>
-                                    <input type="text" class="form-control" id="nom_commercial" name="nom_commercial" 
-                                           value="{{ old('nom_commercial', $entreprise->nom_commercial) }}">
+                                    <input type="text" class="form-control" id="nom_commercial" name="nom_commercial"
+                                        value="{{ old('nom_commercial', $entreprise->nom_commercial) }}">
                                 </div>
 
                                 <!-- Slug -->
@@ -329,8 +338,8 @@
                                     <label for="slug" class="form-label">Slug (URL)</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light">/</span>
-                                        <input type="text" class="form-control" id="slug" name="slug" 
-                                               value="{{ old('slug', $entreprise->slug) }}" placeholder="mon-entreprise">
+                                        <input type="text" class="form-control" id="slug" name="slug"
+                                            value="{{ old('slug', $entreprise->slug) }}" placeholder="mon-entreprise">
                                     </div>
                                 </div>
 
@@ -352,22 +361,22 @@
                                 <!-- Numéro de registre -->
                                 <div class="col-md-4">
                                     <label for="numero_registre" class="form-label">N° Registre de commerce</label>
-                                    <input type="text" class="form-control" id="numero_registre" name="numero_registre" 
-                                           value="{{ old('numero_registre', $entreprise->numero_registre) }}">
+                                    <input type="text" class="form-control" id="numero_registre" name="numero_registre"
+                                        value="{{ old('numero_registre', $entreprise->numero_registre) }}">
                                 </div>
 
                                 <!-- Numéro IF -->
                                 <div class="col-md-4">
                                     <label for="numeroIdentificationFiscale" class="form-label">N° Identification Fiscale</label>
-                                    <input type="text" class="form-control" id="numeroIdentificationFiscale" 
-                                           name="numeroIdentificationFiscale" value="{{ old('numeroIdentificationFiscale', $entreprise->numeroIdentificationFiscale) }}">
+                                    <input type="text" class="form-control" id="numeroIdentificationFiscale"
+                                        name="numeroIdentificationFiscale" value="{{ old('numeroIdentificationFiscale', $entreprise->numeroIdentificationFiscale) }}">
                                 </div>
 
                                 <!-- Numéro contribuable -->
                                 <div class="col-md-4">
                                     <label for="numeroContribuable" class="form-label">N° Contribuable</label>
-                                    <input type="text" class="form-control" id="numeroContribuable" 
-                                           name="numeroContribuable" value="{{ old('numeroContribuable', $entreprise->numeroContribuable) }}">
+                                    <input type="text" class="form-control" id="numeroContribuable"
+                                        name="numeroContribuable" value="{{ old('numeroContribuable', $entreprise->numeroContribuable) }}">
                                 </div>
 
                                 <!-- Logo -->
@@ -385,8 +394,8 @@
                                             </div>
                                             @endif
                                         </div>
-                                        <input type="file" id="logo" name="logo" accept="image/*" style="display: none;" 
-                                               onchange="previewLogo(event)">
+                                        <input type="file" id="logo" name="logo" accept="image/*" style="display: none;"
+                                            onchange="previewLogo(event)">
                                         <div>
                                             <p class="mb-1 small text-muted">Formats acceptés: JPG, PNG, GIF, SVG</p>
                                             <p class="mb-0 small text-muted">Taille max: 2MB</p>
@@ -401,32 +410,32 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Couleur primaire</label>
                                     <div class="color-picker-wrapper">
-                                        <input type="color" class="form-control form-control-color" 
-                                               id="couleur_primaire" name="couleur_primaire" 
-                                               value="{{ old('couleur_primaire', $entreprise->couleur_primaire ?? '#198754') }}">
-                                        <input type="text" class="form-control" 
-                                               value="{{ old('couleur_primaire', $entreprise->couleur_primaire ?? '#198754') }}" 
-                                               onchange="document.getElementById('couleur_primaire').value = this.value">
+                                        <input type="color" class="form-control form-control-color"
+                                            id="couleur_primaire" name="couleur_primaire"
+                                            value="{{ old('couleur_primaire', $entreprise->couleur_primaire ?? '#198754') }}">
+                                        <input type="text" class="form-control"
+                                            value="{{ old('couleur_primaire', $entreprise->couleur_primaire ?? '#198754') }}"
+                                            onchange="document.getElementById('couleur_primaire').value = this.value">
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Couleur secondaire</label>
                                     <div class="color-picker-wrapper">
-                                        <input type="color" class="form-control form-control-color" 
-                                               id="couleur_secondaire" name="couleur_secondaire" 
-                                               value="{{ old('couleur_secondaire', $entreprise->couleur_secondaire ?? '#20c997') }}">
-                                        <input type="text" class="form-control" 
-                                               value="{{ old('couleur_secondaire', $entreprise->couleur_secondaire ?? '#20c997') }}" 
-                                               onchange="document.getElementById('couleur_secondaire').value = this.value">
+                                        <input type="color" class="form-control form-control-color"
+                                            id="couleur_secondaire" name="couleur_secondaire"
+                                            value="{{ old('couleur_secondaire', $entreprise->couleur_secondaire ?? '#20c997') }}">
+                                        <input type="text" class="form-control"
+                                            value="{{ old('couleur_secondaire', $entreprise->couleur_secondaire ?? '#20c997') }}"
+                                            onchange="document.getElementById('couleur_secondaire').value = this.value">
                                     </div>
                                 </div>
 
                                 <!-- Statut -->
                                 <div class="col-md-12">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="est_active" 
-                                               name="est_active" value="1" {{ old('est_active', $entreprise->est_active) ? 'checked' : '' }}>
+                                        <input class="form-check-input" type="checkbox" id="est_active"
+                                            name="est_active" value="1" {{ old('est_active', $entreprise->est_active) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="est_active">
                                             Entreprise active
                                         </label>
@@ -445,8 +454,8 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                               id="email" name="email" value="{{ old('email', $entreprise->email) }}" required>
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                            id="email" name="email" value="{{ old('email', $entreprise->email) }}" required>
                                         @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -460,8 +469,8 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                        <input type="tel" class="form-control @error('telephone') is-invalid @enderror" 
-                                               id="telephone" name="telephone" value="{{ old('telephone', $entreprise->telephone) }}" required>
+                                        <input type="tel" class="form-control @error('telephone') is-invalid @enderror"
+                                            id="telephone" name="telephone" value="{{ old('telephone', $entreprise->telephone) }}" required>
                                         @error('telephone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -473,8 +482,8 @@
                                     <label for="telephone_alternatif" class="form-label">Téléphone alternatif</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-phone"></i></span>
-                                        <input type="tel" class="form-control" id="telephone_alternatif" 
-                                               name="telephone_alternatif" value="{{ old('telephone_alternatif', $entreprise->telephone_alternatif) }}">
+                                        <input type="tel" class="form-control" id="telephone_alternatif"
+                                            name="telephone_alternatif" value="{{ old('telephone_alternatif', $entreprise->telephone_alternatif) }}">
                                     </div>
                                 </div>
 
@@ -507,8 +516,8 @@
                                 <!-- Code postal -->
                                 <div class="col-md-4">
                                     <label for="code_postal" class="form-label">Code postal</label>
-                                    <input type="text" class="form-control" id="code_postal" name="code_postal" 
-                                           value="{{ old('code_postal', $entreprise->code_postal) }}">
+                                    <input type="text" class="form-control" id="code_postal" name="code_postal"
+                                        value="{{ old('code_postal', $entreprise->code_postal) }}">
                                 </div>
                             </div>
                         </div>
@@ -525,8 +534,8 @@
                                     <label for="nom_representant_legal" class="form-label">Nom complet</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                        <input type="text" class="form-control" id="nom_representant_legal" 
-                                               name="nom_representant_legal" value="{{ old('nom_representant_legal', $entreprise->nom_representant_legal) }}">
+                                        <input type="text" class="form-control" id="nom_representant_legal"
+                                            name="nom_representant_legal" value="{{ old('nom_representant_legal', $entreprise->nom_representant_legal) }}">
                                     </div>
                                 </div>
 
@@ -535,8 +544,8 @@
                                     <label for="email_representant_legal" class="form-label">Email</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" class="form-control" id="email_representant_legal" 
-                                               name="email_representant_legal" value="{{ old('email_representant_legal', $entreprise->email_representant_legal) }}">
+                                        <input type="email" class="form-control" id="email_representant_legal"
+                                            name="email_representant_legal" value="{{ old('email_representant_legal', $entreprise->email_representant_legal) }}">
                                     </div>
                                 </div>
 
@@ -545,8 +554,8 @@
                                     <label for="telephone_representant_legal" class="form-label">Téléphone</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                        <input type="tel" class="form-control" id="telephone_representant_legal" 
-                                               name="telephone_representant_legal" value="{{ old('telephone_representant_legal', $entreprise->telephone_representant_legal) }}">
+                                        <input type="tel" class="form-control" id="telephone_representant_legal"
+                                            name="telephone_representant_legal" value="{{ old('telephone_representant_legal', $entreprise->telephone_representant_legal) }}">
                                     </div>
                                 </div>
                             </div>
@@ -560,61 +569,70 @@
                                     <label class="form-label">Formule d'abonnement <span class="required-indicator">*</span></label>
                                     <div class="row g-3 mt-2">
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('essai')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'essai' ? 'selected' : '' }}" onclick="selectPackage('essai')">
                                                 <div class="package-icon bg-warning bg-opacity-10 text-warning">
                                                     <i class="bi bi-clock"></i>
                                                 </div>
                                                 <h6 class="mb-1">Essai</h6>
                                                 <small class="text-muted">15 jours gratuits</small>
-                                                <input type="radio" name="formule" value="essai" 
-                                                       id="formule_essai" {{ old('formule', $entreprise->formule) == 'essai' ? 'checked' : '' }}
-                                                       class="d-none">
+                                                <input type="radio" name="formule" value="essai"
+                                                    id="formule_essai" {{ old('formule', $entreprise->formule) == 'essai' ? 'checked' : '' }}
+                                                    class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('basic')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'basic' ? 'selected' : '' }}" onclick="selectPackage('basic')">
                                                 <div class="package-icon bg-primary bg-opacity-10 text-primary">
                                                     <i class="bi bi-star"></i>
                                                 </div>
                                                 <h6 class="mb-1">Basic</h6>
                                                 <small class="text-muted">Gestion de base</small>
-                                                <input type="radio" name="formule" value="basic" 
-                                                       id="formule_basic" {{ old('formule', $entreprise->formule) == 'basic' ? 'checked' : '' }}
-                                                       class="d-none">
+                                                <input type="radio" name="formule" value="basic"
+                                                    id="formule_basic" {{ old('formule', $entreprise->formule) == 'basic' ? 'checked' : '' }}
+                                                    class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('standard')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'standard' ? 'selected' : '' }}" onclick="selectPackage('standard')">
                                                 <div class="package-icon bg-success bg-opacity-10 text-success">
                                                     <i class="bi bi-award"></i>
                                                 </div>
                                                 <h6 class="mb-1">Standard</h6>
                                                 <small class="text-muted">Toutes fonctionnalités</small>
-                                                <input type="radio" name="formule" value="standard" 
-                                                       id="formule_standard" {{ old('formule', $entreprise->formule) == 'standard' ? 'checked' : '' }}
-                                                       class="d-none">
+                                                <input type="radio" name="formule" value="standard"
+                                                    id="formule_standard" {{ old('formule', $entreprise->formule) == 'standard' ? 'checked' : '' }}
+                                                    class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('premium')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
                                                 <div class="package-icon" style="background: rgba(111, 66, 193, 0.1); color: #6f42c1;">
                                                     <i class="bi bi-gem"></i>
                                                 </div>
                                                 <h6 class="mb-1">Premium</h6>
                                                 <small class="text-muted">Support dédié</small>
-                                                <input type="radio" name="formule" value="premium" 
-                                                       id="formule_premium" {{ old('formule', $entreprise->formule) == 'premium' ? 'checked' : '' }}
-                                                       class="d-none">
+                                                <input type="radio" name="formule" value="premium"
+                                                    id="formule_premium" {{ old('formule', $entreprise->formule) == 'premium' ? 'checked' : '' }}
+                                                    class="d-none">
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Erreur de validation inline pour formule -->
+                                    @error('formule')
+                                    <div class="mt-2">
+                                        <div class="d-flex align-items-center text-danger">
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                            <span class="small fw-medium">{{ $message }}</span>
+                                        </div>
+                                    </div>
+                                    @enderror
                                 </div>
 
                                 <!-- Période d'essai -->
                                 <div class="col-md-12 mt-3">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="est_en_essai" 
-                                               name="est_en_essai" value="1" {{ old('est_en_essai', $entreprise->est_en_essai) ? 'checked' : '' }}>
+                                        <input class="form-check-input" type="checkbox" id="est_en_essai"
+                                            name="est_en_essai" value="1" {{ old('est_en_essai', $entreprise->est_en_essai) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="est_en_essai">
                                             En période d'essai
                                         </label>
@@ -628,9 +646,9 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-people"></i></span>
-                                        <input type="number" class="form-control @error('nombre_agents_max') is-invalid @enderror" 
-                                               id="nombre_agents_max" name="nombre_agents_max" 
-                                               value="{{ old('nombre_agents_max', $entreprise->nombre_agents_max) }}" min="1" required>
+                                        <input type="number" class="form-control @error('nombre_agents_max') is-invalid @enderror"
+                                            id="nombre_agents_max" name="nombre_agents_max"
+                                            value="{{ old('nombre_agents_max', $entreprise->nombre_agents_max) }}" min="1" required>
                                         @error('nombre_agents_max')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -644,9 +662,9 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                        <input type="number" class="form-control @error('nombre_sites_max') is-invalid @enderror" 
-                                               id="nombre_sites_max" name="nombre_sites_max" 
-                                               value="{{ old('nombre_sites_max', $entreprise->nombre_sites_max) }}" min="1" required>
+                                        <input type="number" class="form-control @error('nombre_sites_max') is-invalid @enderror"
+                                            id="nombre_sites_max" name="nombre_sites_max"
+                                            value="{{ old('nombre_sites_max', $entreprise->nombre_sites_max) }}" min="1" required>
                                         @error('nombre_sites_max')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -656,15 +674,15 @@
                                 <!-- Date de début contrat -->
                                 <div class="col-md-4">
                                     <label for="date_debut_contrat" class="form-label">Date de début</label>
-                                    <input type="date" class="form-control" id="date_debut_contrat" 
-                                           name="date_debut_contrat" value="{{ old('date_debut_contrat', $entreprise->date_debut_contrat?->format('Y-m-d')) }}">
+                                    <input type="date" class="form-control" id="date_debut_contrat"
+                                        name="date_debut_contrat" value="{{ old('date_debut_contrat', $entreprise->date_debut_contrat?->format('Y-m-d')) }}">
                                 </div>
 
                                 <!-- Date de fin contrat -->
                                 <div class="col-md-4">
                                     <label for="date_fin_contrat" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin_contrat" 
-                                           name="date_fin_contrat" value="{{ old('date_fin_contrat', $entreprise->date_fin_contrat?->format('Y-m-d')) }}">
+                                    <input type="date" class="form-control" id="date_fin_contrat"
+                                        name="date_fin_contrat" value="{{ old('date_fin_contrat', $entreprise->date_fin_contrat?->format('Y-m-d')) }}">
                                 </div>
 
                                 <!-- Montant mensuel -->
@@ -672,8 +690,8 @@
                                     <label for="montant_mensuel" class="form-label">Montant mensuel (FCFA)</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
-                                        <input type="number" class="form-control" id="montant_mensuel" 
-                                               name="montant_mensuel" value="{{ old('montant_mensuel', $entreprise->montant_mensuel) }}" min="0" step="100">
+                                        <input type="number" class="form-control" id="montant_mensuel"
+                                            name="montant_mensuel" value="{{ old('montant_mensuel', $entreprise->montant_mensuel) }}" min="0" step="100">
                                     </div>
                                 </div>
 
@@ -690,8 +708,8 @@
                                 <!-- Notes -->
                                 <div class="col-12">
                                     <label for="notes" class="form-label">Notes</label>
-                                    <textarea class="form-control" id="notes" name="notes" rows="3" 
-                                              placeholder="Notes complémentaires...">{{ old('notes', $entreprise->notes) }}</textarea>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3"
+                                        placeholder="Notes complémentaires...">{{ old('notes', $entreprise->notes) }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -744,20 +762,20 @@
             reader.onload = function(e) {
                 const preview = document.querySelector('.preview-logo');
                 preview.classList.add('has-image');
-                
+
                 // Supprimer l'ancienne image s'il y en a une
                 const oldImg = preview.querySelector('img:not(.current-logo)');
                 if (oldImg) oldImg.remove();
-                
+
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.style.objectFit = 'cover';
                 img.style.borderRadius = '10px';
-                
+
                 preview.appendChild(img);
-                
+
                 const placeholder = document.getElementById('logoPlaceholder');
                 if (placeholder) placeholder.style.display = 'none';
             };
@@ -771,7 +789,7 @@
         document.querySelectorAll('.package-card').forEach(card => {
             card.classList.remove('selected');
         });
-        
+
         // Ajouter la sélection
         const radio = document.getElementById('formule_' + packageName);
         if (radio) {

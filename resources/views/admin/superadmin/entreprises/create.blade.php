@@ -515,7 +515,7 @@
                                     <label class="form-label">Formule d'abonnement <span class="required-indicator">*</span></label>
                                     <div class="row g-3 mt-2">
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('essai')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'essai' ? 'selected' : '' }}" onclick="selectPackage('essai')">
                                                 <div class="package-icon bg-warning bg-opacity-10 text-warning">
                                                     <i class="bi bi-clock"></i>
                                                 </div>
@@ -527,7 +527,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('basic')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', 'basic') == 'basic' ? 'selected' : '' }}" onclick="selectPackage('basic')">
                                                 <div class="package-icon bg-primary bg-opacity-10 text-primary">
                                                     <i class="bi bi-star"></i>
                                                 </div>
@@ -535,11 +535,11 @@
                                                 <small class="text-muted">Gestion de base</small>
                                                 <input type="radio" name="formule" value="basic"
                                                     id="formule_basic" {{ old('formule', 'basic') == 'basic' ? 'checked' : '' }}
-                                                    class="d-none">
+                                                    class="d-none" checked>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('standard')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'standard' ? 'selected' : '' }}" onclick="selectPackage('standard')">
                                                 <div class="package-icon bg-success bg-opacity-10 text-success">
                                                     <i class="bi bi-award"></i>
                                                 </div>
@@ -551,7 +551,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card" onclick="selectPackage('premium')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
                                                 <div class="package-icon bg-purple bg-opacity-10 text-purple" style="color: #6f42c1;">
                                                     <i class="bi bi-gem"></i>
                                                 </div>
@@ -563,6 +563,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Erreur de validation inline pour formule -->
+                                    @error('formule')
+                                    <div class="mt-2">
+                                        <div class="d-flex align-items-center text-danger">
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                            <span class="small fw-medium">{{ $message }}</span>
+                                        </div>
+                                    </div>
+                                    @enderror
                                 </div>
 
                                 <!-- Période d'essai -->

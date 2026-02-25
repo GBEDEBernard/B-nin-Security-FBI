@@ -169,7 +169,7 @@ class Entreprise extends Model
      */
     public function getLogoUrlAttribute(): string
     {
-        return $this->logo ? asset('storage/' . $this->logo) : asset('images/logo-defaut.png');
+        return $this->logo ? asset('storage/' . $this->logo) : asset('images/logo-defaut.svg');
     }
 
     /**
