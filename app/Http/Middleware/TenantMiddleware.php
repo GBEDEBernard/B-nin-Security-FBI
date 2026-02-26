@@ -12,54 +12,55 @@ class TenantMiddleware
     /**
      * Handle an incoming request.
      * Vérifie que l'utilisateur appartient à un tenant actif
+     * Gère à la fois User (SuperAdmin) et Employe
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        // ─────────────────────────────────────────────────────────────
+        // 1. Vérifier si un SuperAdmin (User) est connecté
+        // ─────────────────────────────────────────────────────────────
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
 
-        // Les super admins ont accès à tout
-        if ($user && $user->estSuperAdmin()) {
+            // Les super admins ont accès à tout
+            if ($user->estSuperAdmin()) {
+                return $next($request);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 2. Vérifier si un Employé est connecté
+        // ─────────────────────────────────────────────────────────────
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+
+            // Vérifier que l'employé est actif
+            if (!$employe->est_actif) {
+                Auth::guard('employe')->logout();
+                return redirect('/login')->with('error', 'Votre compte employé est inactif.');
+            }
+
+            // Vérifier le statut (en_poste ou conge)
+            if (!in_array($employe->statut, ['en_poste', 'conge'])) {
+                Auth::guard('employe')->logout();
+                return redirect('/login')->with('error', 'Votre statut ne permet pas la connexion.');
+            }
+
+            // Vérifier que l'entreprise est active
+            $entreprise = $employe->entreprise;
+            if (!$entreprise || !$entreprise->est_active) {
+                Auth::guard('employe')->logout();
+                return redirect('/login')->with('error', 'Votre entreprise est inactive.');
+            }
+
             return $next($request);
         }
 
-        // Pour les autres utilisateurs, vérifier le contexte entreprise
-        // Vérifier si le superadmin est en contexte d'entreprise temporaire
-        if ($user && $user->estEnContexteEntreprise()) {
-            $entrepriseId = $user->getEntrepriseContexteId();
-            $entreprise = \App\Models\Entreprise::find($entrepriseId);
-
-            // Vérifier que l'entreprise temporaire est active
-            if (!$entreprise || !$entreprise->est_active) {
-                // Retourner au dashboard superadmin si l'entreprise est inactive
-                return redirect()->route('admin.superadmin.return')
-                    ->with('error', 'L\'entreprise temporaire est inactive.');
-            }
-        }
-
-        // Vérifier que l'utilisateur a une entreprise
-        if (!$user || !$user->entreprise_id) {
-            Auth::logout();
-            return redirect('/login')->with('error', 'Votre compte n\'est pas lié à une entreprise.');
-        }
-
-        // Vérifier que l'entreprise est active
-        $entreprise = $user->entreprise;
-        if (!$entreprise || !$entreprise->est_active) {
-            Auth::logout();
-            return redirect('/login')->with('error', 'Votre entreprise est inactive. Veuillez contacter l\'administrateur.');
-        }
-
-        // Pour les utilisateurs de type client, vérifier que le client est actif
-        if ($user->estClient() && $user->client_id) {
-            $client = $user->client;
-            if (!$client || !$client->est_actif) {
-                Auth::logout();
-                return redirect('/login')->with('error', 'Votre compte client est inactif.');
-            }
-        }
-
-        return $next($request);
+        // ─────────────────────────────────────────────────────────────
+        // 3. Aucun utilisateur connecté - rediriger vers login
+        // ─────────────────────────────────────────────────────────────
+        return redirect('/login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
     }
 }

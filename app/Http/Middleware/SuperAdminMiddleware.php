@@ -11,24 +11,20 @@ class SuperAdminMiddleware
 {
     /**
      * Handle an incoming request.
-     * Vérifie que l'utilisateur est un Super Administrateur
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Vérifie que l'utilisateur est un SuperAdmin (User avec is_superadmin = true)
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-
-        // Vérifier que l'utilisateur est connecté
-        if (!$user) {
-            return redirect('/login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
+        // Vérifier si connecté
+        if (!Auth::guard('web')->check()) {
+            return redirect('/login')->with('error', 'Vous devez être connecté.');
         }
 
-        // Vérifier que l'utilisateur est un Super Admin
+        $user = Auth::guard('web')->user();
+
+        // Vérifier si c'est un SuperAdmin
         if (!$user->estSuperAdmin()) {
-            // Rediriger vers le dashboard approprié selon le rôle
-            return redirect()->route($user->getAdminRoute())
-                ->with('error', 'Vous n\'avez pas accès à cette section. Cette zone est réservée aux administrateurs de la plateforme.');
+            abort(403, 'Accès réservé aux Super Administrateurs.');
         }
 
         return $next($request);

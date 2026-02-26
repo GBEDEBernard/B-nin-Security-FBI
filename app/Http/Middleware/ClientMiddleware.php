@@ -11,52 +11,40 @@ class ClientMiddleware
 {
     /**
      * Handle an incoming request.
-     * Vérifie que l'utilisateur est un client
+     * Vérifie que l'utilisateur est un client connecté via le guard 'client'
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-
-        // Vérifier que l'utilisateur est connecté
-        if (!$user) {
+        // Vérifier si un client est connecté via le guard 'client'
+        if (!Auth::guard('client')->check()) {
+            // Si c'est un SuperAdmin connecté, le laisser passer
+            if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin()) {
+                return $next($request);
+            }
+            // Si c'est un employé connecté, le rediriger vers son dashboard
+            if (Auth::guard('employe')->check()) {
+                $employe = Auth::guard('employe')->user();
+                return redirect()->to($employe->getDashboardUrl())
+                    ->with('error', 'Cette section est réservée aux clients.');
+            }
             return redirect('/login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
         }
 
-        // Les super admins ne devraient pas utiliser ce middleware (ils ont leur propre section)
-        if ($user->estSuperAdmin()) {
-            return redirect()->route('admin.superadmin.index')
-                ->with('error', 'Veuillez utiliser le panneau d\'administration Super Admin.');
-        }
-
-        // Vérifier que l'utilisateur est un client
-        if (!$user->estClient()) {
-            // Rediriger vers le dashboard approprié selon le rôle
-            return redirect()->route($user->getAdminRoute())
-                ->with('error', 'Vous n\'avez pas accès à cette section. Cette zone est réservée aux clients.');
-        }
-
-        // Vérifier que l'utilisateur a une entreprise
-        if (!$user->entreprise_id) {
-            Auth::logout();
-            return redirect('/login')->with('error', 'Votre compte n\'est pas lié à une entreprise.');
-        }
-
-        // Vérifier que l'entreprise est active
-        $entreprise = $user->entreprise;
-        if (!$entreprise || !$entreprise->est_active) {
-            Auth::logout();
-            return redirect('/login')->with('error', 'Votre entreprise est inactive. Veuillez contacter l\'administrateur.');
-        }
+        $client = Auth::guard('client')->user();
 
         // Vérifier que le client est actif
-        if ($user->client_id) {
-            $client = $user->client;
-            if (!$client || !$client->est_actif) {
-                Auth::logout();
-                return redirect('/login')->with('error', 'Votre compte client est inactif.');
-            }
+        if (!$client->est_actif) {
+            Auth::guard('client')->logout();
+            return redirect('/login')->with('error', 'Votre compte client est inactif.');
+        }
+
+        // Vérifier que l'entreprise associée est active
+        $entreprise = $client->entreprise;
+        if (!$entreprise || !$entreprise->est_active) {
+            Auth::guard('client')->logout();
+            return redirect('/login')->with('error', 'Le service de sécurité de votre entreprise est inactif.');
         }
 
         return $next($request);

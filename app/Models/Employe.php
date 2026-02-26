@@ -7,12 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
-class Employe extends Model
+class Employe extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
 
     protected $table = 'employes';
+    protected $guard_name = 'web';
 
     protected $fillable = [
         //Entreprise (référence)
@@ -51,16 +56,28 @@ class Employe extends Model
         'statut', // en_poste, conge, suspendu, licencie
         'date_depart',
         'motif_depart',
+
+        // Connexion
+        'est_connecte',
+        'last_login_at',
+        'last_login_ip',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
         'est_actif' => 'boolean',
         'disponible' => 'boolean',
+        'est_connecte' => 'boolean',
         'date_naissance' => 'date',
         'date_embauche' => 'date',
         'date_fin_contrat' => 'date',
         'date_depart' => 'date',
         'salaire_base' => 'decimal:2',
+        'last_login_at' => 'datetime',
     ];
 
     // ── Constantes ─────────────────────────────────────────────────────────
@@ -95,10 +112,23 @@ class Employe extends Model
         'licencie'
     ];
 
+    // Rôles par défaut selon le poste
+    public const POSTE_ROLES = [
+        'directeur_general' => ['general_director'],
+        'directeur_adjoint' => ['deputy_director'],
+        'superviseur_general' => ['supervisor'],
+        'superviseur_adjoint' => ['supervisor'],
+        'controleur_principal' => ['controller'],
+        'controleur' => ['controller'],
+        'agent_terrain' => ['agent'],
+        'agent_mobile' => ['agent'],
+        'agent_poste_fixe' => ['agent'],
+    ];
+
     // ── Relations ───────────────────────────────────────────────────────────
 
     /**
-     * L'entreprise de sécurité employs this employee
+     * L'entreprise de sécurité employees this employee
      */
     public function entreprise(): BelongsTo
     {
@@ -179,6 +209,17 @@ class Employe extends Model
         return $query->where('disponible', true)->where('est_actif', true);
     }
 
+    /**
+     * Employés pouvant se connecter
+     */
+    public function scopeCanLogin($query)
+    {
+        return $query->where('est_actif', true)
+            ->whereIn('statut', ['en_poste', 'conge'])
+            ->whereNotNull('email')
+            ->whereNotNull('password');
+    }
+
     // ── Accesseurs ──────────────────────────────────────────────────────────
 
     /**
@@ -210,6 +251,57 @@ class Employe extends Model
     }
 
     /**
+     * Peut se connecter
+     */
+    public function peutSeConnecter(): bool
+    {
+        return $this->est_actif
+            && in_array($this->statut, ['en_poste', 'conge'])
+            && !empty($this->email)
+            && !empty($this->password);
+    }
+
+    /**
+     * Est directeur général
+     */
+    public function estDirecteurGeneral(): bool
+    {
+        return $this->poste === 'directeur_general';
+    }
+
+    /**
+     * Est superviseur
+     */
+    public function estSuperviseur(): bool
+    {
+        return in_array($this->poste, ['superviseur_general', 'superviseur_adjoint']);
+    }
+
+    /**
+     * Est contrôleur
+     */
+    public function estControleur(): bool
+    {
+        return in_array($this->poste, ['controleur_principal', 'controleur']);
+    }
+
+    /**
+     * Est agent
+     */
+    public function estAgent(): bool
+    {
+        return in_array($this->poste, ['agent_terrain', 'agent_mobile', 'agent_poste_fixe']);
+    }
+
+    /**
+     * Est direction (DG + DA)
+     */
+    public function estDirection(): bool
+    {
+        return in_array($this->poste, ['directeur_general', 'directeur_adjoint']);
+    }
+
+    /**
      * Poste hiérarchique
      */
     public function getLibelleCategorie(): string
@@ -221,5 +313,36 @@ class Employe extends Model
             'agent' => 'Agent',
             default => 'Inconnu'
         };
+    }
+
+    /**
+     * Route du dashboard selon le poste
+     */
+    public function getDashboardRoute(): string
+    {
+        if ($this->estDirection()) {
+            return 'admin.entreprise.index';
+        }
+        if ($this->estSuperviseur() || $this->estControleur()) {
+            return 'admin.entreprise.index';
+        }
+        return 'admin.agent.index';
+    }
+
+    /**
+     * URL du dashboard
+     */
+    public function getDashboardUrl(): string
+    {
+        return route($this->getDashboardRoute());
+    }
+
+    /**
+     * Assigner le rôle par défaut selon le poste
+     */
+    public function assignRoleByPoste(): void
+    {
+        $roles = self::POSTE_ROLES[$this->poste] ?? ['agent'];
+        $this->assignRole($roles);
     }
 }

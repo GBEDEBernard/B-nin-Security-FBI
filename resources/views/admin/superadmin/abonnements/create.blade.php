@@ -35,53 +35,129 @@
                         <form action="{{ route('admin.superadmin.abonnements.store') }}" method="POST">
                             @csrf
 
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <label for="nom_entreprise" class="form-label">Nom de l'Entreprise <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nom_entreprise" name="nom_entreprise" required placeholder="Nom de l'entreprise de sécurité">
-                                </div>
-                            </div>
-
+                            <!-- Formule et Description -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="formule" class="form-label">Formule <span class="text-danger">*</span></label>
                                     <select class="form-select" id="formule" name="formule" required>
                                         <option value="">Sélectionner une formule</option>
-                                        <option value="essai">Essai</option>
-                                        <option value="basic">Basic</option>
-                                        <option value="standard" selected>Standard</option>
-                                        <option value="premium">Premium</option>
+                                        @foreach($formules as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-6">
+                                    <label for="cycle_facturation" class="form-label">Cycle de facturation</label>
+                                    <select class="form-select" id="cycle_facturation" name="cycle_facturation">
+                                        @foreach($cycles as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="2" placeholder="Description de l'abonnement..."></textarea>
+                            </div>
+
+                            <!-- Limites -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="nombre_agents_max" class="form-label">Nombre d'agents max</label>
+                                    <input type="number" class="form-control" id="nombre_agents_max" name="nombre_agents_max" value="25" min="0" placeholder="0 = illimité">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="nombre_sites_max" class="form-label">Nombre de sites max</label>
+                                    <input type="number" class="form-control" id="nombre_sites_max" name="nombre_sites_max" value="10" min="0" placeholder="0 = illimité">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="limite_utilisateurs" class="form-label">Nombre d'utilisateurs</label>
+                                    <input type="number" class="form-control" id="limite_utilisateurs" name="limite_utilisateurs" value="5" min="1">
+                                </div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="date_debut" class="form-label">Date de début <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date('Y-m-d') }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="date_fin" class="form-label">Date de fin</label>
+                                    <input type="date" class="form-control" id="date_fin" name="date_fin">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="date_fin_essai" class="form-label">Fin de la période d'essai</label>
+                                    <input type="date" class="form-control" id="date_fin_essai" name="date_fin_essai">
+                                </div>
+                            </div>
+
+                            <!-- Facturation -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
                                     <label for="montant_mensuel" class="form-label">Montant Mensuel (CFA) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="montant_mensuel" name="montant_mensuel" value="100000" min="0" required>
                                 </div>
+                                <div class="col-md-4">
+                                    <label for="tarif_agents_supplementaires" class="form-label">Tarif agents sup. (CFA)</label>
+                                    <input type="number" class="form-control" id="tarif_agents_supplementaires" name="tarif_agents_supplementaires" value="5000" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="mode_paiement" class="form-label">Mode de paiement</label>
+                                    <select class="form-select" id="mode_paiement" name="mode_paiement">
+                                        <option value="">Sélectionner</option>
+                                        <option value="virement">Virement</option>
+                                        <option value="mobile_money">Mobile Money</option>
+                                        <option value="cheque">Chèque</option>
+                                    </select>
+                                </div>
                             </div>
 
+                            <!-- Options -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="nombre_agents_max" class="form-label">Nombre d'agents maximum</label>
-                                    <input type="number" class="form-control" id="nombre_agents_max" name="nombre_agents_max" value="25" min="0" placeholder="Laissez vide pour illimité">
-                                    <small class="text-muted">Laissez vide pour illimité</small>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="est_active" name="est_active" checked>
+                                        <label class="form-check-label" for="est_active">
+                                            Abonnement actif
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="nombre_sites_max" class="form-label">Nombre de sites maximum</label>
-                                    <input type="number" class="form-control" id="nombre_sites_max" name="nombre_sites_max" value="10" min="0" placeholder="Laissez vide pour illimité">
-                                    <small class="text-muted">Laissez vide pour illimité</small>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="est_en_essai" name="est_en_essai">
+                                        <label class="form-check-label" for="est_en_essai">
+                                            Période d'essai
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="est_renouvele_auto" name="est_renouvele_auto">
+                                        <label class="form-check-label" for="est_renouvele_auto">
+                                            Renouvellement auto
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="date_debut_contrat" class="form-label">Date de début <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="date_debut_contrat" name="date_debut_contrat" value="{{ date('Y-m-d') }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="date_fin_contrat" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin_contrat" name="date_fin_contrat">
-                                    <small class="text-muted">Laissez vide pour sans date de fin</small>
-                                </div>
+                            <!-- Assignation à une entreprise -->
+                            <div class="mb-3">
+                                <label for="entreprise_id" class="form-label">Assigner à une entreprise</label>
+                                <select class="form-select" id="entreprise_id" name="entreprise_id">
+                                    <option value="">Sélectionner une entreprise (optionnel)</option>
+                                    @foreach($entreprises as $entreprise)
+                                    <option value="{{ $entreprise->id }}">{{ $entreprise->nom_entreprise }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Vous pouvez assigner cet abonnement à une entreprise maintenant ou plus tard</small>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Notes internes..."></textarea>
                             </div>
 
                             <div class="d-flex justify-content-between">
@@ -106,8 +182,8 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <p class="small">La création d'un abonnement va également créer une nouvelle entreprise de sécurité dans le système.</p>
-                        <p class="small text-muted">L'entreprise pourra ensuite être gérée via le menu "Entreprises" ou directement via ce formulaire d'abonnement.</p>
+                        <p class="small">Créez un plan d'abonnement qui pourra être assigné à une ou plusieurs entreprises.</p>
+                        <p class="small text-muted">L'abonnement définit les limites (agents, sites) et le tarif. Chaque entreprise peut avoir son propre abonnement.</p>
                     </div>
                 </div>
 
@@ -144,6 +220,13 @@
                                     <span>200 000 CFA</span>
                                 </div>
                                 <small class="text-muted">Agents illimités</small>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-dark">Enterprise</span>
+                                    <span>Sur mesure</span>
+                                </div>
+                                <small class="text-muted">Personnalisé</small>
                             </div>
                         </div>
                     </div>

@@ -26,11 +26,29 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-// Page d'accueil - redirige vers le dashboard SuperAdmin si connecté
+// Page d'accueil - redirige selon le rôle de l'utilisateur connecté
 Route::get('/', function () {
-    if (Auth::check() && Auth::user()->estSuperAdmin()) {
-        return redirect()->route('admin.superadmin.index');
+    // Vérifier si c'est un SuperAdmin
+    if (Auth::guard('web')->check()) {
+        $user = Auth::guard('web')->user();
+        if ($user->estSuperAdmin()) {
+            return redirect()->route('admin.superadmin.index');
+        }
     }
+
+    // Vérifier si c'est un employé
+    if (Auth::guard('employe')->check()) {
+        $employe = Auth::guard('employe')->user();
+        return redirect()->to($employe->getDashboardUrl());
+    }
+
+    // Vérifier si c'est un client
+    if (Auth::guard('client')->check()) {
+        $client = Auth::guard('client')->user();
+        return redirect()->to($client->getDashboardUrl());
+    }
+
+    // Pas connecté - afficher la page d'accueil
     return view('welcome');
 })->name('home');
 
@@ -49,9 +67,26 @@ Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratContro
 
 // Administration principal (redirige selon le rôle)
 Route::get('/admin', function () {
-    if (Auth::check()) {
-        return redirect()->to(Auth::user()->getAdminUrl());
+    // Vérifier si c'est un SuperAdmin
+    if (Auth::guard('web')->check()) {
+        $user = Auth::guard('web')->user();
+        if ($user->estSuperAdmin()) {
+            return redirect()->route('admin.superadmin.index');
+        }
     }
+
+    // Vérifier si c'est un employé
+    if (Auth::guard('employe')->check()) {
+        $employe = Auth::guard('employe')->user();
+        return redirect()->to($employe->getDashboardUrl());
+    }
+
+    // Vérifier si c'est un client
+    if (Auth::guard('client')->check()) {
+        $client = Auth::guard('client')->user();
+        return redirect()->to($client->getDashboardUrl());
+    }
+
     return redirect('/login');
 })->middleware('auth')->name('admin');
 
@@ -144,9 +179,17 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'edit'])->name('edit');
         Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'destroy'])->name('destroy');
+
+        // Actions sur les abonnements
         Route::post('/{id}/renew', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'renew'])->name('renew');
         Route::post('/{id}/suspend', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'suspend'])->name('suspend');
         Route::post('/{id}/activate', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'activate'])->name('activate');
+        Route::post('/{id}/resilier', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'resilier'])->name('resilier');
+        Route::post('/{id}/essai', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'mettreEnEssai'])->name('essai');
+
+        // Assignation aux entreprises
+        Route::post('/{id}/assigner', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'assigner'])->name('assigner');
+        Route::delete('/{id}/retirer/{entrepriseId}', [\App\Http\Controllers\SuperAdmin\AbonnementController::class, 'retirer'])->name('retirer');
     });
 
     // Facturation globale

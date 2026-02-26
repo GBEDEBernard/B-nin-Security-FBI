@@ -13,265 +13,122 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
-    protected $table = 'users';
+
+    protected $table      = 'users';
     protected $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
         'telephone',
         'password',
-        'entreprise_id',
-        'employe_id',
         'is_superadmin',
-        // Nouveaux champs multi-tenant
-        'type_user',
-        'client_id',
         'is_active',
         'last_login_at',
         'last_login_ip',
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'is_superadmin' => 'boolean',
-        'is_active' => 'boolean',
-        'entreprise_id' => 'integer',
-        'employe_id' => 'integer',
-        'client_id' => 'integer',
-        'last_login_at' => 'datetime',
+        'password'          => 'hashed',
+        'is_superadmin'     => 'boolean',
+        'is_active'         => 'boolean',
+        'last_login_at'     => 'datetime',
     ];
 
-    // ── Relations ───────────────────────────────────────────────────────────
+    // ── Vérifications de rôle ────────────────────────────────────────────────
 
-    /**
-     * L'entreprise (si l'utilisateur est lié à une entreprise)
-     */
-    public function entreprise(): BelongsTo
-    {
-        return $this->belongsTo(Entreprise::class);
-    }
-
-    /**
-     * L'employé (si l'utilisateur est un employé)
-     */
-    public function employe(): BelongsTo
-    {
-        return $this->belongsTo(Employe::class);
-    }
-
-    // ── Accesseurs ──────────────────────────────────────────────────────────
-
-    /**
-     * Nom complet
-     */
-    public function getNomCompletAttribute(): string
-    {
-        return $this->name;
-    }
-
-    // ── Méthodes métier ─────────────────────────────────────────────────────
-
-    /**
-     * Est super administrateur
-     */
     public function estSuperAdmin(): bool
     {
         return $this->is_superadmin === true;
     }
 
+    // ── Accès à l'application ────────────────────────────────────────────────
+
     /**
-     * Peut accéder à l'application
+     * Le SuperAdmin peut TOUJOURS accéder.
      */
     public function peutAcceder(): bool
     {
+        // SuperAdmin : accès total
         if ($this->estSuperAdmin()) {
             return true;
         }
 
-        // Vérifier si le compte est actif
-        if ($this->is_active === false) {
-            return false;
-        }
-
-        if (!$this->entreprise_id) {
-            return false;
-        }
-
-        $entreprise = $this->entreprise;
-        return $entreprise && $entreprise->est_active;
+        // Compte désactivé
+        return $this->is_active === true;
     }
 
-    // ── Relations pour les clients ─────────────────────────────────────────
+    // ── Redirection selon le rôle ────────────────────────────────────────────
 
-    /**
-     * Le client (si l'utilisateur est un client)
-     */
-    public function client(): BelongsTo
-    {
-        return $this->belongsTo(Client::class);
-    }
-
-    // ── Méthodes de vérification de rôle ───────────────────────────────────
-
-    /**
-     * Est un utilisateur interne (employé de l'entreprise de sécurité)
-     */
-    public function estInterne(): bool
-    {
-        return $this->type_user === 'interne';
-    }
-
-    /**
-     * Est un client (particulier ou entreprise avec compte)
-     */
-    public function estClient(): bool
-    {
-        return $this->type_user === 'client';
-    }
-
-    /**
-     * Est direction (Directeur Général ou Directeur Adjoint)
-     */
-    public function estDirection(): bool
-    {
-        return $this->hasRole(['general_director', 'deputy_director']);
-    }
-
-    /**
-     * Est superviseur
-     */
-    public function estSuperviseur(): bool
-    {
-        return $this->hasRole('supervisor');
-    }
-
-    /**
-     * Est contrôleur
-     */
-    public function estControleur(): bool
-    {
-        return $this->hasRole('controller');
-    }
-
-    /**
-     * Est agent de terrain
-     */
-    public function estAgent(): bool
-    {
-        return $this->hasRole('agent');
-    }
-
-    /**
-     * Est un utilisateur de l'entreprise (direction, superviseur, contrôleur, agent)
-     */
-    public function estUtilisateurEntreprise(): bool
-    {
-        return $this->estDirection() || $this->estSuperviseur() || $this->estControleur() || $this->estAgent();
-    }
-
-    // ── Méthodes de redirection ───────────────────────────────────────────
-
-    /**
-     * Retourne le nom de la route admin selon le rôle
-     */
     public function getAdminRoute(): string
     {
-        // Super Admin
-        if ($this->estSuperAdmin()) {
-            return 'admin.superadmin.index';
-        }
-
-        // Client
-        if ($this->estClient()) {
-            return 'admin.client.index';
-        }
-
-        // Utilisateurs de l'entreprise (direction, superviseur, contrôleur, agent)
-        if ($this->estUtilisateurEntreprise()) {
-            // Les agents ont un admin spécifique
-            if ($this->estAgent()) {
-                return 'admin.agent.index';
-            }
-            // Direction, superviseur et contrôleur ont le admin entreprise
-            return 'admin.entreprise.index';
-        }
-
-        // Par défaut, admin générique
-        return 'admin';
+        return 'admin.superadmin.index';
     }
 
-    /**
-     * Retourne l'URL du admin selon le rôle
-     */
     public function getAdminUrl(): string
     {
         return route($this->getAdminRoute());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // GESTION DU CONTEXTE TEMPORAIRE (POUR SUPERADMIN SE CONNECTANT AUX ENTREPRISES)
-    // ═══════════════════════════════════════════════════════════════════════
+    // ── Contexte Entreprise (SuperAdmin) ─────────────────────────────────────
 
     /**
-     * Vérifie si le superadmin est en contexte d'entreprise
+     * Vérifie si le SuperAdmin est en contexte entreprise
+     * (c'est-à-dire s'il a sélectionné une entreprise spécifique via switch)
      */
     public function estEnContexteEntreprise(): bool
     {
-        return session()->has('superadmin_temp_entreprise_id') && $this->estSuperAdmin();
+        // Le SuperAdmin n'est en contexte entreprise que si une entreprise est sélectionnée en session
+        return session()->has('entreprise_id') && !is_null(session('entreprise_id'));
     }
 
     /**
-     * Obtient l'ID de l'entreprise temporaire (si en contexte)
+     * Obtient l'entreprise actuellement sélectionnée (si en contexte entreprise)
      */
-    public function getEntrepriseContexteId(): ?int
+    public function getEntrepriseId(): ?int
     {
-        if ($this->estEnContexteEntreprise()) {
-            return session()->get('superadmin_temp_entreprise_id');
-        }
-        return null;
+        return session('entreprise_id');
     }
 
     /**
-     * Obtient l'entreprise du contexte temporaire (si applicable)
+     * Obtient l'objet entreprise du contexte (si en contexte entreprise)
      */
     public function getEntrepriseContexte(): ?Entreprise
     {
-        $entrepriseId = $this->getEntrepriseContexteId();
-
-        if ($entrepriseId) {
-            return Entreprise::find($entrepriseId);
+        $entrepriseId = $this->getEntrepriseId();
+        if (!$entrepriseId) {
+            return null;
         }
-
-        return null;
+        return Entreprise::find($entrepriseId);
     }
 
     /**
-     * Vérifie si on peut retourner au mode superadmin
+     * Vérifie si l'utilisateur est un utilisateur entreprise (employé avec rôle)
      */
-    public function peutRetournerSuperAdmin(): bool
+    public function estUtilisateurEntreprise(): bool
     {
-        return $this->estEnContexteEntreprise() && session()->has('superadmin_original');
+        // C'est un utilisateur entreprise s'il a un entreprise_id et n'est pas SuperAdmin
+        return !$this->estSuperAdmin() && $this->entreprise_id !== null;
     }
 
     /**
-     * Retourne l'URL de retour au superadmin
+     * Vérifie si l'utilisateur est un agent (rôle agent)
      */
-    public function getUrlRetourSuperAdmin(): string
+    public function estAgent(): bool
     {
-        return route('admin.superadmin.return');
+        // L'agent est un employé avec le rôle 'agent'
+        return $this->hasRole('agent');
     }
 
     /**
-     * Retourne l'URL du dashboard entreprise (pour le superadmin en contexte)
+     * Vérifie si l'utilisateur est un client (ancien système - via client_id)
      */
-    public function getUrlDashboardEntreprise(): string
+    public function estClient(): bool
     {
-        return route('admin.entreprise.index');
+        // L'utilisateur est un client s'il a un client_id
+        return $this->client_id !== null;
     }
 }

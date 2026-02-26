@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class Client extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens;
 
     protected $table = 'clients';
 
@@ -32,6 +35,7 @@ class Client extends Model
 
         // Contact principal
         'email',
+        'password', // Ajouté pour authentification
         'telephone',
         'telephone_secondaire',
         'contact_principal_nom',
@@ -44,11 +48,21 @@ class Client extends Model
 
         // Statut
         'est_actif',
+        'est_connecte', // Pour suivi connexion
+        'last_login_at',
+        'last_login_ip',
         'notes',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
         'est_actif' => 'boolean',
+        'est_connecte' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     // ── Constantes ─────────────────────────────────────────────────────────
@@ -155,5 +169,55 @@ class Client extends Model
         return $this->contrats()
             ->whereIn('statut', ['en_cours'])
             ->exists();
+    }
+
+    // ── Authentification ───────────────────────────────────────────────────
+
+    /**
+     * Peut se connecter
+     */
+    public function peutSeConnecter(): bool
+    {
+        return $this->est_actif
+            && !empty($this->email)
+            && !empty($this->password);
+    }
+
+    /**
+     * Route du dashboard
+     */
+    public function getDashboardRoute(): string
+    {
+        return 'admin.client.index';
+    }
+
+    /**
+     * URL du dashboard
+     */
+    public function getDashboardUrl(): string
+    {
+        return route($this->getDashboardRoute());
+    }
+
+    /**
+     * Enregistrer la connexion
+     */
+    public function enregistrerConnexion(string $ip): void
+    {
+        $this->update([
+            'est_connecte' => true,
+            'last_login_at' => now(),
+            'last_login_ip' => $ip,
+        ]);
+    }
+
+    /**
+     * Enregistrer la déconnexion
+     */
+    public function enregistrerDeconnexion(): void
+    {
+        $this->update([
+            'est_connecte' => false,
+        ]);
     }
 }

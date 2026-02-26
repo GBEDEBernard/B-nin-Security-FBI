@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Employe;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,19 +14,27 @@ class AuthController extends Controller
 {
     /**
      * Affiche le formulaire de connexion
-     * Si déjà connecté, redirige vers l'admin
      */
     public function showLoginForm()
     {
-        // Si déjà connecté, rediriger vers l'admin
         if (Auth::check()) {
-            return redirect()->route('admin')->with('info', 'Vous êtes déjà connecté.');
+            return $this->redirectByGuard();
+        }
+        if (Auth::guard('employe')->check()) {
+            return $this->redirectByGuard();
+        }
+        if (Auth::guard('client')->check()) {
+            return $this->redirectByGuard();
         }
         return view('auth.login');
     }
 
     /**
      * Traite la connexion
+     * Gère trois types d'utilisateurs:
+     * 1. SuperAdmin (table users avec is_superadmin = true)
+     * 2. Employés (table employes avec email/password)
+     * 3. Clients (table clients avec email/password)
      */
     public function login(Request $request)
     {
@@ -33,79 +43,116 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $email = $request->email;
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Les identifiants sont incorrects.'],
+        // ─────────────────────────────────────────────────────────────
+        // 1. Essayer d'abord comme SuperAdmin (User)
+        // ─────────────────────────────────────────────────────────────
+        $user = User::where('email', $email)->first();
+
+        if ($user && $user->is_superadmin && Hash::check($request->password, $user->password)) {
+            // Connexion SuperAdmin
+            if (!$user->is_active) {
+                throw ValidationException::withMessages([
+                    'email' => ['Votre compte SuperAdmin est inactif.'],
+                ]);
+            }
+
+            Auth::login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+
+            // Enregistrer les informations de connexion
+            $user->update([
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
             ]);
+
+            return redirect()->route('admin.superadmin.index')
+                ->with('success', 'Bienvenue ' . $user->name . ' !');
         }
 
-        // Vérifier si le compte est actif
-        if (!$user->is_active) {
-            throw ValidationException::withMessages([
-                'email' => ['Votre compte est inactif. Veuillez contacter l\'administrateur.'],
+        // ─────────────────────────────────────────────────────────────
+        // 2. Essayer comme Employé
+        // ─────────────────────────────────────────────────────────────
+        $employe = Employe::where('email', $email)
+            ->whereNotNull('password')
+            ->whereNotNull('email')
+            ->first();
+
+        if ($employe && Hash::check($request->password, $employe->password)) {
+            // Vérifier si l'employé peut se connecter
+            if (!$employe->peutSeConnecter()) {
+                throw ValidationException::withMessages([
+                    'email' => ['Votre compte employé est inactif ou vous n\'êtes plus en poste.'],
+                ]);
+            }
+
+            // Vérifier si l'entreprise est active
+            $entreprise = $employe->entreprise;
+            if (!$entreprise || !$entreprise->est_active) {
+                throw ValidationException::withMessages([
+                    'email' => ['Votre entreprise est inactive. Veuillez contacter l\'administrateur.'],
+                ]);
+            }
+
+            // Connexion Employé via Guard 'employe'
+            Auth::guard('employe')->login($employe, $request->boolean('remember'));
+            $request->session()->regenerate();
+
+            // Enregistrer les informations de connexion
+            $employe->update([
+                'est_connecte' => true,
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
             ]);
+
+            // Rediriger selon le poste
+            return redirect()->to($employe->getDashboardUrl())
+                ->with('success', 'Bienvenue ' . $employe->nomComplet . ' !');
         }
 
-        // Vérifier si l'utilisateur peut accéder à l'application
-        if (!$user->peutAcceder()) {
-            throw ValidationException::withMessages([
-                'email' => ['Votre compte est inactif. Veuillez contacter l\'administrateur.'],
-            ]);
+        // ─────────────────────────────────────────────────────────────
+        // 3. Essayer comme Client
+        // ─────────────────────────────────────────────────────────────
+        $client = Client::where('email', $email)
+            ->whereNotNull('password')
+            ->whereNotNull('email')
+            ->first();
+
+        if ($client && Hash::check($request->password, $client->password)) {
+            // Vérifier si le client peut se connecter
+            if (!$client->peutSeConnecter()) {
+                throw ValidationException::withMessages([
+                    'email' => ['Votre compte client est inactif. Veuillez contacter l\'administrateur.'],
+                ]);
+            }
+
+            // Vérifier si l'entreprise associée est active
+            $entreprise = $client->entreprise;
+            if (!$entreprise || !$entreprise->est_active) {
+                throw ValidationException::withMessages([
+                    'email' => ['Le service de sécurité de votre entreprise est inactif.'],
+                ]);
+            }
+
+            // Connexion Client via Guard 'client'
+            Auth::guard('client')->login($client, $request->boolean('remember'));
+            $request->session()->regenerate();
+
+            // Enregistrer les informations de connexion
+            $client->enregistrerConnexion($request->ip());
+
+            // Rediriger vers le dashboard client
+            return redirect()->to($client->getDashboardUrl())
+                ->with('success', 'Bienvenue ' . $client->nomAffichage . ' !');
         }
 
-        Auth::login($user, $request->boolean('remember'));
-
-        $request->session()->regenerate();
-
-        // Enregistrer les informations de connexion
-        $user->update([
-            'last_login_at' => now(),
-            'last_login_ip' => $request->ip(),
+        // ─────────────────────────────────────────────────────────────
+        // 4. Échec - Identifiants incorrects
+        // ─────────────────────────────────────────────────────────────
+        throw ValidationException::withMessages([
+            'email' => ['Les identifiants sont incorrects.'],
         ]);
-
-        // Rediriger vers l'admin approprié selon le rôle
-        return redirect()->to($user->getAdminUrl())
-            ->with('success', 'Bienvenue ' . $user->name . ' !');
-    }
-
-    /**
-     * Affiche le formulaire d'inscription
-     * Si déjà connecté, redirige vers l'admin
-     */
-    public function showRegistrationForm()
-    {
-        // Si déjà connecté, rediriger vers l'admin
-        if (Auth::check()) {
-            return redirect()->route('admin')->with('info', 'Vous êtes déjà connecté.');
-        }
-        return view('auth.register');
-    }
-
-    /**
-     * Traite l'inscription
-     */
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|confirmed|min:8',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        // Assigner le rôle par défaut (agent pour les nouveaux utilisateurs)
-        $user->assignRole('agent');
-
-        Auth::login($user);
-
-        return redirect('/admin')->with('success', 'Compte créé avec succès !');
     }
 
     /**
@@ -113,11 +160,54 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        // Vérifier si c'est un employe connecté
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            $employe->update(['est_connecte' => false]);
+            Auth::guard('employe')->logout();
+        }
+        // Vérifier si c'est un client connecté
+        elseif (Auth::guard('client')->check()) {
+            $client = Auth::guard('client')->user();
+            $client->enregistrerDeconnexion();
+            Auth::guard('client')->logout();
+        }
+        // Sinon c'est un SuperAdmin
+        else {
+            Auth::guard('web')->logout();
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/login')->with('success', 'Vous avez été déconnecté.');
+    }
+
+    /**
+     * Redirige selon le guard utilisé
+     */
+    private function redirectByGuard()
+    {
+        // Vérifier si c'est un SuperAdmin
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin()) {
+                return redirect()->route('admin.superadmin.index');
+            }
+        }
+
+        // Vérifier si c'est un employé
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return redirect()->to($employe->getDashboardUrl());
+        }
+
+        // Vérifier si c'est un client
+        if (Auth::guard('client')->check()) {
+            $client = Auth::guard('client')->user();
+            return redirect()->to($client->getDashboardUrl());
+        }
+
+        return redirect('/login');
     }
 }

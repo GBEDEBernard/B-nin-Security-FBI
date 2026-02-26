@@ -40,6 +40,18 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Guard pour les employés (utilise la table employes)
+        'employe' => [
+            'driver' => 'session',
+            'provider' => 'employes',
+        ],
+
+        // Guard pour les clients (utilise la table clients)
+        'client' => [
+            'driver' => 'session',
+            'provider' => 'clients',
+        ],
     ],
 
     /*
@@ -65,10 +77,17 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // Provider pour les employés
+        'employes' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_EMPLOYE_MODEL', App\Models\Employe::class),
+        ],
+
+        // Provider pour les clients
+        'clients' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_CLIENT_MODEL', App\Models\Client::class),
+        ],
     ],
 
     /*
@@ -93,6 +112,22 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        // Password reset pour les employés
+        'employes' => [
+            'provider' => 'employes',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        // Password reset pour les clients
+        'clients' => [
+            'provider' => 'clients',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
