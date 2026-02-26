@@ -469,14 +469,14 @@
                             <div class="text-muted small">Clients</div>
                         </div>
                     </div>
-                    {{-- Contrats Actifs --}}
+                    {{-- Abonnements Actifs --}}
                     <div class="col-lg-2 col-6">
                         <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity:0;">
                             <div class="d-flex align-items-center justify-content-between mb-3">
-                                <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-file-earmark-check"></i></div>
+                                <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-credit-card-2-front-fill"></i></div>
                             </div>
-                            <div class="stat-number mb-1">{{ $nbContratsActifs }}</div>
-                            <div class="textContrats Actifs-muted small"></div>
+                            <div class="stat-number mb-1">{{ $nbEntreprisesActives }}</div>
+                            <div class="text-muted small">Abonnements Actifs</div>
                         </div>
                     </div>
                     {{-- Employés --}}
@@ -507,24 +507,34 @@
                         <div class="dashboard-card p-4">
                             <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-warning"></i>Actions Rapides</h6>
                             <div class="row g-3">
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <a href="{{ route('admin.superadmin.entreprises.create') }}" class="quick-action-btn">
                                         <i class="bi bi-building-add text-primary"></i><span>Nouvelle Entreprise</span>
                                     </a>
                                 </div>
-                                <div class="col-6 col-md-3">
-                                    <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="quick-action-btn">
-                                        <i class="bi bi-person-plus text-success"></i><span>Nouvel Utilisateur</span>
+                                <div class="col-6 col-md-2">
+                                    <a href="{{ route('admin.superadmin.abonnements.index') }}" class="quick-action-btn">
+                                        <i class="bi bi-credit-card-2-front text-success"></i><span>Abonnements</span>
                                     </a>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
+                                    <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="quick-action-btn">
+                                        <i class="bi bi-person-plus text-info"></i><span>Nouvel Utilisateur</span>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-2">
                                     <a href="{{ route('admin.superadmin.parametres.index') }}" class="quick-action-btn">
                                         <i class="bi bi-gear text-warning"></i><span>Paramètres</span>
                                     </a>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <a href="{{ route('admin.superadmin.rapports.index') }}" class="quick-action-btn">
-                                        <i class="bi bi-bar-chart text-info"></i><span>Rapports</span>
+                                        <i class="bi bi-bar-chart text-purple"></i><span>Rapports</span>
+                                    </a>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <a href="{{ route('admin.superadmin.propositions.index') }}" class="quick-action-btn">
+                                        <i class="bi bi-file-earmark-ruled text-danger"></i><span>Propositions</span>
                                     </a>
                                 </div>
                             </div>
@@ -578,12 +588,12 @@
                     </div>
                 </div>
 
-                {{-- Charts Row 2: Contracts Evolution & Status --}}
+                {{-- Charts Row 2: Abonnements Evolution & Status --}}
                 <div class="row mb-4">
                     <div class="col-lg-8">
                         <div class="dashboard-card">
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Contrats ({{ date('Y') }})</span>
+                                <span><i class="bi bi-graph-up-arrow me-2 text-success"></i>Évolution des Abonnements ({{ date('Y') }})</span>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
@@ -595,7 +605,7 @@
                     <div class="col-lg-4">
                         <div class="dashboard-card h-100">
                             <div class="card-header">
-                                <i class="bi bi-pie-chart me-2 text-warning"></i>Statut des Contrats
+                                <i class="bi bi-pie-chart me-2 text-warning"></i>Statut des Abonnements
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
@@ -643,7 +653,12 @@
                         <div class="dashboard-card">
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <span><i class="bi bi-building me-2" style="color:#6f42c1;"></i>Entreprises de Sécurité</span>
-                                <a href="{{ route('admin.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                                <div>
+                                    <a href="{{ route('admin.superadmin.abonnements.index') }}" class="btn btn-sm btn-outline-success me-1">
+                                        <i class="bi bi-credit-card-2-front"></i> Abonnements
+                                    </a>
+                                    <a href="{{ route('admin.superadmin.entreprises.index') }}" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                                </div>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -653,6 +668,7 @@
                                                 <th>Nom</th>
                                                 <th>Email</th>
                                                 <th>Téléphone</th>
+                                                <th>Abonnement</th>
                                                 <th>Statut</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -671,6 +687,11 @@
                                                 <td>{{ $entreprise->email }}</td>
                                                 <td>{{ $entreprise->telephone }}</td>
                                                 <td>
+                                                    <span class="badge bg-{{ $entreprise->formule == 'premium' ? 'purple' : ($entreprise->formule == 'standard' ? 'info' : ($entreprise->formule == 'basic' ? 'warning' : 'secondary')) }}">
+                                                        {{ ucfirst($entreprise->formule ?? 'Standard') }}
+                                                    </span>
+                                                </td>
+                                                <td>
                                                     @if($entreprise->est_active ?? $entreprise->est_actif)
                                                     <span class="status-badge status-active">Actif</span>
                                                     @else
@@ -678,13 +699,20 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
-                                                    <a href="{{ route('admin.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                                                    <a href="{{ route('admin.superadmin.abonnements.show', $entreprise->id) }}" class="btn btn-sm btn-success" title="Abonnement">
+                                                        <i class="bi bi-credit-card-2-front"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary" title="Voir">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.superadmin.entreprises.edit', $entreprise->id) }}" class="btn btn-sm btn-warning" title="Modifier">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
                                                 </td>
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="5" class="text-center py-4">Aucune entreprise trouvée</td>
+                                                <td colspan="6" class="text-center py-4">Aucune entreprise trouvée</td>
                                             </tr>
                                             @endforelse
                                         </tbody>
@@ -709,12 +737,12 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                     <div>
-                                        <div class="text-muted small">Contrats</div>
-                                        <div class="fw-bold">{{ $nbContrats }}</div>
+                                        <div class="text-muted small">Abonnements</div>
+                                        <div class="fw-bold">{{ $nbEntreprises }}</div>
                                     </div>
                                     <div class="text-end">
-                                        <div class="text-success small">Actifs: {{ $nbContratsEnCours }}</div>
-                                        <div class="text-danger small">Expirés: {{ $nbContratsExpirés }}</div>
+                                        <div class="text-success small">Actifs: {{ $nbEntreprisesActives }}</div>
+                                        <div class="text-danger small">Inactifs: {{ $nbEntreprises - $nbEntreprisesActives }}</div>
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
