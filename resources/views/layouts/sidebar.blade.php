@@ -47,7 +47,7 @@
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-layout-text-window-reverse"></i>
             <p>
-              Accès  Entreprises
+              Accès Entreprises
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
@@ -839,7 +839,11 @@
 <!--end::Sidebar-->
 
 <style>
-  /* Custom Sidebar Styles */
+  /* ========================================
+     Custom Sidebar Styles with Animations
+     ======================================== */
+
+  /* Brand Logo Animation */
   .brand-image-container {
     display: flex;
     align-items: center;
@@ -849,33 +853,303 @@
     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
     border-radius: 8px;
     margin-right: 10px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+  }
+
+  .brand-image-container:hover {
+    transform: rotate(10deg) scale(1.1);
+    box-shadow: 0 6px 25px rgba(25, 135, 84, 0.5);
   }
 
   .brand-icon {
     font-size: 24px;
     color: white;
+    transition: transform 0.4s ease;
+  }
+
+  .brand-image-container:hover .brand-icon {
+    transform: scale(1.2);
   }
 
   .brand-link {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .brand-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
   }
 
   .sidebar-brand {
     padding: 0.5rem 0;
   }
 
+  /* Nav Headers Animation */
   .sidebar-menu>.nav-header {
     padding: 0.75rem 1rem 0.5rem;
     font-size: 0.7rem;
     letter-spacing: 0.5px;
     opacity: 0.8;
+    animation: fadeInDown 0.5s ease forwards;
+    position: relative;
+  }
+
+  .sidebar-menu>.nav-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+    right: 1rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 0.8;
+      transform: translateY(0);
+    }
   }
 
   .nav-badge {
     font-size: 0.65rem;
     padding: 0.25em 0.5em;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+  }
+
+  /* ========================================
+     Menu Items Base Styles
+     ======================================== */
+  .sidebar-menu .nav-item {
+    position: relative;
+    margin: 2px 8px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .sidebar-menu .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .sidebar-menu .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+    z-index: -1;
+  }
+
+  .sidebar-menu .nav-link:hover::before {
+    left: 100%;
+  }
+
+  /* Active State Animation */
+  .sidebar-menu .nav-link.active {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.3) 0%, rgba(32, 201, 151, 0.2) 100%);
+    border-left: 3px solid #20c997;
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.2);
+  }
+
+  .sidebar-menu .nav-link.active .nav-icon,
+  .sidebar-menu .nav-link.active p {
+    color: #20c997 !important;
+  }
+
+  .sidebar-menu .nav-link.active::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 8px 6px 0;
+    border-color: transparent #1a1a1a transparent transparent;
+  }
+
+  /* Hover State */
+  .sidebar-menu .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+  }
+
+  .sidebar-menu .nav-link:hover .nav-icon {
+    transform: scale(1.1);
+    color: #20c997;
+  }
+
+  .sidebar-menu .nav-icon {
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+  }
+
+  /* Nav Arrow Animation */
+  .nav-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+    margin-left: auto;
+  }
+
+  .nav-item.menu-open>.nav-link .nav-arrow,
+  .nav-item.expand>.nav-link .nav-arrow {
+    transform: rotate(90deg);
+  }
+
+  /* ========================================
+     Submenu (Treeview) Animations
+     ======================================== */
+  .nav-treeview {
+    display: none;
+    padding-left: 0.5rem;
+    animation: slideDown 0.3s ease forwards;
+  }
+
+  .nav-item.menu-open>.nav-treeview,
+  .nav-item.expand>.nav-treeview {
+    display: block;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .nav-treeview .nav-item {
+    margin: 2px 0;
+    opacity: 0;
+    animation: fadeInLeft 0.3s ease forwards;
+  }
+
+  .nav-treeview .nav-item:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+
+  .nav-treeview .nav-item:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .nav-treeview .nav-item:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+
+  .nav-treeview .nav-item:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+
+  .nav-treeview .nav-item:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+
+  .nav-treeview .nav-item:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .nav-treeview .nav-link {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .nav-treeview .nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(10px);
+  }
+
+  .nav-treeview .nav-icon {
+    font-size: 0.7rem;
+    margin-right: 0.5rem;
+  }
+
+  /* ========================================
+     Buttons with Animations
+     ======================================== */
+  .connect-entreprise-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .connect-entreprise-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(32, 201, 151, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .connect-entreprise-btn:hover::before {
+    left: 100%;
+  }
+
+  .connect-entreprise-btn:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   /* Animation du bouton Retour Super Admin */
@@ -930,7 +1204,62 @@
     }
   }
 
-  /* Animation de fondu pour le contenu */
+  /* ========================================
+     Context Indicator Animation
+     ======================================== */
+  .entreprise-context-indicator {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+    transition: all 0.3s ease;
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+
+    0%,
+    100% {
+      border-color: rgba(25, 135, 84, 0.2);
+    }
+
+    50% {
+      border-color: rgba(25, 135, 84, 0.5);
+    }
+  }
+
+  .entreprise-context-indicator:hover {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%);
+    border-color: rgba(25, 135, 84, 0.4);
+    transform: scale(1.02);
+  }
+
+  /* ========================================
+     Smooth Scrollbar
+     ======================================== */
+  .sidebar-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .sidebar-wrapper::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+
+  .sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* ========================================
+     Fade Animations
+     ======================================== */
   .fade-out {
     animation: fadeOut 0.3s ease-out forwards;
   }
@@ -962,20 +1291,214 @@
     }
   }
 
-  /* Indicateur visuel de contexte entreprise */
-  .entreprise-context-indicator {
-    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
-    border: 1px solid rgba(25, 135, 84, 0.2);
-    transition: all 0.3s ease;
+  /* ========================================
+     Ripple Effect
+     ======================================== */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
   }
 
-  .entreprise-context-indicator:hover {
-    background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%);
-    border-color: rgba(25, 135, 84, 0.4);
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  /* ========================================
+     Icon Bounce on Active
+     ======================================== */
+  .sidebar-menu .nav-link.active .nav-icon {
+    animation: iconBounce 0.5s ease;
+  }
+
+  @keyframes iconBounce {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.3);
+    }
+  }
+
+  /* ========================================
+     Menu Item Stagger Animation
+     ======================================== */
+  .sidebar-menu>.nav-item {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease forwards;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(5) {
+    animation-delay: 0.25s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(7) {
+    animation-delay: 0.35s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(8) {
+    animation-delay: 0.4s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(9) {
+    animation-delay: 0.45s;
+  }
+
+  .sidebar-menu>.nav-item:nth-child(10) {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
 
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ========================================
+    // Accordion Animation Handler
+    // ========================================
+    const menuToggles = document.querySelectorAll('.sidebar-menu .nav-item > .nav-link:not([href="#"])');
+
+    menuToggles.forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        const parent = this.parentElement;
+        const treeview = parent.querySelector('.nav-treeview');
+
+        if (treeview) {
+          e.preventDefault();
+          const isOpen = parent.classList.contains('menu-open') || parent.classList.contains('expand');
+
+          // Close other open menus in the same level
+          const siblings = parent.parentElement.querySelectorAll(':scope > .nav-item');
+          siblings.forEach(sibling => {
+            if (sibling !== parent) {
+              sibling.classList.remove('menu-open', 'expand');
+              const siblingTreeview = sibling.querySelector('.nav-treeview');
+              if (siblingTreeview) {
+                siblingTreeview.style.animation = 'slideUp 0.3s ease forwards';
+                setTimeout(() => {
+                  siblingTreeview.style.display = 'none';
+                  siblingTreeview.style.animation = '';
+                }, 300);
+              }
+            }
+          });
+
+          // Toggle current menu
+          if (isOpen) {
+            treeview.style.animation = 'slideUp 0.3s ease forwards';
+            setTimeout(() => {
+              parent.classList.remove('menu-open', 'expand');
+              treeview.style.display = 'none';
+              treeview.style.animation = '';
+            }, 300);
+          } else {
+            parent.classList.add('menu-open', 'expand');
+            treeview.style.display = 'block';
+            treeview.style.animation = 'slideDown 0.3s ease forwards';
+          }
+        }
+      });
+    });
+
+    // ========================================
+    // Click Ripple Effect
+    // ========================================
+    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        // Create ripple element
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+
+        // Get click position relative to the link
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+
+        // Add ripple to link
+        this.appendChild(ripple);
+
+        // Remove ripple after animation
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+    // ========================================
+    // Active State Management
+    // ========================================
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && (currentPath === href || currentPath.startsWith(href + '/'))) {
+        link.classList.add('active');
+
+        // Open parent menus if closed
+        let parent = link.closest('.nav-treeview');
+        while (parent) {
+          const parentItem = parent.closest('.nav-item');
+          if (parentItem) {
+            parentItem.classList.add('menu-open', 'expand');
+            parent.style.display = 'block';
+          }
+          parent = parent.closest('.nav-treeview');
+        }
+      }
+    });
+
+    // ========================================
+    // Hover Sound Effect (Optional - commented out)
+    // ========================================
+    // Uncomment below to enable hover sound
+    // const hoverSound = new Audio('/path/to/hover-sound.mp3');
+    // document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
+    //   link.addEventListener('mouseenter', () => {
+    //     hoverSound.volume = 0.1;
+    //     hoverSound.play().catch(() => {});
+    //   });
+    // });
+  });
+
   // Animation de retour au Super Admin
   function animateReturn(event) {
     event.preventDefault();
