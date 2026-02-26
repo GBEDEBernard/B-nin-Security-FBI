@@ -27,7 +27,22 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        // Déterminer l'ID de l'entreprise
+        // Pour un SuperAdmin en contexte entreprise, utiliser la session
+        // Pour un employé, utiliser son entreprise_id
+        $entrepriseId = null;
+
+        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+            // SuperAdmin en contexte entreprise
+            $entrepriseId = session('entreprise_id');
+        } else {
+            // Utilisateur normal (employé)
+            $entrepriseId = Auth::user()->entreprise_id;
+        }
+
+        if (!$entrepriseId) {
+            abort(403, 'Aucune entreprise sélectionnée.');
+        }
 
         // Statistiques rapides
         $stats = [

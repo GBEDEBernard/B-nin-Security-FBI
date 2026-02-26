@@ -116,8 +116,14 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'Cette entreprise est inactive.');
         }
 
+        // Stocker les infos originales du superadmin
         Session::put('superadmin_original', ['user_id' => Auth::id(), 'is_superadmin' => true]);
-        Session::put('superadmin_temp_entreprise_id', $entrepriseId);
+
+        // Stocker l'ID de l'entreprise en contexte (clé utilisée par le modèle User)
+        Session::put('entreprise_id', $entrepriseId);
+
+        // Garder une référence pour le retour
+        Session::put('superadmin_return_url', route('admin.superadmin.index'));
 
         $request->session()->flash('success', 'Connecté en contexte : ' . $entreprise->nom_entreprise);
         return redirect()->route('admin.entreprise.index');
@@ -125,7 +131,9 @@ class SuperAdminController extends Controller
 
     public function returnToSuperAdmin(Request $request)
     {
-        Session::forget(['superadmin_temp_entreprise_id', 'superadmin_original', 'superadmin_return_url']);
+        // Nettoyer toutes les sessions liées au contexte entreprise
+        Session::forget(['entreprise_id', 'superadmin_original', 'superadmin_return_url', 'superadmin_temp_entreprise_id']);
+
         return redirect()->route('admin.superadmin.index')->with('info', 'Retour au Super Admin.');
     }
 

@@ -13,14 +13,22 @@ class EntrepriseMiddleware
      * Handle an incoming request.
      * Vérifie que l'utilisateur est un membre interne de l'entreprise
      * (Direction, Superviseur, Contrôleur, Agent) via la table Employe
+     * OU que c'est un SuperAdmin en contexte entreprise
      */
     public function handle(Request $request, Closure $next): Response
     {
         // Vérifier si un Employé est connecté
         if (!Auth::guard('employe')->check()) {
-            // Si c'est un SuperAdmin, le laisser passer
+            // Si c'est un SuperAdmin
             if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin()) {
-                return $next($request);
+                // Vérifier si le SuperAdmin est en contexte entreprise
+                if (session()->has('entreprise_id') && session('entreprise_id')) {
+                    // SuperAdmin en contexte entreprise - autorisé
+                    return $next($request);
+                }
+                // SuperAdmin pas en contexte - rediriger vers son dashboard
+                return redirect()->route('admin.superadmin.index')
+                    ->with('error', 'Veuillez sélectionner une entreprise pour accéder à ce tableau de bord.');
             }
             return redirect('/login');
         }

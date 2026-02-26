@@ -38,23 +38,33 @@
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
-        {{-- Bouton de retour au SuperAdmin (si en contexte entreprise) --}}
-        @if(auth()->user()->estEnContexteEntreprise())
+        {{-- Accès Rapide aux Tableaux de Bord (bouton flottant) --}}
+        @php
+        $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();
+        @endphp
+        @if($entreprises->count() > 0)
         <li class="nav-item">
-          <a href="{{ route('admin.superadmin.return') }}" class="nav-link bg-warning text-dark">
-            <i class="nav-icon bi bi-arrow-left-circle"></i>
-            <p class="fw-bold">Retour Super Admin</p>
-          </a>
-        </li>
-
-        {{-- Indicateur de l'entreprise courante --}}
-        <li class="nav-item">
-          <a href="#" class="nav-link bg-info bg-opacity-25">
-            <i class="nav-icon bi bi-building text-info"></i>
-            <p class="text-info">
-              <strong>{{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}</strong>
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-layout-text-window-reverse"></i>
+            <p>
+              Accès  Entreprises
+              <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
+          <ul class="nav nav-treeview">
+            @foreach($entreprises as $entreprise)
+            <li class="nav-item">
+              <button type="button" class="nav-link btn btn-link text-start w-100 connect-entreprise-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#connectModal"
+                data-entreprise-id="{{ $entreprise->id }}"
+                data-entreprise-nom="{{ $entreprise->nom_entreprise ?? $entreprise->nom }}">
+                <i class="nav-icon bi bi-box-arrow-in-right" style="color: var(--bs-success);"></i>
+                <p style="color: var(--bs-body-color);">{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</p>
+              </button>
+            </li>
+            @endforeach
+          </ul>
         </li>
         @endif
 
@@ -123,36 +133,6 @@
             </p>
           </a>
         </li>
-
-        {{-- Accès Rapide aux Tableaux de Bord --}}
-        @php
-        $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();
-        @endphp
-        @if($entreprises->count() > 0)
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-layout-text-window-reverse"></i>
-            <p>
-              Accès Rapide
-              <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            @foreach($entreprises as $entreprise)
-            <li class="nav-item">
-              <button type="button" class="nav-link btn btn-link text-start w-100 connect-entreprise-btn"
-                data-bs-toggle="modal"
-                data-bs-target="#connectModal"
-                data-entreprise-id="{{ $entreprise->id }}"
-                data-entreprise-nom="{{ $entreprise->nom_entreprise ?? $entreprise->nom }}">
-                <i class="nav-icon bi bi-box-arrow-in-right" style="color: var(--bs-success);"></i>
-                <p style="color: var(--bs-body-color);">{{ $entreprise->nom_entreprise ?? $entreprise->nom }}</p>
-              </button>
-            </li>
-            @endforeach
-          </ul>
-        </li>
-        @endif
 
         {{-- Utilisateurs Globaux --}}
         <li class="nav-item">
@@ -426,21 +406,31 @@
 
         {{-- Bouton de retour au SuperAdmin (si super admin en contexte entreprise) --}}
         @if($estSuperAdminEnContexte)
-        <li class="nav-item">
-          <a href="{{ route('admin.superadmin.return') }}" class="nav-link bg-warning text-dark">
-            <i class="nav-icon bi bi-arrow-left-circle"></i>
-            <p class="fw-bold">Retour Super Admin</p>
+        <li class="nav-item mb-3">
+          <a href="{{ route('admin.superadmin.return') }}"
+            class="nav-link bg-warning text-dark rounded-3 mx-2 py-2 return-superadmin-btn"
+            id="returnSuperAdminBtn"
+            onclick="animateReturn(event)">
+            <i class="nav-icon bi bi-arrow-left-circle me-2"></i>
+            <span class="fw-bold">Retour Super Admin</span>
           </a>
         </li>
 
         {{-- Indicateur de l'entreprise courante --}}
-        <li class="nav-item">
-          <a href="#" class="nav-link" style="background: var(--bs-info-bg-subtle); border: 1px solid var(--bs-info-border-subtle);">
-            <i class="nav-icon bi bi-building" style="color: var(--bs-info-text-emphasis);"></i>
-            <p style="color: var(--bs-body-color);">
-              <strong>{{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}</strong>
-            </p>
-          </a>
+        <li class="nav-item mb-3 mx-2">
+          <div class="nav-link rounded-3" style="background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%); border: 1px solid rgba(25, 135, 84, 0.3);">
+            <div class="d-flex align-items-center">
+              <div class="me-2">
+                <i class="bi bi-building" style="color: var(--bs-success);"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Vue actuelle:</small>
+                <strong style="color: var(--bs-success); font-size: 0.85rem;">
+                  {{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}
+                </strong>
+              </div>
+            </div>
+          </div>
         </li>
         @endif
 
@@ -887,4 +877,130 @@
     font-size: 0.65rem;
     padding: 0.25em 0.5em;
   }
+
+  /* Animation du bouton Retour Super Admin */
+  .return-superadmin-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .return-superadmin-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .return-superadmin-btn:hover::before {
+    left: 100%;
+  }
+
+  .return-superadmin-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+  }
+
+  .return-superadmin-btn:active {
+    transform: translateX(0) scale(0.98);
+  }
+
+  .return-superadmin-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .return-superadmin-btn.loading .bi-arrow-left-circle {
+    animation: bounce-left 0.6s ease-in-out infinite;
+  }
+
+  @keyframes bounce-left {
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    50% {
+      transform: translateX(-5px);
+    }
+  }
+
+  /* Animation de fondu pour le contenu */
+  .fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-in forwards;
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Indicateur visuel de contexte entreprise */
+  .entreprise-context-indicator {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .entreprise-context-indicator:hover {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%);
+    border-color: rgba(25, 135, 84, 0.4);
+  }
 </style>
+
+<script>
+  // Animation de retour au Super Admin
+  function animateReturn(event) {
+    event.preventDefault();
+    const btn = document.getElementById('returnSuperAdminBtn');
+
+    if (btn) {
+      // Ajouter la classe de chargement
+      btn.classList.add('loading');
+
+      // Ajouter un effet visuel
+      btn.innerHTML = '<i class="bi bi-arrow-repeat me-2 spin"></i><span class="fw-bold">Retour en cours...</span>';
+
+      // Attendre un peu pour l'animation
+      setTimeout(() => {
+        // Ajouter l'animation de sortie
+        const mainContent = document.querySelector('.app-main');
+        if (mainContent) {
+          mainContent.classList.add('fade-out');
+        }
+
+        // Rediriger après l'animation
+        setTimeout(() => {
+          window.location.href = btn.getAttribute('href');
+        }, 300);
+      }, 500);
+    }
+  }
+</script>

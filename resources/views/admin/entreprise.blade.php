@@ -330,10 +330,18 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h4 class="mb-1">
+                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
+                                Vue Entreprise: {{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }} 👋
+                                @else
                                 Bienvenue, {{ Auth::user()->name }}! 👋
+                                @endif
                             </h4>
                             <p class="mb-0 opacity-75">
+                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
+                                Vous êtes en train de gérer cette entreprise en tant que Super Admin
+                                @else
                                 Voici un aperçu de votre entreprise de sécurité
+                                @endif
                             </p>
                         </div>
                         <div class="d-none d-md-block">
