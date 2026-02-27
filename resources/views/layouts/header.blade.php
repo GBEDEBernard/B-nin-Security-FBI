@@ -198,7 +198,7 @@
              <!--begin::Row-->
              <div class="row">
                <div class="col-4 text-center">
-                 <a href="#">Profil</a>
+                 <a href="{{ auth()->user() && auth()->user()->estSuperAdmin() ? route('admin.superadmin.utilisateurs.show', auth()->id()) : '#' }}">Profil</a>
                </div>
                <div class="col-4 text-center">
                  <a href="#">Rôles</a>
@@ -212,7 +212,7 @@
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
            <li class="user-footer p-2">
-             <a href="#" class="btn btn-outline-secondary btn-sm">
+             <a href="{{ auth()->user() && auth()->user()->estSuperAdmin() ? route('admin.superadmin.utilisateurs.show', auth()->id()) : '#' }}" class="btn btn-outline-secondary btn-sm">
                <i class="bi bi-person-circle me-1"></i> Profil
              </a>
              <form method="POST" action="{{ route('logout') }}" class="d-inline">

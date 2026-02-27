@@ -219,6 +219,26 @@
                                     </div>
                                 </div>
 
+                                <!-- Photo de profil -->
+                                <div class="col-12">
+                                    <label class="form-label">Photo de profil</label>
+                                    <div class="d-flex align-items-start gap-4">
+                                        <div class="preview-logo" onclick="document.getElementById('photo').click()">
+                                            <img id="photoPreview" src="" style="display: none;">
+                                            <div id="photoPlaceholder" class="text-center text-muted">
+                                                <i class="bi bi-image fs-3"></i>
+                                                <p class="mb-0 small">Cliquez pour uploader</p>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="photo" name="photo" accept="image/*" style="display: none;"
+                                            onchange="previewPhoto(event)">
+                                        <div>
+                                            <p class="mb-1 small text-muted">Formats acceptés: JPG, PNG, GIF</p>
+                                            <p class="mb-0 small text-muted">Taille max: 2MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Téléphone -->
                                 <div class="col-md-6">
                                     <label for="telephone" class="form-label">
@@ -457,6 +477,20 @@
         }
 
         document.getElementById('req-match').classList.toggle('valid', password === confirmation && password.length > 0);
+    }
+
+    // Prévisualiser la photo
+    function previewPhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+                document.getElementById('photoPreview').style.display = 'block';
+                document.getElementById('photoPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
     }
 </script>
 @endpush

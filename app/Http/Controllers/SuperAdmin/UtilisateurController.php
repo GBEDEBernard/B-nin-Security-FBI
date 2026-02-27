@@ -75,6 +75,7 @@ class UtilisateurController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'telephone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'password' => 'required|string|min:8|confirmed',
             'is_active' => 'boolean',
         ]);
@@ -83,6 +84,7 @@ class UtilisateurController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'telephone' => $validated['telephone'] ?? null,
+            'photo' => $request->hasFile('photo') ? $request->file('photo')->store('photos', 'public') : null,
             'password' => Hash::make($validated['password']),
             'is_superadmin' => true,
             'is_active' => $validated['is_active'] ?? true,
@@ -148,6 +150,7 @@ class UtilisateurController extends Controller
                 Rule::unique('users')->ignore($id),
             ],
             'telephone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'password' => 'nullable|string|min:8|confirmed',
             'is_active' => 'boolean',
         ]);
@@ -156,6 +159,7 @@ class UtilisateurController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'telephone' => $validated['telephone'] ?? null,
+            'photo' => $request->hasFile('photo') ? $request->file('photo')->store('photos', 'public') : $utilisateur->photo,
             'is_active' => $validated['is_active'] ?? true,
         ];
 
