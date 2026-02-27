@@ -41,30 +41,59 @@ Route::middleware('auth')->group(function () {
 });
 
 // Page d'accueil - redirige selon le rôle de l'utilisateur connecté
-Route::get('/', function () {
-    // Vérifier si c'est un SuperAdmin
-    if (Auth::guard('web')->check()) {
-        $user = Auth::guard('web')->user();
-        if ($user->estSuperAdmin()) {
-            return redirect()->route('admin.superadmin.index');
+// ⚠️  Le middleware 'role.redirect' est appliqué UNIQUEMENT ici et sur /admin
+Route::middleware(['role.redirect'])->group(function () {
+
+    Route::get('/', function () {
+        // Vérifier si c'est un SuperAdmin
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin()) {
+                return redirect()->route('admin.superadmin.index');
+            }
         }
-    }
 
-    // Vérifier si c'est un employé
-    if (Auth::guard('employe')->check()) {
-        $employe = Auth::guard('employe')->user();
-        return redirect()->to($employe->getDashboardUrl());
-    }
+        // Vérifier si c'est un employé
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return redirect()->to($employe->getDashboardUrl());
+        }
 
-    // Vérifier si c'est un client
-    if (Auth::guard('client')->check()) {
-        $client = Auth::guard('client')->user();
-        return redirect()->to($client->getDashboardUrl());
-    }
+        // Vérifier si c'est un client
+        if (Auth::guard('client')->check()) {
+            $client = Auth::guard('client')->user();
+            return redirect()->to($client->getDashboardUrl());
+        }
 
-    // Pas connecté - afficher la page d'accueil de connexion
-    return view('auth.login');
-})->name('home');
+        // Pas connecté - afficher la page de connexion
+        return view('auth.login');
+    })->name('home');
+
+    // Administration principal (redirige selon le rôle)
+    Route::get('/admin', function () {
+        // Vérifier si c'est un SuperAdmin
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin()) {
+                return redirect()->route('admin.superadmin.index');
+            }
+        }
+
+        // Vérifier si c'est un employé
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return redirect()->to($employe->getDashboardUrl());
+        }
+
+        // Vérifier si c'est un client
+        if (Auth::guard('client')->check()) {
+            $client = Auth::guard('client')->user();
+            return redirect()->to($client->getDashboardUrl());
+        }
+
+        return redirect('/login');
+    })->middleware('auth')->name('admin');
+});
 
 // Route publique pour le formulaire de devis
 Route::get('/devis', function () {
@@ -76,36 +105,8 @@ Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratContro
     ->name('devis.soumettre');
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ROUTES DES ADMINISTRATIONS PAR RÔLE
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Administration principal (redirige selon le rôle)
-Route::get('/admin', function () {
-    // Vérifier si c'est un SuperAdmin
-    if (Auth::guard('web')->check()) {
-        $user = Auth::guard('web')->user();
-        if ($user->estSuperAdmin()) {
-            return redirect()->route('admin.superadmin.index');
-        }
-    }
-
-    // Vérifier si c'est un employé
-    if (Auth::guard('employe')->check()) {
-        $employe = Auth::guard('employe')->user();
-        return redirect()->to($employe->getDashboardUrl());
-    }
-
-    // Vérifier si c'est un client
-    if (Auth::guard('client')->check()) {
-        $client = Auth::guard('client')->user();
-        return redirect()->to($client->getDashboardUrl());
-    }
-
-    return redirect('/login');
-})->middleware('auth')->name('admin');
-
-// ═══════════════════════════════════════════════════════════════════════════
 // ADMIN SUPER ADMIN
+// ⚠️  PAS de 'role.redirect' dans ce groupe
 // ═══════════════════════════════════════════════════════════════════════════
 
 Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
@@ -276,10 +277,25 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
 
     // Route pour retourner au dashboard superadmin
     Route::get('/return', [SuperAdminController::class, 'returnToSuperAdmin'])->name('return');
+
+    // Gestion des rôles
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'index'])->name('index');
+        Route::get('/search', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'search'])->name('search');
+        Route::get('/listes', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'roles'])->name('roles-list');
+        Route::post('/roles', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'createRole'])->name('create-role');
+        Route::delete('/roles/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'deleteRole'])->name('delete-role');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'update'])->name('update');
+        Route::post('/{id}/assign-role', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'assignRole'])->name('assign-role');
+        Route::delete('/{id}/remove-role', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'removeRole'])->name('remove-role');
+    });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN ENTREPRISE (Direction, Superviseur, Contrôleur)
+// ⚠️  PAS de 'role.redirect' dans ce groupe
 // ═══════════════════════════════════════════════════════════════════════════
 
 Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
@@ -359,9 +375,10 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')-
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN AGENT
+// ⚠️  PAS de 'role.redirect' dans ce groupe
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
+Route::middleware(['auth', 'tenant', 'auth.employe'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.agent');
@@ -399,6 +416,7 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/agent')->name
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN CLIENT
+// ⚠️  PAS de 'role.redirect' dans ce groupe
 // ═══════════════════════════════════════════════════════════════════════════
 
 Route::middleware(['auth', 'tenant', 'client'])->prefix('admin/client')->name('admin.client.')->group(function () {

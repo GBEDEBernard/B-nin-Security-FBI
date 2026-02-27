@@ -11,38 +11,45 @@ class AuthenticateEmploye
 {
     /**
      * Handle an incoming request.
-     * Vérifie que l'utilisateur est un employé connecté
+     * Vérifie que l'utilisateur est un employé actif connecté via le guard 'employe'.
+     * Utilisé pour les routes agent (admin/agent*).
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Vérifier si un employé est connecté via le guard 'employe'
+        // SuperAdmin → toujours autorisé
+        if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin()) {
+            return $next($request);
+        }
+
+        // Employé non connecté
         if (!Auth::guard('employe')->check()) {
-            // Si c'est un user (SuperAdmin) connecté, le laisser passer
-            if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin()) {
-                return $next($request);
+            if (Auth::guard('client')->check()) {
+                return redirect()->route('admin.client.index')
+                    ->with('error', 'Cette section est réservée aux employés.');
             }
-            return redirect('/login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
+            return redirect('/login')
+                ->with('error', 'Veuillez vous connecter pour accéder à cette page.');
         }
 
         $employe = Auth::guard('employe')->user();
 
-        // Vérifier si l'employé est actif
         if (!$employe->est_actif) {
             Auth::guard('employe')->logout();
-            return redirect('/login')->with('error', 'Votre compte employé est inactif.');
+            return redirect('/login')
+                ->with('error', 'Votre compte employé est inactif.');
         }
 
-        // Vérifier le statut (en_poste ou conge)
         if (!in_array($employe->statut, ['en_poste', 'conge'])) {
             Auth::guard('employe')->logout();
-            return redirect('/login')->with('error', 'Votre statut ne vous permet pas de vous connecter.');
+            return redirect('/login')
+                ->with('error', 'Votre statut ne vous permet pas de vous connecter.');
         }
 
-        // Vérifier si l'entreprise est active
         $entreprise = $employe->entreprise;
         if (!$entreprise || !$entreprise->est_active) {
             Auth::guard('employe')->logout();
-            return redirect('/login')->with('error', 'Votre entreprise est inactive.');
+            return redirect('/login')
+                ->with('error', 'Votre entreprise est inactive.');
         }
 
         return $next($request);

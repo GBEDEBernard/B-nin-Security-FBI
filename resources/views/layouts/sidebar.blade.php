@@ -159,6 +159,14 @@
           </ul>
         </li>
 
+        {{-- Gestion des Rôles --}}
+        <li class="nav-item">
+          <a href="{{ route('admin.superadmin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.roles*') ? 'active' : '' }}">
+            <i class="nav-icon bi bi-shield-lock-fill"></i>
+            <p>Gestion des Rôles</p>
+          </a>
+        </li>
+
         <li class="nav-header text-uppercase fw-bold text-primary">Finance & Rapports</li>
 
         {{-- Facturation Globale --}}
