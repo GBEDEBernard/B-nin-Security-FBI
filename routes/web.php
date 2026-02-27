@@ -23,7 +23,20 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Route POST pour la déconnexion (depuis le formulaire)
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Route GET pour la déconnexion via lien ou redirection automatique (redirige vers /login)
+    Route::get('/logout', function () {
+        // Déconnecter tous les guards
+        \Illuminate\Support\Facades\Auth::guard('web')->logout();
+        \Illuminate\Support\Facades\Auth::guard('employe')->logout();
+        \Illuminate\Support\Facades\Auth::guard('client')->logout();
+
+        // Rediriger vers la page de connexion
+        return redirect('/login');
+    })->name('logout.get');
+
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
 });
 

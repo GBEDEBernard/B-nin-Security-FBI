@@ -482,7 +482,7 @@
          <button type="button" class="btn btn-secondary" id="extendSessionBtn">
            <i class="bi bi-arrow-clockwise me-1"></i> Rester connecté
          </button>
-         <a href="{{ route('logout') }}" class="btn btn-outline-danger">
+         <a href="{{ route('logout.get') }}" class="btn btn-outline-danger">
            <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
          </a>
        </div>
@@ -538,7 +538,7 @@
        if (timeLeft <= 0) {
          clearInterval(countdownInterval);
          // Déconnecter automatiquement
-         window.location.href = '{{ route("logout") }}';
+         window.location.href = '{{ route("logout.get") }}';
        }
      }, 1000);
    }

@@ -29,6 +29,7 @@
         border-radius: 50%;
     }
 
+    /* Avatar avec initiales (par défaut) */
     .profile-avatar {
         width: 120px;
         height: 120px;
@@ -43,6 +44,17 @@
         border: 5px solid rgba(255, 255, 255, 0.3);
         position: relative;
         z-index: 1;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    /* Photo réelle dans l'avatar */
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
     }
 
     .profile-name {
@@ -204,7 +216,7 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
-        <!-- Messages -->
+
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>
@@ -224,13 +236,20 @@
         <div class="row">
             <!-- Colonne principale -->
             <div class="col-lg-8">
-                <!-- Profile Card -->
                 <div class="card profile-card mb-4">
                     <div class="profile-header">
                         <div class="d-flex align-items-center">
+
+                            {{-- Avatar : photo réelle si elle existe, sinon initiales --}}
                             <div class="profile-avatar">
-                                {{ strtoupper(substr($utilisateur->name, 0, 2)) }}
+                                @if($utilisateur->photo)
+                                    <img src="{{ asset('storage/' . $utilisateur->photo) }}"
+                                         alt="Photo de {{ $utilisateur->name }}">
+                                @else
+                                    {{ strtoupper(substr($utilisateur->name, 0, 2)) }}
+                                @endif
                             </div>
+
                             <div class="ms-4">
                                 <h3 class="profile-name">{{ $utilisateur->name }}</h3>
                                 <p class="profile-email mb-2">
@@ -274,9 +293,9 @@
                                     </div>
                                     <div class="stat-value">
                                         @if($utilisateur->last_login_at)
-                                        {{ $utilisateur->last_login_at->diffForHumans() }}
+                                            {{ $utilisateur->last_login_at->diffForHumans() }}
                                         @else
-                                        -
+                                            -
                                         @endif
                                     </div>
                                     <div class="stat-label">Dernière connexion</div>
@@ -291,9 +310,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-person"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-person"></i></div>
                                         <div>
                                             <div class="info-label">Nom complet</div>
                                             <div class="info-value">{{ $utilisateur->name }}</div>
@@ -304,9 +321,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-envelope"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-envelope"></i></div>
                                         <div>
                                             <div class="info-label">Adresse email</div>
                                             <div class="info-value">
@@ -319,9 +334,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-telephone"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-telephone"></i></div>
                                         <div>
                                             <div class="info-label">Téléphone</div>
                                             <div class="info-value">{{ $utilisateur->telephone ?? 'Non défini' }}</div>
@@ -332,9 +345,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-shield-check"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-shield-check"></i></div>
                                         <div>
                                             <div class="info-label">Type de compte</div>
                                             <div class="info-value">Super Administrateur</div>
@@ -345,9 +356,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-calendar"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-calendar"></i></div>
                                         <div>
                                             <div class="info-label">Créé le</div>
                                             <div class="info-value">{{ $utilisateur->created_at->format('d/m/Y à H:i') }}</div>
@@ -358,9 +367,7 @@
                             <div class="col-md-6">
                                 <div class="info-item">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon me-3">
-                                            <i class="bi bi-clock"></i>
-                                        </div>
+                                        <div class="info-icon me-3"><i class="bi bi-clock"></i></div>
                                         <div>
                                             <div class="info-label">Dernière modification</div>
                                             <div class="info-value">{{ $utilisateur->updated_at->format('d/m/Y à H:i') }}</div>
@@ -370,11 +377,10 @@
                             </div>
                         </div>
 
-                        <!-- IP de dernière connexion -->
                         @if($utilisateur->last_login_ip)
                         <div class="alert alert-info mt-3">
                             <i class="bi bi-geo-alt me-2"></i>
-                            <strong>Dernière connexion IP:</strong> {{ $utilisateur->last_login_ip }}
+                            <strong>Dernière connexion IP :</strong> {{ $utilisateur->last_login_ip }}
                         </div>
                         @endif
                     </div>
@@ -383,6 +389,7 @@
 
             <!-- Colonne latérale -->
             <div class="col-lg-4">
+
                 <!-- Actions -->
                 <div class="card info-card mb-4">
                     <div class="card-header bg-white border-0">
@@ -390,7 +397,8 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a href="{{ route('admin.superadmin.utilisateurs.edit', $utilisateur->id) }}" class="btn btn-warning action-btn">
+                            <a href="{{ route('admin.superadmin.utilisateurs.edit', $utilisateur->id) }}"
+                               class="btn btn-warning action-btn">
                                 <i class="bi bi-pencil me-2"></i>Modifier
                             </a>
 
@@ -403,43 +411,43 @@
                             </form>
 
                             @if($utilisateur->id !== auth()->id())
-                            @if($utilisateur->is_active)
-                            <form action="{{ route('admin.superadmin.utilisateurs.deactivate', $utilisateur->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-secondary action-btn w-100"
-                                    onclick="return confirm('Désactiver {{ $utilisateur->name }} ?')">
-                                    <i class="bi bi-person-dash me-2"></i>Désactiver le compte
-                                </button>
-                            </form>
-                            @else
-                            <form action="{{ route('admin.superadmin.utilisateurs.activate', $utilisateur->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-success action-btn w-100"
-                                    onclick="return confirm('Activer {{ $utilisateur->name }} ?')">
-                                    <i class="bi bi-person-check me-2"></i>Activer le compte
-                                </button>
-                            </form>
-                            @endif
+                                @if($utilisateur->is_active)
+                                <form action="{{ route('admin.superadmin.utilisateurs.deactivate', $utilisateur->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-secondary action-btn w-100"
+                                        onclick="return confirm('Désactiver {{ $utilisateur->name }} ?')">
+                                        <i class="bi bi-person-dash me-2"></i>Désactiver le compte
+                                    </button>
+                                </form>
+                                @else
+                                <form action="{{ route('admin.superadmin.utilisateurs.activate', $utilisateur->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success action-btn w-100"
+                                        onclick="return confirm('Activer {{ $utilisateur->name }} ?')">
+                                        <i class="bi bi-person-check me-2"></i>Activer le compte
+                                    </button>
+                                </form>
+                                @endif
 
-                            @php
-                            $countSuperAdmins = \App\Models\User::where('is_superadmin', true)->count();
-                            @endphp
+                                @php
+                                    $countSuperAdmins = \App\Models\User::where('is_superadmin', true)->count();
+                                @endphp
 
-                            @if($countSuperAdmins > 1)
-                            <form action="{{ route('admin.superadmin.utilisateurs.destroy', $utilisateur->id) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger action-btn w-100"
-                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ $utilisateur->name }} ? Cette action est irréversible.')">
-                                    <i class="bi bi-trash me-2"></i>Supprimer
-                                </button>
-                            </form>
-                            @endif
+                                @if($countSuperAdmins > 1)
+                                <form action="{{ route('admin.superadmin.utilisateurs.destroy', $utilisateur->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger action-btn w-100"
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ $utilisateur->name }} ? Cette action est irréversible.')">
+                                        <i class="bi bi-trash me-2"></i>Supprimer
+                                    </button>
+                                </form>
+                                @endif
                             @else
-                            <div class="alert alert-warning mb-0">
-                                <i class="bi bi-info-circle me-2"></i>
-                                C'est votre propre compte.
-                            </div>
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    C'est votre propre compte.
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -452,15 +460,15 @@
                     </div>
                     <div class="card-body">
                         @if($utilisateur->roles->count() > 0)
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($utilisateur->roles as $role)
-                            <span class="badge bg-primary fs-6">
-                                <i class="bi bi-shield-fill me-1"></i>{{ $role->name }}
-                            </span>
-                            @endforeach
-                        </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach($utilisateur->roles as $role)
+                                <span class="badge bg-primary fs-6">
+                                    <i class="bi bi-shield-fill me-1"></i>{{ $role->name }}
+                                </span>
+                                @endforeach
+                            </div>
                         @else
-                        <p class="text-muted mb-0">Aucun rôle assigné</p>
+                            <p class="text-muted mb-0">Aucun rôle assigné</p>
                         @endif
                     </div>
                 </div>
@@ -468,11 +476,13 @@
                 <!-- Retour -->
                 <div class="card info-card">
                     <div class="card-body">
-                        <a href="{{ route('admin.superadmin.utilisateurs.index') }}" class="btn btn-outline-primary action-btn w-100">
+                        <a href="{{ route('admin.superadmin.utilisateurs.index') }}"
+                           class="btn btn-outline-primary action-btn w-100">
                             <i class="bi bi-arrow-left me-2"></i>Retour à la liste
                         </a>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

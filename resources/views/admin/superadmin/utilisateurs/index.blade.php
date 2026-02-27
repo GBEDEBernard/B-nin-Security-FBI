@@ -252,9 +252,14 @@
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
+                                        @if($user->photo)
+                                        <img src="{{ asset('storage/' . $user->photo) }}" alt="Photo de {{ $user->name }}"
+                                            class="user-avatar me-3" style="object-fit: cover;">
+                                        @else
                                         <div class="user-avatar bg-primary text-white me-3">
                                             {{ strtoupper(substr($user->name, 0, 2)) }}
                                         </div>
+                                        @endif
                                         <div>
                                             <div class="fw-semibold">{{ $user->name }}</div>
                                             <small class="text-muted">Créé le {{ $user->created_at->format('d/m/Y') }}</small>
