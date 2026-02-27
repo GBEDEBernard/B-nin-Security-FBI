@@ -263,18 +263,83 @@
     @include('layouts.header')
     @include('layouts.sidebar')
 
-    @if(session('error'))
-    <div class="alert alert-danger m-3">{{ session('error') }}</div>
-    @endif
-    @if(session('success'))
-    <div class="alert alert-success m-3">{{ session('success') }}</div>
-    @endif
+
 
     <main class="app-main">
       @yield('content')
     </main>
 
     @include('layouts.footer')
+
+    {{-- Modal de succès --}}
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+          <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#198754 0%,#20c997 100%);">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-white bg-opacity-25 rounded-circle p-2">
+                  <i class="bi bi-check-circle-fill fs-4"></i>
+                </div>
+              </div>
+              <div>
+                <h5 class="modal-title fw-bold" id="successModalLabel">Opération Réussie</h5>
+                <p class="mb-0 small opacity-75">Votre action a été effectuée avec succès</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body py-4 px-4 text-center">
+            <div class="mb-3">
+              <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width:80px;height:80px;">
+                <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+              </div>
+            </div>
+            <h6 class="fw-bold mb-3" id="successMessage">Message de succès</h6>
+            <div class="d-flex justify-content-center">
+              <button type="button" class="btn btn-success btn-lg px-4" data-bs-dismiss="modal" style="border-radius:8px;">
+                <i class="bi bi-check-circle me-2"></i>Continuer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Modal d'erreur --}}
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+          <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-white bg-opacity-25 rounded-circle p-2">
+                  <i class="bi bi-exclamation-circle-fill fs-4"></i>
+                </div>
+              </div>
+              <div>
+                <h5 class="modal-title fw-bold" id="errorModalLabel">Erreur</h5>
+                <p class="mb-0 small opacity-75">Une erreur s'est produite</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body py-4 px-4 text-center">
+            <div class="mb-3">
+              <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width:80px;height:80px;">
+                <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+              </div>
+            </div>
+            <h6 class="fw-bold mb-3" id="errorMessage">Message d'erreur</h6>
+            <div class="d-flex justify-content-center">
+              <button type="button" class="btn btn-danger btn-lg px-4" data-bs-dismiss="modal" style="border-radius:8px;">
+                <i class="bi bi-x-circle me-2"></i>Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     {{-- Modal connexion entreprise --}}
     <div class="modal fade" id="connectModal" tabindex="-1" aria-labelledby="connectModalLabel" aria-hidden="true">
@@ -564,6 +629,43 @@
             });
         });
       }
+    });
+  </script>
+
+  {{-- Modal de succès --}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      @if(session('success'))
+      const successMessage = '{{ session('
+      success ') }}';
+      const successModalEl = document.getElementById('successModal');
+      const successMessageEl = document.getElementById('successMessage');
+
+      if (successMessageEl) {
+        successMessageEl.textContent = successMessage;
+      }
+
+      if (successModalEl) {
+        const modal = new bootstrap.Modal(successModalEl);
+        modal.show();
+      }
+      @endif
+
+      @if(session('error'))
+      const errorMessage = '{{ session('
+      error ') }}';
+      const errorModalEl = document.getElementById('errorModal');
+      const errorMessageEl = document.getElementById('errorMessage');
+
+      if (errorMessageEl) {
+        errorMessageEl.textContent = errorMessage;
+      }
+
+      if (errorModalEl) {
+        const modal = new bootstrap.Modal(errorModalEl);
+        modal.show();
+      }
+      @endif
     });
   </script>
 
