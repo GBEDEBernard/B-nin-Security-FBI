@@ -67,6 +67,9 @@ class AuthController extends Controller
                 'last_login_ip' => $request->ip(),
             ]);
 
+            // Initialiser le timestamp de dernière activité pour le timeout
+            $request->session()->put('last_activity', time());
+
             return redirect()->route('admin.superadmin.index')
                 ->with('success', 'Bienvenue ' . $user->name . ' !');
         }
@@ -106,6 +109,9 @@ class AuthController extends Controller
                 'last_login_ip' => $request->ip(),
             ]);
 
+            // Initialiser le timestamp de dernière activité pour le timeout
+            $request->session()->put('last_activity', time());
+
             // Rediriger selon le poste
             return redirect()->to($employe->getDashboardUrl())
                 ->with('success', 'Bienvenue ' . $employe->nomComplet . ' !');
@@ -141,6 +147,9 @@ class AuthController extends Controller
 
             // Enregistrer les informations de connexion
             $client->enregistrerConnexion($request->ip());
+
+            // Initialiser le timestamp de dernière activité pour le timeout
+            $request->session()->put('last_activity', time());
 
             // Rediriger vers le dashboard client
             return redirect()->to($client->getDashboardUrl())
@@ -181,6 +190,17 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/login')->with('success', 'Vous avez été déconnecté.');
+    }
+
+    /**
+     * Prolonge la session active
+     */
+    public function extendSession(Request $request)
+    {
+        // Mettre à jour le timestamp de dernière activité
+        $request->session()->put('last_activity', time());
+
+        return response()->json(['success' => true, 'message' => 'Session prolongée']);
     }
 
     /**

@@ -15,15 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'role.redirect' => \App\Http\Middleware\RoleBasedRedirect::class,
+            'session.timeout' => \App\Http\Middleware\SessionTimeout::class,
             // Middleware de rôle
             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'entreprise' => \App\Http\Middleware\EntrepriseMiddleware::class,
             'client' => \App\Http\Middleware\ClientMiddleware::class,
         ]);
 
-        // Middleware global pour la redirection par rôle
+        // Middleware global pour la redirection par rôle et le timeout de session
         $middleware->web(prepend: [
             \App\Http\Middleware\RoleBasedRedirect::class,
+            \App\Http\Middleware\SessionTimeout::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -24,6 +24,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
 });
 
 // Page d'accueil - redirige selon le rôle de l'utilisateur connecté
@@ -49,7 +50,7 @@ Route::get('/', function () {
     }
 
     // Pas connecté - afficher la page d'accueil
-    return view('welcome');
+    return view('login');
 })->name('home');
 
 // Route publique pour le formulaire de devis

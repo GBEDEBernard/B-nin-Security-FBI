@@ -699,6 +699,13 @@
       </div>
       @endif
 
+      @if(request()->get('timeout') == '1')
+      <div class="alert alert-danger-custom">
+        <i class="bi bi-clock-history"></i>
+        <div>Votre session a expiré par inactivité. Veuillez vous reconnecter.</div>
+      </div>
+      @endif
+
       <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
 

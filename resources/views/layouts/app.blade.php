@@ -399,6 +399,123 @@
     })();
   </script>
 
+  {{-- Session Timeout Handler --}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Only run on authenticated pages
+      if (!document.getElementById('session-countdown')) return;
+
+      const sessionLifetime = {
+        {
+          config('session.lifetime')
+        }
+      }; // en minutes
+      const warningTime = 1; // minutes avant expiration pour afficher le warning
+      const countdownElement = document.getElementById('session-countdown');
+      const sessionIndicator = document.querySelector('.session-timeout-indicator');
+
+      let remainingSeconds = sessionLifetime * 60;
+      let timerInterval = null;
+      let warningShown = false;
+
+      // Fonction pour formater le temps
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      // Fonction pour mettre à jour l'affichage
+      function updateCountdown() {
+        if (countdownElement) {
+          countdownElement.textContent = formatTime(remainingSeconds);
+        }
+
+        // Afficher le warning quand il reste moins de X minutes
+        if (remainingSeconds <= warningTime * 60 && !warningShown) {
+          warningShown = true;
+          if (countdownElement) {
+            countdownElement.classList.remove('bg-warning', 'text-dark');
+            countdownElement.classList.add('bg-danger', 'text-white');
+            countdownElement.parentElement.classList.add('animate-pulse');
+          }
+        }
+
+        // Déconnexion automatique quand le temps est écoulé
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          // Envoyer une requête pour déconnecter
+          fetch('{{ route("logout") }}', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Content-Type': 'application/json'
+            }
+          }).then(() => {
+            window.location.href = '{{ route("login") }}?timeout=1';
+          }).catch(() => {
+            window.location.href = '{{ route("login") }}?timeout=1';
+          });
+          return;
+        }
+
+        remainingSeconds--;
+      }
+
+      // Fonction pour prolonger la session (ping au serveur)
+      function extendSession() {
+        fetch('/session/extend', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+          }
+        }).then(response => {
+          if (response.ok) {
+            // Réinitialiser le compte à rebours
+            remainingSeconds = sessionLifetime * 60;
+            warningShown = false;
+            if (countdownElement) {
+              countdownElement.classList.remove('bg-danger', 'text-white');
+              countdownElement.classList.add('bg-warning', 'text-dark');
+              countdownElement.parentElement.classList.remove('animate-pulse');
+            }
+          }
+        }).catch(err => {
+          console.error('Erreur lors de la prolongation de session:', err);
+        });
+      }
+
+      // Démarrer le timer
+      timerInterval = setInterval(updateCountdown, 1000);
+
+      // Prolonger la session lors des interactions utilisateur
+      const extendOnActivity = () => {
+        // Seulement si on est dans les dernières minutes
+        if (remainingSeconds <= warningTime * 60 * 2) {
+          extendSession();
+        }
+      };
+
+      // Écouter les événements utilisateur pour prolonger la session
+      document.addEventListener('click', extendOnActivity, {
+        passive: true
+      });
+      document.addEventListener('keypress', extendOnActivity, {
+        passive: true
+      });
+      document.addEventListener('mousemove', extendOnActivity, {
+        passive: true
+      });
+      document.addEventListener('scroll', extendOnActivity, {
+        passive: true
+      });
+
+      // Prolonger automatiquement la session toutes les minutes
+      setInterval(extendSession, (sessionLifetime - 1) * 60 * 1000);
+    });
+  </script>
+
   {{-- Modal connexion entreprise --}}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
