@@ -49,8 +49,8 @@ Route::get('/', function () {
         return redirect()->to($client->getDashboardUrl());
     }
 
-    // Pas connecté - afficher la page d'accueil
-    return view('login');
+    // Pas connecté - afficher la page d'accueil de connexion
+    return view('auth.login');
 })->name('home');
 
 // Route publique pour le formulaire de devis

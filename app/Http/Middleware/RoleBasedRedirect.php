@@ -11,55 +11,69 @@ class RoleBasedRedirect
 {
     /**
      * Handle an incoming request.
-     * Redirige l'utilisateur vers l'admin approprié selon son rôle
-     * Gère à la fois User (SuperAdmin) et Employe
+     * Ce middleware vérifie seulement si l'utilisateur est sur la bonne route.
+     * Les redirections principales sont gérées par les routes elles-mêmes.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Si utilisateur non connecté, continuer
-        if (!Auth::guard('web')->check() && !Auth::guard('employe')->check()) {
+        // Si utilisateur non connecté, continuer (la route / gère la redirection)
+        if (!Auth::guard('web')->check() && !Auth::guard('employe')->check() && !Auth::guard('client')->check()) {
             return $next($request);
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // 1. Vérifier si c'est un SuperAdmin (User)
-        // ─────────────────────────────────────────────────────────────
+        // Empêcher les boucles de redirection en vérifiant si on vient déjà d'une redirection
+        if (session()->has('just_redirected')) {
+            session()->forget('just_redirected');
+            return $next($request);
+        }
+
+        // Marquer qu'on a fait une redirection
+        $shouldRedirect = false;
+        $redirectRoute = null;
+        $redirectMessage = '';
+
+        // Vérifier si c'est un SuperAdmin (User)
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
 
-            if ($user->estSuperAdmin()) {
-                // Si déjà sur une autre route admin, rediriger vers superadmin
-                if (!$request->is('admin/superadmin*')) {
-                    return redirect()->route('admin.superadmin.index')
-                        ->with('info', 'Vous avez été redirigé vers votre tableau de bord.');
+            if ($user->estSuperAdmin() && !$request->is('admin/superadmin*')) {
+                $shouldRedirect = true;
+                $redirectRoute = 'admin.superadmin.index';
+                $redirectMessage = 'Vous avez été redirigé vers votre tableau de bord Super Admin.';
+            }
+        }
+
+        // Vérifier si c'est un Employé
+        if (!$shouldRedirect && Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+
+            if ($employe->estDirection() || $employe->estSuperviseur() || $employe->estControleur()) {
+                if (!$request->is('admin/entreprise*') && !$request->is('admin/superadmin*')) {
+                    $shouldRedirect = true;
+                    $redirectRoute = 'admin.entreprise.index';
+                    $redirectMessage = 'Vous avez été redirigé vers votre tableau de bord.';
+                }
+            } elseif ($employe->estAgent()) {
+                if (!$request->is('admin/agent*') && !$request->is('admin/superadmin*')) {
+                    $shouldRedirect = true;
+                    $redirectRoute = 'admin.agent.index';
+                    $redirectMessage = 'Vous avez été redirigé vers votre tableau de bord agent.';
                 }
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // 2. Vérifier si c'est un Employé
-        // ─────────────────────────────────────────────────────────────
-        if (Auth::guard('employe')->check()) {
-            $employe = Auth::guard('employe')->user();
-
-            // Obtenir la route attendue selon le poste
-            $expectedRoute = $employe->getDashboardRoute();
-            $currentPath = $request->path();
-
-            // Si l'utilisateur n'est pas sur la bonne route
-            if ($employe->estDirection() || $employe->estSuperviseur() || $employe->estControleur()) {
-                // Direction, Supervision, Contrôle -> admin/entreprise
-                if (!str_starts_with($currentPath, 'admin/entreprise') && !str_starts_with($currentPath, 'admin/superadmin')) {
-                    return redirect()->route('admin.entreprise.index')
-                        ->with('info', 'Vous avez été redirigé vers votre tableau de bord.');
-                }
-            } elseif ($employe->estAgent()) {
-                // Agent -> admin/agent
-                if (!str_starts_with($currentPath, 'admin/agent') && !str_starts_with($currentPath, 'admin/superadmin')) {
-                    return redirect()->route('admin.agent.index')
-                        ->with('info', 'Vous avez été redirigé vers votre tableau de bord.');
-                }
+        // Vérifier si c'est un Client
+        if (!$shouldRedirect && Auth::guard('client')->check()) {
+            if (!$request->is('admin/client*') && !$request->is('admin/superadmin*')) {
+                $shouldRedirect = true;
+                $redirectRoute = 'admin.client.index';
+                $redirectMessage = 'Vous avez été redirigé vers votre espace client.';
             }
+        }
+
+        if ($shouldRedirect && $redirectRoute) {
+            session()->put('just_redirected', true);
+            return redirect()->route($redirectRoute)->with('info', $redirectMessage);
         }
 
         return $next($request);
