@@ -270,9 +270,8 @@
         color: #212529;
     }
 
-    /* Welcome banner */
+    /* Welcome banner - Dynamic colors will override this */
     .welcome-banner {
-        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
         border-radius: 16px;
         padding: 2rem;
         color: white;
@@ -324,9 +323,19 @@
     <div class="container-fluid">
 
         {{-- Welcome Banner --}}
+        @php
+        $entreprise = null;
+        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+        $entreprise = auth()->user()->getEntrepriseContexte();
+        } elseif (auth()->user()->entreprise_id) {
+        $entreprise = \App\Models\Entreprise::find(auth()->user()->entreprise_id);
+        }
+        $couleurPrimaire = $entreprise?->couleur_primaire ?? '#198754';
+        $couleurSecondaire = $entreprise?->couleur_secondaire ?? '#20c997';
+        @endphp
         <div class="row mb-4">
             <div class="col-12">
-                <div class="welcome-banner">
+                <div class="welcome-banner" style="background: linear-gradient(135deg, {{ $couleurPrimaire }} 0%, {{ $couleurSecondaire }} 100%);">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h4 class="mb-1">
