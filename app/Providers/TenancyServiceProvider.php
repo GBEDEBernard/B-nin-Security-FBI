@@ -119,16 +119,22 @@ class TenancyServiceProvider extends ServiceProvider
             }
         }
     }
-
+// Les routes tenant.php seront chargées uniquement si on n'est pas sur un domaine central
     protected function mapRoutes()
-    {
-        $this->app->booted(function () {
-            if (file_exists(base_path('routes/tenant.php'))) {
+{
+    $this->app->booted(function () {
+        if (file_exists(base_path('routes/tenant.php'))) {
+            $centralDomains = config('tenancy.central_domains', []);
+            $currentDomain = request()->getHost();
+
+            // Ne charger les routes tenant QUE si on n'est pas sur un domaine central
+            if (!in_array($currentDomain, $centralDomains)) {
                 Route::namespace(static::$controllerNamespace)
                     ->group(base_path('routes/tenant.php'));
             }
-        });
-    }
+        }
+    });
+}
 
     protected function makeTenancyMiddlewareHighestPriority()
     {

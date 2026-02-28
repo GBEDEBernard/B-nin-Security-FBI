@@ -18,7 +18,7 @@ return [
      */
 
     // Modèle Tenant - lien vers Entreprise
-   'tenant_model' => Stancl\Tenancy\Database\Models\Tenant::class, // ✅
+   'tenant_model' => App\Models\Tenant::class, // ✅
 
     // Générateur d'ID
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
