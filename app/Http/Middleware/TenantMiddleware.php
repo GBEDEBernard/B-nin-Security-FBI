@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * 
  * NOTE: Ce middleware ne bloque pas l'accès - il ajoute seulement le contexte
  */
-class TenantScope
+class TenantMiddleware
 {
     /**
      * Handle an incoming request.
