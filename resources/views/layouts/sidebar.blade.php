@@ -1,9 +1,57 @@
 <!--begin::Sidebar-->
+@php
+// ============================================================
+// MULTI-GUARD AUTHENTICATION CHECK
+// ============================================================
+$userWeb = Auth::guard('web')->user();
+$userEmploye = Auth::guard('employe')->user();
+$userClient = Auth::guard('client')->user();
+
+// Determine which guard is currently authenticated
+$currentGuard = null;
+$currentUser = null;
+
+if ($userWeb) {
+$currentGuard = 'web';
+$currentUser = $userWeb;
+} elseif ($userEmploye) {
+$currentGuard = 'employe';
+$currentUser = $userEmploye;
+} elseif ($userClient) {
+$currentGuard = 'client';
+$currentUser = $userClient;
+}
+
+// Helper variables for the current user
+$estSuperAdmin = $currentGuard === 'web' && $currentUser && method_exists($currentUser, 'estSuperAdmin') && $currentUser->estSuperAdmin();
+$estEnContexteEntreprise = $currentGuard === 'web' && $currentUser && method_exists($currentUser, 'estEnContexteEntreprise') && $currentUser->estEnContexteEntreprise();
+$estEmploye = $currentGuard === 'employe';
+$estClient = $currentGuard === 'client';
+
+// Get the appropriate route based on guard
+function getAdminRouteForGuard($guard) {
+switch($guard) {
+case 'web': return 'admin.superadmin.index';
+case 'employe': return 'admin.entreprise.index';
+case 'client': return 'admin.client.index';
+default: return 'home';
+}
+}
+$adminRoute = getAdminRouteForGuard($currentGuard);
+
+// Helper for employe role check
+$employeRole = null;
+if ($currentGuard === 'employe' && $currentUser) {
+$employeRole = $currentUser->getRoleNames()->first() ?? 'agent';
+}
+$estAgent = $currentGuard === 'employe' && ($employeRole === 'agent' || $employeRole === 'Agent');
+@endphp
+
 <aside class="app-sidebar shadow" data-bs-theme="dark" style="background-color: #1a1a1a; border-right: 1px solid #2d2d2d;">
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
     <!--begin::Brand Link-->
-    <a href="{{ auth()->check() ? route(auth()->user()->getAdminRoute()) : route('home') }}" class="brand-link">
+    <a href="{{ $currentUser ? route($adminRoute) : route('home') }}" class="brand-link">
       <!--begin::Brand Image-->
       <div class="brand-image-container">
         <i class="bi bi-shield-check brand-icon"></i>
@@ -24,21 +72,20 @@
 
         {{-- Admin --}}
         <li class="nav-item">
-          <a href="{{ auth()->check() ? route(auth()->user()->getAdminRoute()) : route('home') }}" class="nav-link {{ request()->routeIs('admin*') ? 'active' : '' }}">
+          <a href="{{ $currentUser ? route($adminRoute) : route('home') }}" class="nav-link {{ request()->routeIs('admin*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-speedometer2"></i>
             <p>Admin</p>
           </a>
         </li>
 
         {{-- =========================================================== --}}
-        {{-- MENU SUPER ADMIN --}}
-        {{-- Caché quand le super admin est en contexte entreprise --}}
+        {{-- MENU SUPER ADMIN (only for web guard, SuperAdmin, not in entreprise context) --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estSuperAdmin() && !auth()->user()->estEnContexteEntreprise())
+        @if($currentGuard === 'web' && $estSuperAdmin && !$estEnContexteEntreprise)
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
-        {{-- Accès Rapide aux Tableaux de Bord (bouton flottant) --}}
+        {{-- Accès Rapide aux Tableaux de Bord --}}
         @php
         $entreprises = \App\Models\Entreprise::where('est_active', true)->orderBy('nom_entreprise')->limit(10)->get();
         @endphp
@@ -93,7 +140,7 @@
           </ul>
         </li>
 
-        {{-- Abonnements (contrôle des agents par entreprise) --}}
+        {{-- Abonnements --}}
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-credit-card-2-front-fill"></i>
@@ -118,7 +165,7 @@
           </ul>
         </li>
 
-        {{-- Propositions de contrat (Super Admin) --}}
+        {{-- Propositions de contrat --}}
         <li class="nav-item">
           <a href="{{ route('admin.superadmin.propositions.index') }}" class="nav-link {{ request()->is('admin/superadmin/propositions*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-file-earmark-ruled"></i>
@@ -356,31 +403,6 @@
           </ul>
         </li>
 
-        {{-- Modèles --}}
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-file-earmark-text-fill"></i>
-            <p>
-              Modèles
-              <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="{{ route('admin.superadmin.modeles.index') }}" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Liste des modèles</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{{ route('admin.superadmin.modeles.create') }}" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Nouveau modèle</p>
-              </a>
-            </li>
-          </ul>
-        </li>
-
         {{-- Paramètres --}}
         <li class="nav-item">
           <a href="{{ route('admin.superadmin.parametres.index') }}" class="nav-link">
@@ -393,19 +415,12 @@
 
         {{-- =========================================================== --}}
         {{-- MENU ENTREPRISE (Direction, Superviseur, Contrôleur) --}}
-        {{-- Affiché aussi quand le super admin est en contexte entreprise --}}
+        {{-- For employe guard OR web guard in entreprise context --}}
         {{-- =========================================================== --}}
-        @php
-        $estEnContexteEntreprise = auth()->check() && (
-        (auth()->user()->estUtilisateurEntreprise() && !auth()->user()->estSuperAdmin()) ||
-        (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
-        );
-        $estSuperAdminEnContexte = auth()->check() && auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise();
-        @endphp
-        @if($estEnContexteEntreprise)
+        @if(($currentGuard === 'employe') || ($currentGuard === 'web' && $estEnContexteEntreprise))
 
         <li class="nav-header text-uppercase fw-bold text-primary">
-          @if($estSuperAdminEnContexte)
+          @if($currentGuard === 'web' && $estSuperAdmin)
           <i class="bi bi-shield-lock me-1"></i> Super Admin
           @else
           Gestion
@@ -413,7 +428,7 @@
         </li>
 
         {{-- Bouton de retour au SuperAdmin (si super admin en contexte entreprise) --}}
-        @if($estSuperAdminEnContexte)
+        @if($currentGuard === 'web' && $estSuperAdmin && $estEnContexteEntreprise)
         <li class="nav-item mb-3">
           <a href="{{ route('admin.superadmin.return') }}"
             class="nav-link bg-warning text-dark rounded-3 mx-2 py-2 return-superadmin-btn"
@@ -434,7 +449,7 @@
               <div>
                 <small class="text-muted d-block" style="font-size: 0.65rem;">Vue actuelle:</small>
                 <strong style="color: var(--bs-success); font-size: 0.85rem;">
-                  {{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}
+                  {{ $currentUser->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}
                 </strong>
               </div>
             </div>
@@ -736,9 +751,9 @@
         @endif
 
         {{-- =========================================================== --}}
-        {{-- MENU AGENT --}}
+        {{-- MENU AGENT (only for employe guard with agent role) --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estAgent())
+        @if($estAgent)
 
         <li class="nav-header text-uppercase fw-bold text-primary">Mon Activité</li>
 
@@ -779,9 +794,9 @@
         @endif
 
         {{-- =========================================================== --}}
-        {{-- MENU CLIENT --}}
+        {{-- MENU CLIENT (only for client guard) --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estClient())
+        @if($estClient)
 
         <li class="nav-header text-uppercase fw-bold text-primary">Mon Espace</li>
 
@@ -1213,34 +1228,6 @@
   }
 
   /* ========================================
-     Context Indicator Animation
-     ======================================== */
-  .entreprise-context-indicator {
-    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
-    border: 1px solid rgba(25, 135, 84, 0.2);
-    transition: all 0.3s ease;
-    animation: shimmer 3s infinite;
-  }
-
-  @keyframes shimmer {
-
-    0%,
-    100% {
-      border-color: rgba(25, 135, 84, 0.2);
-    }
-
-    50% {
-      border-color: rgba(25, 135, 84, 0.5);
-    }
-  }
-
-  .entreprise-context-indicator:hover {
-    background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%);
-    border-color: rgba(25, 135, 84, 0.4);
-    transform: scale(1.02);
-  }
-
-  /* ========================================
      Smooth Scrollbar
      ======================================== */
   .sidebar-wrapper {
@@ -1296,44 +1283,6 @@
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  /* ========================================
-     Ripple Effect
-     ======================================== */
-  .ripple {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(0);
-    animation: ripple 0.6s linear;
-    pointer-events: none;
-  }
-
-  @keyframes ripple {
-    to {
-      transform: scale(4);
-      opacity: 0;
-    }
-  }
-
-  /* ========================================
-     Icon Bounce on Active
-     ======================================== */
-  .sidebar-menu .nav-link.active .nav-icon {
-    animation: iconBounce 0.5s ease;
-  }
-
-  @keyframes iconBounce {
-
-    0%,
-    100% {
-      transform: scale(1);
-    }
-
-    50% {
-      transform: scale(1.3);
     }
   }
 
@@ -1448,31 +1397,6 @@
     });
 
     // ========================================
-    // Click Ripple Effect
-    // ========================================
-    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
-      link.addEventListener('click', function(e) {
-        // Create ripple element
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple');
-
-        // Get click position relative to the link
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
-
-        // Add ripple to link
-        this.appendChild(ripple);
-
-        // Remove ripple after animation
-        setTimeout(() => ripple.remove(), 600);
-      });
-    });
-
-    // ========================================
     // Active State Management
     // ========================================
     const currentPath = window.location.pathname;
@@ -1493,18 +1417,6 @@
         }
       }
     });
-
-    // ========================================
-    // Hover Sound Effect (Optional - commented out)
-    // ========================================
-    // Uncomment below to enable hover sound
-    // const hoverSound = new Audio('/path/to/hover-sound.mp3');
-    // document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
-    //   link.addEventListener('mouseenter', () => {
-    //     hoverSound.volume = 0.1;
-    //     hoverSound.play().catch(() => {});
-    //   });
-    // });
   });
 
   // Animation de retour au Super Admin
@@ -1513,21 +1425,15 @@
     const btn = document.getElementById('returnSuperAdminBtn');
 
     if (btn) {
-      // Ajouter la classe de chargement
       btn.classList.add('loading');
-
-      // Ajouter un effet visuel
       btn.innerHTML = '<i class="bi bi-arrow-repeat me-2 spin"></i><span class="fw-bold">Retour en cours...</span>';
 
-      // Attendre un peu pour l'animation
       setTimeout(() => {
-        // Ajouter l'animation de sortie
         const mainContent = document.querySelector('.app-main');
         if (mainContent) {
           mainContent.classList.add('fade-out');
         }
 
-        // Rediriger après l'animation
         setTimeout(() => {
           window.location.href = btn.getAttribute('href');
         }, 300);

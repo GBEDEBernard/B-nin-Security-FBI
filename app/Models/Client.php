@@ -10,12 +10,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
-class Client extends Model
+/**
+ * Modèle Client avec support Multi-Tenant
+ *
+ * L'isolation par entreprise se fait via entreprise_id dans chaque requête.
+ * PAS de GlobalScope ici — il causait des boucles infinies au login.
+ */
+class Client extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
 
     protected $table = 'clients';
+
+    // ⚠️ IMPORTANT: guard_name doit être 'client' pour correspondre au guard Auth
+    protected $guard_name = 'client';
 
     protected $fillable = [
         // Entreprise (référence)

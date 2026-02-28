@@ -151,46 +151,87 @@
        <!--end::Fullscreen Toggle-->
 
        <!--begin::User Menu Dropdown-->
-       @auth
+       @php
+       // Check for all three guards
+       $userWeb = Auth::guard('web')->user();
+       $userEmploye = Auth::guard('employe')->user();
+       $userClient = Auth::guard('client')->user();
+
+       // Determine which guard is currently authenticated
+       $currentGuard = null;
+       $currentUser = null;
+
+       if ($userWeb) {
+       $currentGuard = 'web';
+       $currentUser = $userWeb;
+       } elseif ($userEmploye) {
+       $currentGuard = 'employe';
+       $currentUser = $userEmploye;
+       } elseif ($userClient) {
+       $currentGuard = 'client';
+       $currentUser = $userClient;
+       }
+
+       // Get display name and role based on guard
+       $displayName = '';
+       $displayRole = '';
+       $displayPhoto = null;
+
+       if ($currentGuard === 'web' && $currentUser) {
+       $displayName = $currentUser->name;
+       $displayRole = $currentUser->roles && count($currentUser->roles) > 0 ? $currentUser->roles[0]->name : 'Membre';
+       $displayPhoto = $currentUser->photo;
+       } elseif ($currentGuard === 'employe' && $currentUser) {
+       $displayName = ($currentUser->prenoms ?? '') . ' ' . ($currentUser->nom ?? '');
+       $displayRole = $currentUser->getRoleNames()->first() ?? 'Employé';
+       $displayPhoto = $currentUser->photo;
+       } elseif ($currentGuard === 'client' && $currentUser) {
+       $displayName = $currentUser->nom ?? $currentUser->prenoms ?? 'Client';
+       $displayRole = $currentUser->type_client === 'entreprise' ? 'Entreprise' : 'Particulier';
+       $displayPhoto = null;
+       }
+
+       // Get logout route based on guard - all guards use the same logout route
+       // The AuthController's logout() method handles all guards
+       $logoutRoute = route('logout');
+       @endphp
+
+       @if($currentUser)
        <li class="nav-item dropdown user-menu ms-2">
          <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
            <div class="user-image-wrapper">
-             @if(Auth::user()->photo)
+             @if($displayPhoto)
              <img
-               src="{{ asset('storage/' . Auth::user()->photo) }}"
+               src="{{ asset('storage/' . $displayPhoto) }}"
                class="user-image rounded-circle shadow"
                alt="User Image" />
              @else
              <div class="user-avatar rounded-circle shadow">
-               {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+               {{ strtoupper(substr($displayName, 0, 1)) }}
              </div>
              @endif
            </div>
-           <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</span>
+           <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ $displayName }}">{{ $displayName }}</span>
          </a>
          <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
            <!--begin::User Image-->
            <li class="user-header text-bg-dark d-flex flex-column align-items-center py-3">
-             @if(Auth::user()->photo)
+             @if($displayPhoto)
              <img
-               src="{{ asset('storage/' . Auth::user()->photo) }}"
+               src="{{ asset('storage/' . $displayPhoto) }}"
                class="rounded-circle shadow mb-2"
                alt="User Image"
                style="width: 60px; height: 60px; object-fit: cover;" />
              @else
              <div class="user-avatar-lg rounded-circle shadow mb-2">
-               {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+               {{ strtoupper(substr($displayName, 0, 2)) }}
              </div>
              @endif
              <p class="mb-0 text-center">
-               {{ Auth::user()->name }}
+               {{ $displayName }}
              </p>
-             @if(Auth::user()->roles && count(Auth::user()->roles) > 0)
-             <small class="text-success">{{ Auth::user()->roles[0]->name }}</small>
-             @else
-             <small>Membre</small>
-             @endif
-             <small class="text-secondary" style="font-size: 0.75rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
+             <small class="text-success">{{ $displayRole }}</small>
+             <small class="text-secondary" style="font-size: 0.75rem;">Membre depuis {{ $currentUser->created_at->format('M. Y') }}</small>
            </li>
            <!--end::User Image-->
            <!--begin::Menu Body-->
@@ -198,7 +239,7 @@
              <!--begin::Row-->
              <div class="row">
                <div class="col-4 text-center">
-                 <a href="{{ auth()->user() && auth()->user()->estSuperAdmin() ? route('admin.superadmin.utilisateurs.show', auth()->id()) : '#' }}">Profil</a>
+                 <a href="#">Profil</a>
                </div>
                <div class="col-4 text-center">
                  <a href="#">Rôles</a>
@@ -212,10 +253,10 @@
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
            <li class="user-footer p-2">
-             <a href="{{ auth()->user() && auth()->user()->estSuperAdmin() ? route('admin.superadmin.utilisateurs.show', auth()->id()) : '#' }}" class="btn btn-outline-secondary btn-sm">
+             <a href="#" class="btn btn-outline-secondary btn-sm">
                <i class="bi bi-person-circle me-1"></i> Profil
              </a>
-             <form method="POST" action="{{ route('logout') }}" class="d-inline">
+             <form method="POST" action="{{ $logoutRoute }}" class="d-inline">
                @csrf
                <button type="submit" class="btn btn-outline-danger btn-sm float-end">
                  <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
@@ -236,7 +277,7 @@
            <i class="bi bi-person-plus me-1"></i> Inscription
          </a>
        </li>
-       @endauth
+       @endif
        <!--end::User Menu Dropdown-->
 
        <!--begin::Theme Toggle-->
