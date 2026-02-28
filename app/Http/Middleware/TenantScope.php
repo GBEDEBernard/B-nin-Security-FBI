@@ -10,36 +10,22 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Middleware de portée de tenant (entreprise)
  * 
- * Ce middleware assure l'isolation des données en:
- * 1. Identifiant l'entreprise courante à partir de l'utilisateur connecté
- * 2. Stockant l'ID de l'entreprise en session
- * 3. Permettant aux modèles d'utiliser ce contexte pour filtrer les données
+ * Ce middleware ajoute le contexte tenant sans bloquer l'accès
  */
 class TenantScope
 {
     /**
      * Handle an incoming request.
+     * Ajoute le contexte tenant sans bloquer l'accès
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // ─────────────────────────────────────────────────────────────
-        // 1. Si déjà initialisé, laisser passer
-        // ─────────────────────────────────────────────────────────────
-        if (tenant()) {
-            return $next($request);
-        }
-
-        // ─────────────────────────────────────────────────────────────
-        // 2. Chercher l'entreprise depuis l'utilisateur connecté
-        // ─────────────────────────────────────────────────────────────
+        // Chercher l'entreprise depuis l'utilisateur connecté
         $entrepriseId = $this->getEntrepriseIdFromUser();
 
         if ($entrepriseId) {
             // Stocker en session pour accès ultérieur
             session(['entreprise_id' => $entrepriseId]);
-
-            // Si pas de tenant actif, on ne fait rien pour l'instant
-            // car on utilise entreprise_id directement dans les modèles
         }
 
         return $next($request);
@@ -50,9 +36,7 @@ class TenantScope
      */
     private function getEntrepriseIdFromUser(): ?int
     {
-        // ─────────────────────────────────────────────────────────────
         // SuperAdmin en contexte entreprise spécifique
-        // ─────────────────────────────────────────────────────────────
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
 
@@ -62,27 +46,23 @@ class TenantScope
             }
 
             // Si utilisateur entreprise (employé avec compte user)
-            if ($user->entreprise_id) {
+            if (!empty($user->entreprise_id)) {
                 return $user->entreprise_id;
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
         // Employé connecté via guard employe
-        // ─────────────────────────────────────────────────────────────
         if (Auth::guard('employe')->check()) {
             $employe = Auth::guard('employe')->user();
-            if ($employe->entreprise_id) {
+            if (!empty($employe->entreprise_id)) {
                 return $employe->entreprise_id;
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
         // Client connecté via guard client
-        // ─────────────────────────────────────────────────────────────
         if (Auth::guard('client')->check()) {
             $client = Auth::guard('client')->user();
-            if ($client->entreprise_id) {
+            if (!empty($client->entreprise_id)) {
                 return $client->entreprise_id;
             }
         }
