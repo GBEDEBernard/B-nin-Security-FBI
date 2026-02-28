@@ -15,11 +15,12 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     /**
-     * Constructeur
+     * ✅ PAS de middleware ici — c'est EntrepriseMiddleware dans routes/web.php
+     *    qui gère l'authentification et les droits d'accès.
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'entreprise']);
+        // Vide intentionnellement
     }
 
     /**
@@ -27,26 +28,15 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Déterminer l'ID de l'entreprise
-        // Pour un SuperAdmin en contexte entreprise, utiliser la session
-        // Pour un employé, utiliser son entreprise_id
-        $entrepriseId = null;
-
-        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
-            // SuperAdmin en contexte entreprise
-            $entrepriseId = session('entreprise_id');
-        } else {
-            // Utilisateur normal (employé)
-            $entrepriseId = Auth::user()->entreprise_id;
-        }
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
-            abort(403, 'Aucune entreprise sélectionnée.');
+            return redirect()->route('login')
+                ->with('error', 'Aucune entreprise associée à votre compte.');
         }
 
         // Statistiques rapides
         $stats = [
-            // Employés
             'employes_total' => Employe::where('entreprise_id', $entrepriseId)->count(),
             'employes_actifs' => Employe::where('entreprise_id', $entrepriseId)
                 ->where('est_actif', true)
@@ -60,13 +50,11 @@ class DashboardController extends Controller
                 ->where('disponible', true)
                 ->count(),
 
-            // Clients
             'clients_total' => Client::where('entreprise_id', $entrepriseId)->count(),
             'clients_actifs' => Client::where('entreprise_id', $entrepriseId)
                 ->where('est_actif', true)
                 ->count(),
 
-            // Contrats
             'contrats_total' => ContratPrestation::where('entreprise_id', $entrepriseId)->count(),
             'contrats_actifs' => ContratPrestation::where('entreprise_id', $entrepriseId)
                 ->where('statut', 'en_cours')
@@ -75,19 +63,16 @@ class DashboardController extends Controller
                 ->where('statut', 'expire')
                 ->count(),
 
-            // Facturation
             'factures_en_attente' => Facture::where('entreprise_id', $entrepriseId)
                 ->whereIn('statut', ['en_attente', 'impayee'])
                 ->count(),
             'montant_impaye' => Facture::where('entreprise_id', $entrepriseId)
                 ->sum('montant_restant'),
 
-            // Affectations
             'affectations_actives' => Affectation::where('entreprise_id', $entrepriseId)
                 ->where('statut', 'active')
                 ->count(),
 
-            // Incidents
             'incidents_en_cours' => Incident::where('entreprise_id', $entrepriseId)
                 ->where('statut', 'en_cours')
                 ->count(),
@@ -95,14 +80,12 @@ class DashboardController extends Controller
 
         // Données pour les graphiques
         $chartData = [
-            // Évolution des employés par mois
             'employes_par_mois' => Employe::where('entreprise_id', $entrepriseId)
                 ->selectRaw('MONTH(date_embauche) as mois, COUNT(*) as total')
                 ->whereYear('date_embauche', now()->year)
                 ->groupBy('mois')
                 ->get(),
 
-            // Contrats par mois
             'contrats_par_mois' => ContratPrestation::where('entreprise_id', $entrepriseId)
                 ->selectRaw('MONTH(date_debut) as mois, COUNT(*) as total')
                 ->whereYear('date_debut', now()->year)
@@ -146,7 +129,11 @@ class DashboardController extends Controller
      */
     public function statistiques()
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
+
+        if (!$entrepriseId) {
+            return redirect()->route('login')->with('error', 'Non autorisé.');
+        }
 
         $stats = [
             'employes_par_categorie' => Employe::where('entreprise_id', $entrepriseId)
@@ -178,20 +165,12 @@ class DashboardController extends Controller
     }
 
     /**
-     * Notifications
-     */
-    public function notifications()
-    {
-        // Logique pour les notifications
-        return view('admin.entreprise.notifications');
-    }
-
-    /**
      * Profile de l'entreprise
      */
     public function profile()
     {
-        $entreprise = Auth::user()->entreprise;
+        $entrepriseId = $this->getEntrepriseId();
+        $entreprise   = \App\Models\Entreprise::find($entrepriseId);
         return view('admin.entreprise.profile', compact('entreprise'));
     }
 
@@ -200,20 +179,49 @@ class DashboardController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $entreprise = Auth::user()->entreprise;
+        $entrepriseId = $this->getEntrepriseId();
+        $entreprise   = \App\Models\Entreprise::findOrFail($entrepriseId);
 
         $validated = $request->validate([
             'nom_entreprise' => 'required|string|max:255',
-            'nom_commercial' => 'nullable|string|max:255',
-            'email' => 'required|email',
-            'telephone' => 'required|string|max:20',
-            'adresse' => 'nullable|string',
-            'ville' => 'nullable|string|max:100',
-            'pays' => 'nullable|string|max:100',
+            'nom_commercial'  => 'nullable|string|max:255',
+            'email'           => 'required|email',
+            'telephone'       => 'required|string|max:20',
+            'adresse'         => 'nullable|string',
+            'ville'           => 'nullable|string|max:100',
+            'pays'            => 'nullable|string|max:100',
         ]);
 
         $entreprise->update($validated);
 
         return back()->with('success', 'Profil mis à jour.');
+    }
+
+    // ── Méthode privée partagée ───────────────────────────────────────────
+
+    /**
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
+     *
+     * Priorité :
+     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
+     *   2. Employé (guard employe) → son entreprise_id direct
+     */
+    private function getEntrepriseId(): ?int
+    {
+        // SuperAdmin en contexte entreprise
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
+                return (int) session('entreprise_id');
+            }
+        }
+
+        // Employé connecté via guard 'employe'
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
+        }
+
+        return null;
     }
 }

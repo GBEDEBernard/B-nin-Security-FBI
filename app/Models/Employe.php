@@ -14,22 +14,21 @@ use Spatie\Permission\Traits\HasRoles;
 
 /**
  * Modèle Employé avec support Multi-Tenant
- * 
- * Utilise le scope global TenantScope pour filtrer automatiquement
- * les employés par entreprise_id
+ *
+ * L'isolation par entreprise se fait via entreprise_id dans chaque requête.
+ * PAS de GlobalScope ici — il causait des boucles infinies au login.
  */
 class Employe extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
 
     protected $table = 'employes';
-    protected $guard_name = 'web';
+
+    // ⚠️ IMPORTANT: guard_name doit être 'employe' pour correspondre au guard Auth
+    protected $guard_name = 'employe';
 
     protected $fillable = [
-        //Entreprise (référence)
         'entreprise_id',
-
-        // Identité
         'matricule',
         'civilite',
         'nom',
@@ -43,27 +42,19 @@ class Employe extends Authenticatable
         'telephone_urgence',
         'photo',
         'adresse',
-
-        // Poste dans l'entreprise de sécurité
-        'categorie', // direction, supervision, controle, agent
-        'poste', // directeur_general, superviseur, agent_terrain, etc.
-        'niveau_hierarchique', // 1 = plus haut, 5 = agent
-
-        // Contrat de travail
-        'type_contrat', // cdi, cdd, stage, prestation
+        'categorie',
+        'poste',
+        'niveau_hierarchique',
+        'type_contrat',
         'date_embauche',
         'date_fin_contrat',
         'salaire_base',
         'numero_cnss',
-
-        // Statut
         'est_actif',
         'disponible',
-        'statut', // en_poste, conge, suspendu, licencie
+        'statut',
         'date_depart',
         'motif_depart',
-
-        // Connexion
         'est_connecte',
         'last_login_at',
         'last_login_ip',
@@ -75,149 +66,96 @@ class Employe extends Authenticatable
     ];
 
     protected $casts = [
-        'est_actif' => 'boolean',
-        'disponible' => 'boolean',
-        'est_connecte' => 'boolean',
-        'date_naissance' => 'date',
-        'date_embauche' => 'date',
-        'date_fin_contrat' => 'date',
-        'date_depart' => 'date',
-        'salaire_base' => 'decimal:2',
-        'last_login_at' => 'datetime',
+        'est_actif'       => 'boolean',
+        'disponible'      => 'boolean',
+        'est_connecte'    => 'boolean',
+        'date_naissance'  => 'date',
+        'date_embauche'   => 'date',
+        'date_fin_contrat'=> 'date',
+        'date_depart'     => 'date',
+        'salaire_base'    => 'decimal:2',
+        'last_login_at'   => 'datetime',
     ];
 
-    // ── Constantes ─────────────────────────────────────────────────────────
+    // ── Constantes ──────────────────────────────────────────────────────────
 
-    public const CATEGORIES = [
-        'direction',
-        'supervision',
-        'controle',
-        'agent'
-    ];
+    public const CATEGORIES = ['direction', 'supervision', 'controle', 'agent'];
 
     public const POSTES = [
-        // Direction
-        'directeur_general',
-        'directeur_adjoint',
-        // Supervision
-        'superviseur_general',
-        'superviseur_adjoint',
-        // Contrôle
-        'controleur_principal',
-        'controleur',
-        // Agents
-        'agent_terrain',
-        'agent_mobile',
-        'agent_poste_fixe'
+        'directeur_general', 'directeur_adjoint',
+        'superviseur_general', 'superviseur_adjoint',
+        'controleur_principal', 'controleur',
+        'agent_terrain', 'agent_mobile', 'agent_poste_fixe',
     ];
 
-    public const STATUTS = [
-        'en_poste',
-        'conge',
-        'suspendu',
-        'licencie'
-    ];
+    public const STATUTS = ['en_poste', 'conge', 'suspendu', 'licencie'];
 
-    // Rôles par défaut selon le poste
     public const POSTE_ROLES = [
-        'directeur_general' => ['general_director'],
-        'directeur_adjoint' => ['deputy_director'],
+        'directeur_general'   => ['general_director'],
+        'directeur_adjoint'   => ['deputy_director'],
         'superviseur_general' => ['supervisor'],
         'superviseur_adjoint' => ['supervisor'],
-        'controleur_principal' => ['controller'],
-        'controleur' => ['controller'],
-        'agent_terrain' => ['agent'],
-        'agent_mobile' => ['agent'],
-        'agent_poste_fixe' => ['agent'],
+        'controleur_principal'=> ['controller'],
+        'controleur'          => ['controller'],
+        'agent_terrain'       => ['agent'],
+        'agent_mobile'        => ['agent'],
+        'agent_poste_fixe'    => ['agent'],
     ];
 
-    // ── Relations ───────────────────────────────────────────────────────────
+    // ── Relations ────────────────────────────────────────────────────────────
 
-    /**
-     * L'entreprise de sécurité employees this employee
-     */
     public function entreprise(): BelongsTo
     {
-        return $this->belongsTo(Entreprise::class);
+        return $this->belongsTo(Entreprise::class, 'entreprise_id');
     }
 
-    /**
-     * Les affectations de cet employé aux sites clients
-     */
     public function affectations(): HasMany
     {
         return $this->hasMany(Affectation::class);
     }
 
-    /**
-     * Les pointages de cet employé
-     */
     public function pointages(): HasMany
     {
         return $this->hasMany(Pointage::class);
     }
 
-    /**
-     * Les congés de cet employé
-     */
     public function conges(): HasMany
     {
         return $this->hasMany(Conge::class);
     }
 
-    /**
-     * Les soldes de congés
-     */
     public function soldesConge(): HasMany
     {
         return $this->hasMany(SoldeConge::class);
     }
 
-    /**
-     * Les bulletins de paie
-     */
     public function paies(): HasMany
     {
         return $this->hasMany(Paie::class);
     }
 
-    // ── Scopes ──────────────────────────────────────────────────────────────
+    // ── Scopes ───────────────────────────────────────────────────────────────
 
-    /**
-     * Employés actifs (en poste)
-     */
     public function scopeActifs($query)
     {
         return $query->where('est_actif', true)->where('statut', 'en_poste');
     }
 
-    /**
-     * Employés par catégorie
-     */
     public function scopeByCategorie($query, string $categorie)
     {
         return $query->where('categorie', $categorie);
     }
 
-    /**
-     * Agents de terrain
-     */
     public function scopeAgents($query)
     {
         return $query->where('categorie', 'agent');
     }
 
-    /**
-     * Employés disponibles (pour les missions)
-     */
     public function scopeDisponibles($query)
     {
         return $query->where('disponible', true)->where('est_actif', true);
     }
 
-    /**
-     * Employés pouvant se connecter
-     */
     public function scopeCanLogin($query)
     {
         return $query->where('est_actif', true)
@@ -226,39 +164,33 @@ class Employe extends Authenticatable
             ->whereNotNull('password');
     }
 
-    // ── Accesseurs ──────────────────────────────────────────────────────────
+    // ── Accesseurs ───────────────────────────────────────────────────────────
 
-    /**
-     * Nom complet
-     */
     public function getNomCompletAttribute(): string
     {
-        return $this->prenoms . ' ' . $this->nom;
+        return trim(($this->prenoms ?? '') . ' ' . ($this->nom ?? ''));
     }
 
-    /**
-     * Initiales
-     */
+    // Alias utilisé dans certains endroits du code
+    public function getNomCompletAffichageAttribute(): string
+    {
+        return $this->getNomCompletAttribute();
+    }
+
     public function getInitialesAttribute(): string
     {
-        $nom = strtoupper(substr($this->nom, 0, 1));
-        $prenom = strtoupper(substr($this->prenoms, 0, 1));
+        $nom    = strtoupper(substr($this->nom ?? 'X', 0, 1));
+        $prenom = strtoupper(substr($this->prenoms ?? 'X', 0, 1));
         return $nom . $prenom;
     }
 
-    // ── Méthodes métier ─────────────────────────────────────────────────────
+    // ── Méthodes métier ──────────────────────────────────────────────────────
 
-    /**
-     * Est en poste
-     */
     public function estEnPoste(): bool
     {
         return $this->est_actif && $this->statut === 'en_poste';
     }
 
-    /**
-     * Peut se connecter
-     */
     public function peutSeConnecter(): bool
     {
         return $this->est_actif
@@ -267,57 +199,39 @@ class Employe extends Authenticatable
             && !empty($this->password);
     }
 
-    /**
-     * Est directeur général
-     */
     public function estDirecteurGeneral(): bool
     {
         return $this->poste === 'directeur_general';
     }
 
-    /**
-     * Est superviseur
-     */
     public function estSuperviseur(): bool
     {
         return in_array($this->poste, ['superviseur_general', 'superviseur_adjoint']);
     }
 
-    /**
-     * Est contrôleur
-     */
     public function estControleur(): bool
     {
         return in_array($this->poste, ['controleur_principal', 'controleur']);
     }
 
-    /**
-     * Est agent
-     */
     public function estAgent(): bool
     {
         return in_array($this->poste, ['agent_terrain', 'agent_mobile', 'agent_poste_fixe']);
     }
 
-    /**
-     * Est direction (DG + DA)
-     */
     public function estDirection(): bool
     {
         return in_array($this->poste, ['directeur_general', 'directeur_adjoint']);
     }
 
-    /**
-     * Poste hiérarchique
-     */
     public function getLibelleCategorie(): string
     {
         return match ($this->categorie) {
-            'direction' => 'Direction',
-            'supervision' => 'Supervision',
-            'controle' => 'Contrôle',
-            'agent' => 'Agent',
-            default => 'Inconnu'
+            'direction'  => 'Direction',
+            'supervision'=> 'Supervision',
+            'controle'   => 'Contrôle',
+            'agent'      => 'Agent',
+            default      => 'Inconnu',
         };
     }
 
@@ -326,10 +240,7 @@ class Employe extends Authenticatable
      */
     public function getDashboardRoute(): string
     {
-        if ($this->estDirection()) {
-            return 'admin.entreprise.index';
-        }
-        if ($this->estSuperviseur() || $this->estControleur()) {
+        if ($this->estDirection() || $this->estSuperviseur() || $this->estControleur()) {
             return 'admin.entreprise.index';
         }
         return 'admin.agent.index';
@@ -352,45 +263,24 @@ class Employe extends Authenticatable
         $this->assignRole($roles);
     }
 
-    // ── Global Scopes pour Multi-Tenant ───────────────────────────────────
+    // ── Boot ────────────────────────────────────────────────────────────────
 
     /**
-     * Appliquer le scope global pour filtrer par entreprise
-     * Utilisé automatiquement par Laravel si le trait TenantScope est utilisé
+     * ✅ PAS de GlobalScope ici.
+     *
+     * Raison: un GlobalScope basé sur la session causait une boucle infinie :
+     *   1. L'employé se connecte → session('entreprise_id') = null
+     *   2. Le scope retournait 0 résultats
+     *   3. Auth::guard('employe')->user() = null
+     *   4. EntrepriseMiddleware redirige vers /login
+     *   5. Boucle infinie
+     *
+     * L'isolation par entreprise est gérée MANUELLEMENT dans chaque
+     * contrôleur via ->where('entreprise_id', $entrepriseId).
      */
     protected static function boot()
     {
         parent::boot();
-
-        // Appliquer le scope global pour filtrer par entreprise_id
-        static::addGlobalScope('entreprise', function ($builder) {
-            // Si un SuperAdmin est connecté et a sélectionné une entreprise
-            if (session()->has('entreprise_id')) {
-                $entrepriseId = session('entreprise_id');
-                // Ne pas filtrer si c'est pour vedere toutes les entreprises
-                // Utiliser Entreprise::withoutGlobalScope() pour ignorer
-                return $builder->where('entreprise_id', $entrepriseId);
-            }
-
-            // Pour les employés, ils ont déjà entreprise_id
-            // Ce scope ne s'applique que si on veut filtrer depuis la session
-            return $builder;
-        });
-    }
-
-    /**
-     * Obtenir le contexte tenant actuel
-     */
-    public static function getTenantId(): ?int
-    {
-        return session('entreprise_id');
-    }
-
-    /**
-     * Vérifier si le filtering par entreprise est actif
-     */
-    public static function isTenantFilteringEnabled(): bool
-    {
-        return session()->has('entreprise_id');
+        // Aucun GlobalScope — isolation gérée dans les contrôleurs
     }
 }
