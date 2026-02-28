@@ -16,7 +16,7 @@ class EntrepriseMiddleware
      *   1. Un Employé actif (Direction, Superviseur, Contrôleur, Agent)
      *   2. Un SuperAdmin qui a sélectionné une entreprise en session
      *
-     * En cas d'échec → redirection vers /login (jamais vers admin/entreprise).
+     * En cas d'échec → redirection vers SON PROPRE dashboard (jamais vers /login qui cause des boucles).
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -36,20 +36,25 @@ class EntrepriseMiddleware
                     ->with('info', 'Veuillez sélectionner une entreprise pour accéder à ce tableau de bord.');
             }
 
-            // Un User (web) non-superadmin n'a rien à faire ici
+            // Un User (web) non-superadmin → son propre dashboard
             return redirect()->route('admin.superadmin.index');
         }
 
         // -----------------------------------------------------------
-        // CAS 2 : Employé (guard employe)
+        // CAS 2 : Client essayant d'accéder aux routes entreprise
+        // -----------------------------------------------------------
+        if (Auth::guard('client')->check()) {
+            // Les clients n'ont pas accès à l'espace entreprise
+            // → Redirection vers leur propre espace client
+            return redirect()->route('admin.client.index')
+                ->with('error', 'Cette section est réservée aux employés.');
+        }
+
+        // -----------------------------------------------------------
+        // CAS 3 : Employé (guard employe)
         // -----------------------------------------------------------
         if (!Auth::guard('employe')->check()) {
-            // Client essayant d'accéder à l'espace entreprise
-            if (Auth::guard('client')->check()) {
-                return redirect()->route('admin.client.index')
-                    ->with('error', 'Cette section est réservée aux employés.');
-            }
-            // Non connecté
+            // Non connecté → vers login
             return redirect('/login')
                 ->with('error', 'Veuillez vous connecter pour accéder à cette page.');
         }

@@ -12,6 +12,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * Modèle Employé avec support Multi-Tenant
+ * 
+ * Utilise le scope global TenantScope pour filtrer automatiquement
+ * les employés par entreprise_id
+ */
 class Employe extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
@@ -344,5 +350,47 @@ class Employe extends Authenticatable
     {
         $roles = self::POSTE_ROLES[$this->poste] ?? ['agent'];
         $this->assignRole($roles);
+    }
+
+    // ── Global Scopes pour Multi-Tenant ───────────────────────────────────
+
+    /**
+     * Appliquer le scope global pour filtrer par entreprise
+     * Utilisé automatiquement par Laravel si le trait TenantScope est utilisé
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Appliquer le scope global pour filtrer par entreprise_id
+        static::addGlobalScope('entreprise', function ($builder) {
+            // Si un SuperAdmin est connecté et a sélectionné une entreprise
+            if (session()->has('entreprise_id')) {
+                $entrepriseId = session('entreprise_id');
+                // Ne pas filtrer si c'est pour vedere toutes les entreprises
+                // Utiliser Entreprise::withoutGlobalScope() pour ignorer
+                return $builder->where('entreprise_id', $entrepriseId);
+            }
+
+            // Pour les employés, ils ont déjà entreprise_id
+            // Ce scope ne s'applique que si on veut filtrer depuis la session
+            return $builder;
+        });
+    }
+
+    /**
+     * Obtenir le contexte tenant actuel
+     */
+    public static function getTenantId(): ?int
+    {
+        return session('entreprise_id');
+    }
+
+    /**
+     * Vérifier si le filtering par entreprise est actif
+     */
+    public static function isTenantFilteringEnabled(): bool
+    {
+        return session()->has('entreprise_id');
     }
 }

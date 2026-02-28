@@ -220,4 +220,40 @@ class Client extends Model
             'est_connecte' => false,
         ]);
     }
+
+    // ── Global Scopes pour Multi-Tenant ───────────────────────────────────
+
+    /**
+     * Appliquer le scope global pour filtrer par entreprise
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Appliquer le scope global pour filtrer par entreprise_id
+        static::addGlobalScope('entreprise', function ($builder) {
+            // Si un SuperAdmin est connecté et a sélectionné une entreprise
+            if (session()->has('entreprise_id')) {
+                $entrepriseId = session('entreprise_id');
+                return $builder->where('entreprise_id', $entrepriseId);
+            }
+            return $builder;
+        });
+    }
+
+    /**
+     * Obtenir le contexte tenant actuel
+     */
+    public static function getTenantId(): ?int
+    {
+        return session('entreprise_id');
+    }
+
+    /**
+     * Vérifier si le filtering par entreprise est actif
+     */
+    public static function isTenantFilteringEnabled(): bool
+    {
+        return session()->has('entreprise_id');
+    }
 }

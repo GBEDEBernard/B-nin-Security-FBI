@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Entreprise;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -23,7 +22,7 @@ class SuperAdminSeeder extends Seeder
         // ============================================================
 
         $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@benin-security.local'],
+            ['email' => 'admin@benin-security.bj'],
             [
                 'name' => 'Super Administrateur',
                 'telephone' => '+229 12 34 56 78',
@@ -34,25 +33,31 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        // Assigner tous les rôles au SuperAdmin
-        $superAdmin->assignRole('super_admin');
+        // Assigner le rôle super_admin
+        if (method_exists($superAdmin, 'assignRole')) {
+            $superAdmin->assignRole('super_admin');
+        }
 
         // ============================================================
         // INFORMATIONS DE CONNEXION
         // ============================================================
 
         $this->command->info('================================================');
-        $this->command->info('SuperAdmin seeded avec succès!');
+        $this->command->info('✅ SuperAdmin seeded avec succès!');
         $this->command->info('================================================');
         $this->command->info('');
         $this->command->info('--- SUPER ADMINISTRATOR ---');
-        $this->command->info('Email: admin@benin-security.local');
+        $this->command->info('Email: admin@benin-security.bj');
         $this->command->info('Mot de passe: admin@BenSecure2026');
+        $this->command->info('');
+        $this->command->info('URL: /admin/superadmin');
         $this->command->info('');
         $this->command->info('================================================');
         $this->command->info('');
-        $this->command->info('⚠️  NOTE: Les employés se connectent via leur table Employe.');
-        $this->command->info('Utilisez EmployeSeeder pour créer les employés.');
+        $this->command->info('⚠️  NOTE:');
+        $this->command->info('- Les employés se connectent via la page /login avec leur email Employe');
+        $this->command->info('- Les clients se connectent via la page /login avec leur email Client');
+        $this->command->info('- Utilisez EmployeSeeder pour créer les employés');
         $this->command->info('');
     }
 }

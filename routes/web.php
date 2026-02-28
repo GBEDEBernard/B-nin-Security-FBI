@@ -13,8 +13,8 @@ use App\Http\Controllers\SuperAdminController;
 | the "web" middleware group. Now create something great!
 */
 
-// Routes d'authentification
-Route::middleware('guest')->group(function () {
+// Routes d'authentification - utilise multi-guest pour vérifier tous les guards
+Route::middleware('multi-guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -107,9 +107,10 @@ Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratContro
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN SUPER ADMIN
 // ⚠️  PAS de 'role.redirect' dans ce groupe
+// Note: On utilise 'superadmin' middleware qui vérifie l'authentification
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
+Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('admin.superadmin.')->group(function () {
     // Dashboard
     Route::get('/', [SuperAdminController::class, 'index'])->name('index');
 
@@ -296,9 +297,10 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN ENTREPRISE (Direction, Superviseur, Contrôleur)
 // ⚠️  PAS de 'role.redirect' dans ce groupe
+// Note: On utilise 'entreprise' middleware qui vérifie l'authentification
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
+Route::middleware(['tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Entreprise\DashboardController::class, 'index'])->name('index');
     Route::get('/statistiques', [\App\Http\Controllers\Entreprise\DashboardController::class, 'statistiques'])->name('statistiques');
@@ -376,9 +378,10 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')-
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN AGENT
 // ⚠️  PAS de 'role.redirect' dans ce groupe
+// Note: On utilise 'auth.employe' pour authenticate avec le guard employe
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'auth.employe'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
+Route::middleware(['tenant', 'entreprise'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.agent');
@@ -417,9 +420,10 @@ Route::middleware(['auth', 'tenant', 'auth.employe'])->prefix('admin/agent')->na
 // ═══════════════════════════════════════════════════════════════════════════
 // ADMIN CLIENT
 // ⚠️  PAS de 'role.redirect' dans ce groupe
+// Note: On utilise 'client' middleware pour authenticate avec le guard client
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'client'])->prefix('admin/client')->name('admin.client.')->group(function () {
+Route::middleware(['tenant', 'client'])->prefix('admin/client')->name('admin.client.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.client');

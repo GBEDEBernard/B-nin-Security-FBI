@@ -10,10 +10,14 @@ class EntrepriseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Crée 4 entreprises de sécurité avec les informations complètes.
      */
     public function run(): void
     {
         $entreprises = [
+            // ============================================================
+            // ENTREPRISE 1: Bénin Security Services (Siège)
+            // ============================================================
             [
                 'nom_entreprise' => 'Bénin Security Services',
                 'slug' => 'benin-security',
@@ -50,8 +54,12 @@ class EntrepriseSeeder extends Seeder
                     'devise' => 'XOF',
                     'symbole_devise' => 'FCFA',
                 ],
-                'notes' => 'Entreprise de sécurité leaders au Bénin',
+                'notes' => 'Entreprise de sécurité leaders au Bénin - Siège',
             ],
+
+            // ============================================================
+            // ENTREPRISE 2: Guard Pro Côte d'Ivoire
+            // ============================================================
             [
                 'nom_entreprise' => 'Guard Pro Côte d\'Ivoire',
                 'slug' => 'guard-pro-ci',
@@ -90,6 +98,10 @@ class EntrepriseSeeder extends Seeder
                 ],
                 'notes' => 'Filiale en Côte d\'Ivoire',
             ],
+
+            // ============================================================
+            // ENTREPRISE 3: Niger Protection
+            // ============================================================
             [
                 'nom_entreprise' => 'Niger Protection',
                 'slug' => 'niger-protection',
@@ -127,6 +139,48 @@ class EntrepriseSeeder extends Seeder
                     'symbole_devise' => 'FCFA',
                 ],
                 'notes' => 'Nouvelle succursale au Niger',
+            ],
+
+            // ============================================================
+            // ENTREPRISE 4: Togo Sécurité
+            // ============================================================
+            [
+                'nom_entreprise' => 'Togo Sécurité Globale',
+                'slug' => 'togo-securite',
+                'nom_commercial' => 'TSG Security',
+                'forme_juridique' => 'SARL',
+                'numero_registre' => 'RC/2024/001-TG',
+                'numeroIdentificationFiscale' => 'NIF-2024-001-TG',
+                'numeroContribuable' => 'NC-2024-001',
+                'email' => 'contact@tsgsecurity.tg',
+                'telephone' => '+228 22 00 01',
+                'telephone_alternatif' => '+228 22 00 02',
+                'adresse' => 'Boulevard du 30 Janvier, Lomé',
+                'ville' => 'Lomé',
+                'pays' => 'Togo',
+                'code_postal' => 'BP 123',
+                'nom_representant_legal' => 'Koffi Mensah',
+                'email_representant_legal' => 'kmensah@tsgsecurity.tg',
+                'telephone_representant_legal' => '+228 90 00 00 01',
+                'logo' => null,
+                'couleur_primaire' => '#1565c0',
+                'couleur_secondaire' => '#ffca28',
+                'formule' => 'premium',
+                'nombre_agents_max' => 30,
+                'nombre_sites_max' => 15,
+                'date_debut_contrat' => '2024-09-01',
+                'date_fin_contrat' => '2025-09-01',
+                'montant_mensuel' => 250000,
+                'cycle_facturation' => 'mensuel',
+                'est_active' => true,
+                'est_en_essai' => false,
+                'parametres' => [
+                    'rayon_gps_defaut' => 200,
+                    'fuseau_horaire' => 'Africa/Lome',
+                    'devise' => 'XOF',
+                    'symbole_devise' => 'FCFA',
+                ],
+                'notes' => 'Nouvelle succursale au Togo',
             ],
         ];
 

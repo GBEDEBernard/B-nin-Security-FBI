@@ -20,11 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'entreprise' => \App\Http\Middleware\EntrepriseMiddleware::class,
             'client' => \App\Http\Middleware\ClientMiddleware::class,
+            // Middleware pour vérifier qu'aucun utilisateur n'est connecté (multi-guard)
+            'multi-guest' => \App\Http\Middleware\MultiGuardGuest::class,
         ]);
 
-        // Middleware global pour la redirection par rôle et le timeout de session
+        // MIDDLEWARE GLOBAL UNIQUEMENT pour le timeout de session
+        // NE PAS appliquer RoleBasedRedirect ici car il est déjà géré dans les routes
         $middleware->web(prepend: [
-            \App\Http\Middleware\RoleBasedRedirect::class,
             \App\Http\Middleware\SessionTimeout::class,
         ]);
     })
