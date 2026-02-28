@@ -665,6 +665,7 @@
                                     <table class="table table-hover mb-0">
                                         <thead>
                                             <tr>
+                                                <th>Logo</th>
                                                 <th>Nom</th>
                                                 <th>Email</th>
                                                 <th>Téléphone</th>
@@ -676,6 +677,12 @@
                                         <tbody>
                                             @forelse(\App\Models\Entreprise::latest()->take(8)->get() as $entreprise)
                                             <tr>
+                                                <td>
+                                                    <img src="{{ $entreprise->logoUrl }}"
+                                                        alt="Logo"
+                                                        class="rounded-circle"
+                                                        style="width: 40px; height: 40px; object-fit: cover;">
+                                                </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-sm me-2" style="background:rgba(111,66,193,0.1);">
@@ -712,7 +719,7 @@
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="6" class="text-center py-4">Aucune entreprise trouvée</td>
+                                                <td colspan="7" class="text-center py-4">Aucune entreprise trouvée</td>
                                             </tr>
                                             @endforelse
                                         </tbody>

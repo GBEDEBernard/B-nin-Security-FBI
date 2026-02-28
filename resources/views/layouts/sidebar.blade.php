@@ -440,16 +440,26 @@ $estAgent = $currentGuard === 'employe' && ($employeRole === 'agent' || $employe
         </li>
 
         {{-- Indicateur de l'entreprise courante --}}
+        @php
+        $entrepriseContexte = $currentUser->getEntrepriseContexte();
+        @endphp
         <li class="nav-item mb-3 mx-2">
           <div class="nav-link rounded-3" style="background: linear-gradient(135deg, rgba(25, 135, 84, 0.15) 0%, rgba(32, 201, 151, 0.15) 100%); border: 1px solid rgba(25, 135, 84, 0.3);">
             <div class="d-flex align-items-center">
               <div class="me-2">
-                <i class="bi bi-building" style="color: var(--bs-success);"></i>
+                @if($entrepriseContexte && $entrepriseContexte->logo)
+                <img src="{{ $entrepriseContexte->logoUrl }}"
+                  alt="Logo"
+                  class="rounded-circle"
+                  style="width: 32px; height: 32px; object-fit: cover;">
+                @else
+                <i class="bi bi-building" style="color: var(--bs-success); font-size: 1.2rem;"></i>
+                @endif
               </div>
               <div>
                 <small class="text-muted d-block" style="font-size: 0.65rem;">Vue actuelle:</small>
                 <strong style="color: var(--bs-success); font-size: 0.85rem;">
-                  {{ $currentUser->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}
+                  {{ $entrepriseContexte?->nom_entreprise ?? 'Entreprise' }}
                 </strong>
               </div>
             </div>

@@ -324,28 +324,56 @@
 
         {{-- Welcome Banner --}}
         @php
-        // Utiliser le guard 'employe' pour récupérer l'employé connecté
+        // Support both employe guard and SuperAdmin in entreprise context
         $employe = Auth::guard('employe')->user();
+        $entrepriseId = null;
         $entreprise = null;
 
+        // If employe is logged in
         if ($employe && $employe->entreprise_id) {
-        $entreprise = \App\Models\Entreprise::find($employe->entreprise_id);
+        $entrepriseId = $employe->entreprise_id;
+        $entreprise = \App\Models\Entreprise::find($entrepriseId);
+        }
+        // If SuperAdmin is in entreprise context
+        elseif (Auth::guard('web')->check() && session()->has('entreprise_id')) {
+        $entrepriseId = session('entreprise_id');
+        $entreprise = \App\Models\Entreprise::find($entrepriseId);
         }
 
         $couleurPrimaire = $entreprise?->couleur_primaire ?? '#198754';
         $couleurSecondaire = $entreprise?->couleur_secondaire ?? '#20c997';
+
+        // Get display name based on guard
+        $displayName = '';
+        if ($employe) {
+        $displayName = ($employe->prenoms ?? '') . ' ' . ($employe->nom ?? '');
+        } elseif (Auth::guard('web')->check()) {
+        $displayName = Auth::guard('web')->user()->name;
+        }
         @endphp
         <div class="row mb-4">
             <div class="col-12">
                 <div class="welcome-banner" style="background: linear-gradient(135deg, {{ $couleurPrimaire }} 0%, {{ $couleurSecondaire }} 100%);">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h4 class="mb-1">
-                                Bienvenue, {{ $employe->prenoms ?? '' }} {{ $employe->nom ?? '' }}! 👋
-                            </h4>
-                            <p class="mb-0 opacity-75">
-                                Voici un aperçu de votre entreprise de sécurité
-                            </p>
+                        <div class="d-flex align-items-center">
+                            @if($entreprise && $entreprise->logo)
+                            <img src="{{ $entreprise->logoUrl }}"
+                                alt="Logo"
+                                class="rounded-circle me-3"
+                                style="width: 64px; height: 64px; object-fit: cover; border: 3px solid rgba(255,255,255,0.3);">
+                            @endif
+                            <div>
+                                <h4 class="mb-1">
+                                    Bienvenue, {{ $displayName }}! 👋
+                                </h4>
+                                <p class="mb-0 opacity-75">
+                                    @if($entreprise)
+                                    {{ $entreprise->nom_entreprise ?? $entreprise->nom_commercial }}
+                                    @else
+                                    Voici un aperçu de votre entreprise de sécurité
+                                    @endif
+                                </p>
+                            </div>
                         </div>
                         <div class="d-none d-md-block">
                             <i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i>
@@ -356,10 +384,7 @@
         </div>
 
         {{-- Statistics Cards --}}
-        @php
-        $employeId = Auth::guard('employe')->id();
-        $entrepriseId = Auth::guard('employe')->user()->entreprise_id;
-        @endphp
+        @if($entrepriseId)
         <div class="row mb-4">
             {{-- Total Employés --}}
             <div class="col-lg-3 col-6">
@@ -421,6 +446,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Quick Actions --}}
         <div class="row mb-4">
