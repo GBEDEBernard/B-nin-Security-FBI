@@ -324,12 +324,14 @@
 
         {{-- Welcome Banner --}}
         @php
+        // Utiliser le guard 'employe' pour récupérer l'employé connecté
+        $employe = Auth::guard('employe')->user();
         $entreprise = null;
-        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
-        $entreprise = auth()->user()->getEntrepriseContexte();
-        } elseif (auth()->user()->entreprise_id) {
-        $entreprise = \App\Models\Entreprise::find(auth()->user()->entreprise_id);
+
+        if ($employe && $employe->entreprise_id) {
+        $entreprise = \App\Models\Entreprise::find($employe->entreprise_id);
         }
+
         $couleurPrimaire = $entreprise?->couleur_primaire ?? '#198754';
         $couleurSecondaire = $entreprise?->couleur_secondaire ?? '#20c997';
         @endphp
@@ -339,18 +341,10 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h4 class="mb-1">
-                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
-                                Vue Entreprise: {{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }} 👋
-                                @else
-                                Bienvenue, {{ Auth::user()->name }}! 👋
-                                @endif
+                                Bienvenue, {{ $employe->prenoms ?? '' }} {{ $employe->nom ?? '' }}! 👋
                             </h4>
                             <p class="mb-0 opacity-75">
-                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
-                                Vous êtes en train de gérer cette entreprise en tant que Super Admin
-                                @else
                                 Voici un aperçu de votre entreprise de sécurité
-                                @endif
                             </p>
                         </div>
                         <div class="d-none d-md-block">
@@ -362,6 +356,10 @@
         </div>
 
         {{-- Statistics Cards --}}
+        @php
+        $employeId = Auth::guard('employe')->id();
+        $entrepriseId = Auth::guard('employe')->user()->entreprise_id;
+        @endphp
         <div class="row mb-4">
             {{-- Total Employés --}}
             <div class="col-lg-3 col-6">
@@ -372,7 +370,7 @@
                         </div>
                     </div>
                     <div class="stat-number mb-1">
-                        {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
+                        {{ \App\Models\Employe::where('entreprise_id', $entrepriseId)->count() }}
                     </div>
                     <div class="text-muted small">Total Employés</div>
                 </div>
@@ -387,7 +385,7 @@
                         </div>
                     </div>
                     <div class="stat-number mb-1">
-                        {{ \App\Models\Client::where('entreprise_id', auth()->user()->entreprise_id)->count() }}
+                        {{ \App\Models\Client::where('entreprise_id', $entrepriseId)->count() }}
                     </div>
                     <div class="text-muted small">Clients</div>
                 </div>
@@ -402,7 +400,7 @@
                         </div>
                     </div>
                     <div class="stat-number mb-1">
-                        {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
+                        {{ \App\Models\ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'actif')->count() }}
                     </div>
                     <div class="text-muted small">Contrats Actifs</div>
                 </div>
@@ -417,7 +415,7 @@
                         </div>
                     </div>
                     <div class="stat-number mb-1">
-                        {{ \App\Models\Incident::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('created_at', today())->count() }}
+                        {{ \App\Models\Incident::where('entreprise_id', $entrepriseId)->whereDate('created_at', today())->count() }}
                     </div>
                     <div class="text-muted small">Incidents Aujourd'hui</div>
                 </div>
@@ -487,7 +485,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse(\App\Models\Affectation::where('entreprise_id', auth()->user()->entreprise_id)->with(['employe', 'siteClient', 'contratPrestation.client'])->latest()->take(10)->get() as $affectation)
+                                    @forelse(\App\Models\Affectation::where('entreprise_id', $entrepriseId)->with(['employe', 'siteClient', 'contratPrestation.client'])->latest()->take(10)->get() as $affectation)
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -526,13 +524,13 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Agents disponibles</span>
                                 <span class="text-success fw-bold">
-                                    {{ \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count() }}
+                                    {{ \App\Models\Employe::where('entreprise_id', $entrepriseId)->where('disponible', true)->count() }}
                                 </span>
                             </div>
                             <div class="custom-progress">
                                 @php
-                                $totalAgents = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->count();
-                                $disponibles = \App\Models\Employe::where('entreprise_id', auth()->user()->entreprise_id)->where('disponible', true)->count();
+                                $totalAgents = \App\Models\Employe::where('entreprise_id', $entrepriseId)->count();
+                                $disponibles = \App\Models\Employe::where('entreprise_id', $entrepriseId)->where('disponible', true)->count();
                                 $percent = $totalAgents > 0 ? ($disponibles / $totalAgents) * 100 : 0;
                                 @endphp
                                 <div class="progress-bar bg-success" style="width: {{ $percent }}%;"></div>
@@ -542,7 +540,7 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Pointages aujourd'hui</span>
                                 <span class="text-primary fw-bold">
-                                    {{ \App\Models\Pointage::where('entreprise_id', auth()->user()->entreprise_id)->whereDate('date_pointage', today())->count() }}
+                                    {{ \App\Models\Pointage::where('entreprise_id', $entrepriseId)->whereDate('date_pointage', today())->count() }}
                                 </span>
                             </div>
                         </div>
@@ -550,7 +548,7 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Congés en attente</span>
                                 <span class="text-warning fw-bold">
-                                    {{ \App\Models\Conge::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_attente')->count() }}
+                                    {{ \App\Models\Conge::where('entreprise_id', $entrepriseId)->where('statut', 'en_attente')->count() }}
                                 </span>
                             </div>
                         </div>
@@ -558,7 +556,7 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="fw-semibold">Factures impayées</span>
                                 <span class="text-danger fw-bold">
-                                    {{ \App\Models\Facture::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'impayee')->count() }}
+                                    {{ \App\Models\Facture::where('entreprise_id', $entrepriseId)->where('statut', 'impayee')->count() }}
                                 </span>
                             </div>
                         </div>
@@ -583,7 +581,7 @@
                                     <i class="bi bi-check-circle"></i>
                                 </div>
                                 <div class="fw-bold fs-3">
-                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'actif')->count() }}
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'actif')->count() }}
                                 </div>
                                 <div class="text-muted small">Actifs</div>
                             </div>
@@ -592,7 +590,7 @@
                                     <i class="bi bi-clock"></i>
                                 </div>
                                 <div class="fw-bold fs-3">
-                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'en_cours')->count() }}
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'en_cours')->count() }}
                                 </div>
                                 <div class="text-muted small">En cours</div>
                             </div>
@@ -601,7 +599,7 @@
                                     <i class="bi bi-x-circle"></i>
                                 </div>
                                 <div class="fw-bold fs-3">
-                                    {{ \App\Models\ContratPrestation::where('entreprise_id', auth()->user()->entreprise_id)->where('statut', 'expire')->count() }}
+                                    {{ \App\Models\ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'expire')->count() }}
                                 </div>
                                 <div class="text-muted small">Expirés</div>
                             </div>

@@ -18,7 +18,7 @@ return [
      */
 
     // Modèle Tenant - lien vers Entreprise
-    'tenant_model' => App\Models\Entreprise::class,
+   'tenant_model' => Stancl\Tenancy\Database\Models\Tenant::class, // ✅
 
     // Générateur d'ID
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
@@ -29,7 +29,7 @@ return [
      * Domaines centraux
      */
     'central_domains' => [
-        '127.0.0.1',
+         '127.0.0.1',
         'localhost',
         'benin-security.com',
         'www.benin-security.com',

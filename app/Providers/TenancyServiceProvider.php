@@ -46,7 +46,7 @@ class TenancyServiceProvider extends ServiceProvider
                     Jobs\DeleteDatabase::class,
                 ])->send(function (Events\TenantDeleted $event) {
                     return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
+                })->shouldBeQueued(false),
             ],
 
             // Domain events
@@ -102,7 +102,9 @@ class TenancyServiceProvider extends ServiceProvider
         $this->bootEvents();
         $this->mapRoutes();
 
-        $this->makeTenancyMiddlewareHighestPriority();
+        // NE PLUS forcer les middlewares de Tenancy sur toutes les routes
+        // Ils seront appliqués manuellement uniquement sur les routes qui en ont besoin
+        // $this->makeTenancyMiddlewareHighestPriority();
     }
 
     protected function bootEvents()
@@ -130,19 +132,7 @@ class TenancyServiceProvider extends ServiceProvider
 
     protected function makeTenancyMiddlewareHighestPriority()
     {
-        $tenancyMiddleware = [
-            // Even higher priority than the initialization middleware
-            Middleware\PreventAccessFromCentralDomains::class,
-
-            Middleware\InitializeTenancyByDomain::class,
-            Middleware\InitializeTenancyBySubdomain::class,
-            Middleware\InitializeTenancyByDomainOrSubdomain::class,
-            Middleware\InitializeTenancyByPath::class,
-            Middleware\InitializeTenancyByRequestData::class,
-        ];
-
-        foreach (array_reverse($tenancyMiddleware) as $middleware) {
-            $this->app[\Illuminate\Contracts\Http\Kernel::class]->prependToMiddlewarePriority($middleware);
-        }
+        // Désactivé - les middlewares de Tenancy sont maintenant gérés manuellement dans les routes
+        // Cela permet d'exclure les routes d'authentification (login, register, etc.)
     }
 }

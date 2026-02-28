@@ -225,12 +225,17 @@
 
 <div class="app-content">
     <div class="container-fluid">
+        {{-- Welcome Banner --}}
+        @php
+        // Utiliser le guard 'client' pour récupérer le client connecté
+        $client = Auth::guard('client')->user();
+        @endphp
         <div class="row mb-4">
             <div class="col-12">
                 <div class="welcome-banner">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h4 class="mb-1">Bienvenue, {{ Auth::user()->name }}! 👋</h4>
+                            <h4 class="mb-1">Bienvenue, {{ $client->nom ?? $client->prenoms ?? 'Client' }}! 👋</h4>
                             <p class="mb-0 opacity-75">Gérez vos contrats et services de sécurité</p>
                         </div>
                         <div class="d-none d-md-block"><i class="bi bi-shield-check" style="font-size: 4rem; opacity: 0.3;"></i></div>
@@ -239,13 +244,17 @@
             </div>
         </div>
 
+        @php
+        $clientId = Auth::guard('client')->id();
+        @endphp
+
         <div class="row mb-4">
             <div class="col-lg-3 col-6">
                 <div class="stat-card dashboard-card p-4 animate-fade-in-up" style="opacity: 0;">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="stat-icon bg-gradient-primary text-white"><i class="bi bi-file-earmark-check"></i></div>
                     </div>
-                    <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->count() }}</div>
+                    <div class="stat-number mb-1">{{ \App\Models\ContratPrestation::where('client_id', $clientId)->count() }}</div>
                     <div class="text-muted small">Mes Contrats</div>
                 </div>
             </div>
@@ -254,7 +263,7 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="stat-icon bg-gradient-danger text-white"><i class="bi bi-receipt"></i></div>
                     </div>
-                    <div class="stat-number mb-1">{{ \App\Models\Facture::where('client_id', auth()->user()->client_id)->where('statut', 'impayee')->count() }}</div>
+                    <div class="stat-number mb-1">{{ \App\Models\Facture::where('client_id', $clientId)->where('statut', 'impayee')->count() }}</div>
                     <div class="text-muted small">Factures Impayées</div>
                 </div>
             </div>
@@ -272,7 +281,7 @@
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="stat-icon bg-gradient-success text-white"><i class="bi bi-building"></i></div>
                     </div>
-                    <div class="stat-number mb-1">{{ \App\Models\SiteClient::where('client_id', auth()->user()->client_id)->count() }}</div>
+                    <div class="stat-number mb-1">{{ \App\Models\SiteClient::where('client_id', $clientId)->count() }}</div>
                     <div class="text-muted small">Mes Sites</div>
                 </div>
             </div>
@@ -350,7 +359,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse(\App\Models\ContratPrestation::where('client_id', auth()->user()->client_id)->latest()->take(5)->get() as $contrat)
+                                    @forelse(\App\Models\ContratPrestation::where('client_id', $clientId)->latest()->take(5)->get() as $contrat)
                                     <tr>
                                         <td>{{ $contrat->numero_contrat ?? 'N/A' }}</td>
                                         <td>{{ $contrat->type_contrat ?? 'Prestation' }}</td>
@@ -380,7 +389,6 @@
                 <div class="dashboard-card mb-4">
                     <div class="card-header"><i class="bi bi-person-circle me-2 text-info"></i>Informations du Compte</div>
                     <div class="card-body">
-                        @php $client = auth()->user()->client; @endphp
                         <div class="text-center mb-3">
                             <div class="avatar-sm mx-auto mb-2 bg-primary-subtle rounded-circle" style="width: 60px; height: 60px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">
                                 <i class="bi bi-person-fill"></i>
@@ -389,7 +397,7 @@
                             <span class="badge bg-primary">{{ $client && $client->type_client === 'entreprise' ? 'Entreprise' : 'Particulier' }}</span>
                         </div>
                         <div class="mb-2"><small class="text-muted">Email</small>
-                            <div>{{ auth()->user()->email }}</div>
+                            <div>{{ $client->email ?? 'N/A' }}</div>
                         </div>
                     </div>
                 </div>
@@ -411,7 +419,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse(\App\Models\Facture::where('client_id', auth()->user()->client_id)->latest()->take(3)->get() as $facture)
+                                    @forelse(\App\Models\Facture::where('client_id', $clientId)->latest()->take(3)->get() as $facture)
                                     <tr>
                                         <td>{{ $facture->numero_facture ?? 'N/A' }}</td>
                                         <td>{{ number_format($facture->montant_total ?? 0, 0, ',', ' ') }} F</td>

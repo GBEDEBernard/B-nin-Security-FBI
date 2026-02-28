@@ -39,7 +39,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'benin_security_central'),
+            'database' => env('DB_DATABASE', 'Benin-Security'), // ✅ était hardcodé
             'username' => env('DB_USERNAME', 'Bernard'),
             'password' => env('DB_PASSWORD', 'Bernard@1234!'),
             'unix_socket' => env('DB_SOCKET', ''),

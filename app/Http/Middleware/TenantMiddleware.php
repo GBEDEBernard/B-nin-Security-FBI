@@ -7,56 +7,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Middleware de portée de tenant (entreprise)
- * 
- * Ce middleware assure l'isolation des données en:
- * 1. Identifiant l'entreprise courante à partir de l'utilisateur connecté
- * 2. Stockant l'ID de l'entreprise en session
- * 3. Permettant aux modèles d'utiliser ce contexte pour filtrer les données
- * 
- * NOTE: Ce middleware ne bloque pas l'accès - il ajoute seulement le contexte
- */
 class TenantMiddleware
 {
-    /**
-     * Handle an incoming request.
-     * Ajoute le contexte tenant sans bloquer l'accès
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Chercher l'entreprise depuis l'utilisateur connecté
         $entrepriseId = $this->getEntrepriseIdFromUser();
 
         if ($entrepriseId) {
-            // Stocker en session pour accès ultérieur
             session(['entreprise_id' => $entrepriseId]);
         }
 
         return $next($request);
     }
 
-    /**
-     * Obtenir l'ID de l'entreprise depuis l'utilisateur connecté
-     */
     private function getEntrepriseIdFromUser(): ?int
     {
-        // SuperAdmin en contexte entreprise spécifique
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
-
-            // Si SuperAdmin a sélectionné une entreprise
             if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
                 return session('entreprise_id');
             }
-
-            // Si utilisateur entreprise (employé avec compte user)
             if ($user->entreprise_id) {
                 return $user->entreprise_id;
             }
         }
 
-        // Employé connecté via guard employe
         if (Auth::guard('employe')->check()) {
             $employe = Auth::guard('employe')->user();
             if ($employe->entreprise_id) {
@@ -64,7 +39,6 @@ class TenantMiddleware
             }
         }
 
-        // Client connecté via guard client
         if (Auth::guard('client')->check()) {
             $client = Auth::guard('client')->user();
             if ($client->entreprise_id) {

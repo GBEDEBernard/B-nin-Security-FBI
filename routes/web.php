@@ -40,35 +40,34 @@ Route::middleware('auth')->group(function () {
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
 });
 
-// Page d'accueil - redirige selon le rôle de l'utilisateur connecté
-// ⚠️  Le middleware 'role.redirect' est appliqué UNIQUEMENT ici et sur /admin
+// Page d'accueil - redirige vers la page de connexion pour les utilisateurs non connectés
+Route::get('/', function () {
+    // Si déjà connecté, rediriger vers le dashboard approprié
+    if (Auth::guard('web')->check()) {
+        $user = Auth::guard('web')->user();
+        if ($user->estSuperAdmin()) {
+            return redirect()->route('admin.superadmin.index');
+        }
+    }
+
+    // Si connecté via guard employe
+    if (Auth::guard('employe')->check()) {
+        $employe = Auth::guard('employe')->user();
+        return redirect()->to($employe->getDashboardUrl());
+    }
+
+    // Si connecté via guard client
+    if (Auth::guard('client')->check()) {
+        $client = Auth::guard('client')->user();
+        return redirect()->to($client->getDashboardUrl());
+    }
+
+    // Pas connecté - afficher la page de connexion
+    return redirect()->route('login');
+})->name('home');
+
+// Page d'accueil avec middleware role.redirect pour les utilisateurs connectés
 Route::middleware(['role.redirect'])->group(function () {
-
-    Route::get('/', function () {
-        // Vérifier si c'est un SuperAdmin
-        if (Auth::guard('web')->check()) {
-            $user = Auth::guard('web')->user();
-            if ($user->estSuperAdmin()) {
-                return redirect()->route('admin.superadmin.index');
-            }
-        }
-
-        // Vérifier si c'est un employé
-        if (Auth::guard('employe')->check()) {
-            $employe = Auth::guard('employe')->user();
-            return redirect()->to($employe->getDashboardUrl());
-        }
-
-        // Vérifier si c'est un client
-        if (Auth::guard('client')->check()) {
-            $client = Auth::guard('client')->user();
-            return redirect()->to($client->getDashboardUrl());
-        }
-
-        // Pas connecté - afficher la page de connexion
-        return view('auth.login');
-    })->name('home');
-
     // Administration principal (redirige selon le rôle)
     Route::get('/admin', function () {
         // Vérifier si c'est un SuperAdmin
