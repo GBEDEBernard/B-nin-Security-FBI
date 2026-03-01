@@ -252,11 +252,6 @@
                                 <i class="bi bi-person-badge me-2"></i>Représentant légal
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="abonnement-tab" data-bs-toggle="tab" data-bs-target="#abonnement" type="button" role="tab">
-                                <i class="bi bi-credit-card me-2"></i>Abonnement
-                            </button>
-                        </li>
                     </ul>
 
                     <!-- Contenu des onglets -->
@@ -507,176 +502,21 @@
                             </div>
                         </div>
 
-                        <!-- Onglet 4: Abonnement -->
-                        <div class="tab-pane fade" id="abonnement" role="tabpanel" aria-labelledby="abonnement-tab">
-                            <div class="row g-4">
-                                <!-- Formule d'abonnement -->
-                                <div class="col-12">
-                                    <label class="form-label">Formule d'abonnement <span class="required-indicator">*</span></label>
-                                    <div class="row g-3 mt-2">
-                                        <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'essai' ? 'selected' : '' }}" onclick="selectPackage('essai')">
-                                                <div class="package-icon bg-warning bg-opacity-10 text-warning">
-                                                    <i class="bi bi-clock"></i>
-                                                </div>
-                                                <h6 class="mb-1">Essai</h6>
-                                                <small class="text-muted">15 jours gratuits</small>
-                                                <input type="radio" name="formule" value="essai"
-                                                    id="formule_essai" {{ old('formule') == 'essai' ? 'checked' : '' }}
-                                                    class="d-none">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', 'basic') == 'basic' ? 'selected' : '' }}" onclick="selectPackage('basic')">
-                                                <div class="package-icon bg-primary bg-opacity-10 text-primary">
-                                                    <i class="bi bi-star"></i>
-                                                </div>
-                                                <h6 class="mb-1">Basic</h6>
-                                                <small class="text-muted">Gestion de base</small>
-                                                <input type="radio" name="formule" value="basic"
-                                                    id="formule_basic" {{ old('formule', 'basic') == 'basic' ? 'checked' : '' }}
-                                                    class="d-none" checked>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'standard' ? 'selected' : '' }}" onclick="selectPackage('standard')">
-                                                <div class="package-icon bg-success bg-opacity-10 text-success">
-                                                    <i class="bi bi-award"></i>
-                                                </div>
-                                                <h6 class="mb-1">Standard</h6>
-                                                <small class="text-muted">Toutes fonctionnalités</small>
-                                                <input type="radio" name="formule" value="standard"
-                                                    id="formule_standard" {{ old('formule') == 'standard' ? 'checked' : '' }}
-                                                    class="d-none">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
-                                                <div class="package-icon bg-purple bg-opacity-10 text-purple" style="color: #6f42c1;">
-                                                    <i class="bi bi-gem"></i>
-                                                </div>
-                                                <h6 class="mb-1">Premium</h6>
-                                                <small class="text-muted">Support dédié</small>
-                                                <input type="radio" name="formule" value="premium"
-                                                    id="formule_premium" {{ old('formule') == 'premium' ? 'checked' : '' }}
-                                                    class="d-none">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Erreur de validation inline pour formule -->
-                                    @error('formule')
-                                    <div class="mt-2">
-                                        <div class="d-flex align-items-center text-danger">
-                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
-                                            <span class="small fw-medium">{{ $message }}</span>
-                                        </div>
-                                    </div>
-                                    @enderror
-                                </div>
-
-                                <!-- Période d'essai -->
-                                <div class="col-md-12 mt-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="est_en_essai"
-                                            name="est_en_essai" value="1" {{ old('est_en_essai') ? 'checked' : '' }}
-                                            onchange="toggleEssaiFields()">
-                                        <label class="form-check-label" for="est_en_essai">
-                                            Mettre en période d'essai
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Nombre d'agents max -->
-                                <div class="col-md-6">
-                                    <label for="nombre_agents_max" class="form-label">
-                                        Nombre d'agents max <span class="required-indicator">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-people"></i></span>
-                                        <input type="number" class="form-control @error('nombre_agents_max') is-invalid @enderror"
-                                            id="nombre_agents_max" name="nombre_agents_max"
-                                            value="{{ old('nombre_agents_max', 10) }}" min="1" required>
-                                        @error('nombre_agents_max')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- Nombre de sites max -->
-                                <div class="col-md-6">
-                                    <label for="nombre_sites_max" class="form-label">
-                                        Nombre de sites max <span class="required-indicator">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                        <input type="number" class="form-control @error('nombre_sites_max') is-invalid @enderror"
-                                            id="nombre_sites_max" name="nombre_sites_max"
-                                            value="{{ old('nombre_sites_max', 5) }}" min="1" required>
-                                        @error('nombre_sites_max')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- Date de début contrat -->
-                                <div class="col-md-4">
-                                    <label for="date_debut_contrat" class="form-label">Date de début</label>
-                                    <input type="date" class="form-control" id="date_debut_contrat"
-                                        name="date_debut_contrat" value="{{ old('date_debut_contrat') }}">
-                                </div>
-
-                                <!-- Date de fin contrat -->
-                                <div class="col-md-4">
-                                    <label for="date_fin_contrat" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin_contrat"
-                                        name="date_fin_contrat" value="{{ old('date_fin_contrat') }}">
-                                </div>
-
-                                <!-- Montant mensuel -->
-                                <div class="col-md-4">
-                                    <label for="montant_mensuel" class="form-label">Montant mensuel (FCFA)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
-                                        <input type="number" class="form-control" id="montant_mensuel"
-                                            name="montant_mensuel" value="{{ old('montant_mensuel') }}" min="0" step="100">
-                                    </div>
-                                </div>
-
-                                <!-- Cycle de facturation -->
-                                <div class="col-md-6">
-                                    <label for="cycle_facturation" class="form-label">Cycle de facturation</label>
-                                    <select class="form-select" id="cycle_facturation" name="cycle_facturation">
-                                        <option value="mensuel" {{ old('cycle_facturation', 'mensuel') == 'mensuel' ? 'selected' : '' }}>Mensuel</option>
-                                        <option value="trimestriel" {{ old('cycle_facturation') == 'trimestriel' ? 'selected' : '' }}>Trimestriel</option>
-                                        <option value="annuel" {{ old('cycle_facturation') == 'annuel' ? 'selected' : '' }}>Annuel</option>
-                                    </select>
-                                </div>
-
-                                <!-- Notes -->
-                                <div class="col-12">
-                                    <label for="notes" class="form-label">Notes</label>
-                                    <textarea class="form-control" id="notes" name="notes" rows="3"
-                                        placeholder="Notes complémentaires...">{{ old('notes') }}</textarea>
-                                </div>
+                        <!-- Boutons de navigation -->
+                        <div class="wizard-buttons">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                    <i class="bi bi-arrow-left me-1"></i> Annuler
+                                </button>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-success btn-create">
+                                    <i class="bi bi-check-circle me-1"></i> Créer l'entreprise
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Boutons de navigation -->
-                    <div class="wizard-buttons">
-                        <div>
-                            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
-                                <i class="bi bi-arrow-left me-1"></i> Annuler
-                            </button>
-                        </div>
-                        <div>
-                            <button type="submit" class="btn btn-success btn-create">
-                                <i class="bi bi-check-circle me-1"></i> Créer l'entreprise
-                            </button>
-                        </div>
-                    </div>
                 </div>
-            </div>
         </form>
     </div>
 </div>

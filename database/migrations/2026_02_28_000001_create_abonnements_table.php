@@ -15,19 +15,21 @@ return new class extends Migration
         Schema::create('abonnements', function (Blueprint $table) {
             $table->id();
 
-            // Relation avec l'entreprise
-            $table->foreignId('entreprise_id')
-                ->constrained('entreprises')
-                ->onDelete('cascade')
-                ->unique();
-
-            // Formule d'abonnement
-            $table->string('formule'); // essai, basic, standard, premium, enterprise
+            // Formule d'abonnement (pour les plans standard)
+            $table->string('formule'); // basic, premium, enterprise
             $table->text('description')->nullable();
 
-            // Limites
-            $table->integer('nombre_agents_max')->default(0);
-            $table->integer('nombre_sites_max')->default(0);
+            // Tarification par employé
+            $table->integer('employes_min')->default(1);
+            $table->integer('employes_max')->default(10);
+            $table->decimal('tarif_par_employe', 10, 2)->default(0);
+            $table->decimal('tarif_employe_supplementaire', 10, 2)->nullable();
+            $table->integer('sites_max')->default(1);
+
+            // Type et durée
+            $table->string('type_formule')->nullable(); // basic, premium, enterprise
+            $table->integer('duree_mois')->nullable(); // null = non limitée
+            $table->integer('jours_essai')->default(7);
 
             // Dates du contrat
             $table->date('date_debut')->nullable();
@@ -35,10 +37,9 @@ return new class extends Migration
             $table->date('date_fin_essai')->nullable();
 
             // Facturation
-            $table->decimal('montant_mensuel', 10, 2)->default(0);
             $table->decimal('montant_total', 12, 2)->default(0)->nullable();
+            $table->decimal('montant_mensuel', 10, 2)->default(0);
             $table->string('cycle_facturation')->nullable(); // mensuel, trimestriel, annuel
-            $table->decimal('tarif_agents_supplementaires', 10, 2)->nullable();
             $table->integer('nombre_agents_inclus')->nullable();
 
             // Statut
@@ -65,7 +66,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Index
-            $table->index('entreprise_id');
             $table->index('formule');
             $table->index('est_active');
             $table->index('est_en_essai');

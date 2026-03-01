@@ -158,4 +158,41 @@ class SuperAdminController extends Controller
 
         return null;
     }
+
+    /**
+     * Afficher le profil de l'utilisateur SuperAdmin
+     */
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('admin.superadmin.profile', compact('user'));
+    }
+
+    /**
+     * Mettre à jour le profil de l'utilisateur SuperAdmin
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+        ];
+
+        // Update password only if provided
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('admin.superadmin.profile')->with('success', 'Profil mis à jour avec succès.');
+    }
 }

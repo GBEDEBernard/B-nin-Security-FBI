@@ -238,6 +238,38 @@
            <li class="user-body">
              <!--begin::Row-->
              <div class="row">
+               @php
+               $estSuperAdmin = $currentGuard === 'web' && $currentUser && method_exists($currentUser, 'estSuperAdmin') && $currentUser->estSuperAdmin();
+               @endphp
+
+               @if($currentGuard === 'web' && $estSuperAdmin)
+               <div class="col-4 text-center">
+                 <a href="{{ route('admin.superadmin.profile') }}">Profil</a>
+               </div>
+               <div class="col-4 text-center">
+                 <a href="{{ route('admin.superadmin.parametres.index') }}">Paramètres</a>
+               </div>
+               <div class="col-4 text-center">
+                 <a href="{{ route('admin.superadmin.roles.index') }}">Rôles</a>
+               </div>
+               @elseif($currentGuard === 'employe')
+               <div class="col-4 text-center">
+                 <a href="{{ route('admin.entreprise.profile') }}">Profil</a>
+               </div>
+               <div class="col-4 text-center">
+                 <a href="#">Paramètres</a>
+               </div>
+               <div class="col-4 text-center">
+                 <a href="#">Aide</a>
+               </div>
+               @elseif($currentGuard === 'client')
+               <div class="col-6 text-center">
+                 <a href="#">Mon Profil</a>
+               </div>
+               <div class="col-6 text-center">
+                 <a href="#">Paramètres</a>
+               </div>
+               @else
                <div class="col-4 text-center">
                  <a href="#">Profil</a>
                </div>
@@ -247,15 +279,26 @@
                <div class="col-4 text-center">
                  <a href="#">Paramètres</a>
                </div>
+               @endif
              </div>
              <!--end::Row-->
            </li>
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
            <li class="user-footer p-2">
+             @if($currentGuard === 'web' && $estSuperAdmin)
+             <a href="{{ route('admin.superadmin.profile') }}" class="btn btn-outline-secondary btn-sm">
+               <i class="bi bi-person-circle me-1"></i> Profil
+             </a>
+             @elseif($currentGuard === 'employe')
+             <a href="{{ route('admin.entreprise.profile') }}" class="btn btn-outline-secondary btn-sm">
+               <i class="bi bi-person-circle me-1"></i> Profil
+             </a>
+             @else
              <a href="#" class="btn btn-outline-secondary btn-sm">
                <i class="bi bi-person-circle me-1"></i> Profil
              </a>
+             @endif
              <form method="POST" action="{{ $logoutRoute }}" class="d-inline">
                @csrf
                <button type="submit" class="btn btn-outline-danger btn-sm float-end">
@@ -378,7 +421,7 @@
      display: flex;
      align-items: center;
      justify-content: center;
-     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+     background: linear-gradient(135deg, #6f42c1 0%, #9d7df3 100%);
      color: white;
      font-weight: bold;
      font-size: 14px;
@@ -390,7 +433,7 @@
      display: flex;
      align-items: center;
      justify-content: center;
-     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+     background: linear-gradient(135deg, #6f42c1 0%, #9d7df3 100%);
      color: white;
      font-weight: bold;
      font-size: 20px;

@@ -12,9 +12,10 @@ class DatabaseSeeder extends Seeder
      * Ordre d'exécution:
      * 1. RolesAndPermissionsSeeder - Crée les rôles et permissions
      * 2. SuperAdminSeeder - Crée le SuperAdmin
-     * 3. EntrepriseSeeder - Crée les 4 entreprises
-     * 4. EmployeSeeder - Crée les employés pour chaque entreprise
-     * 5. ClientSeeder - Crée les clients pour chaque entreprise
+     * 3. EntrepriseSeeder - Crée les entreprises
+     * 4. AbonnementSeeder - Crée les plans d'abonnement et les lie aux entreprises
+     * 5. EmployeSeeder - Crée les employés pour chaque entreprise
+     * 6. ClientSeeder - Crée les clients pour chaque entreprise
      */
     public function run(): void
     {
@@ -22,6 +23,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             SuperAdminSeeder::class,
             EntrepriseSeeder::class,
+            AbonnementSeeder::class,
             EmployeSeeder::class,
             ClientSeeder::class,
         ]);

@@ -17,9 +17,17 @@ class Abonnement extends Model
         'formule',
         'description',
 
-        // Limites
-        'nombre_agents_max',
-        'nombre_sites_max',
+        // Tarification par employé
+        'employes_min',
+        'employes_max',
+        'tarif_par_employe',
+        'tarif_employe_supplementaire',
+        'sites_max',
+
+        // Type et durée
+        'type_formule',
+        'duree_mois',
+        'jours_essai',
 
         // Dates
         'date_debut',
@@ -27,10 +35,8 @@ class Abonnement extends Model
         'date_fin_essai',
 
         // Facturation
-        'montant_mensuel',
         'montant_total',
         'cycle_facturation',
-        'tarif_agents_supplementaires',
         'nombre_agents_inclus',
 
         // Statut
@@ -64,9 +70,9 @@ class Abonnement extends Model
         'date_fin_essai' => 'date',
         'date_dernier_paiement' => 'date',
         'date_prochain_paiement' => 'date',
-        'montant_mensuel' => 'decimal:2',
         'montant_total' => 'decimal:2',
-        'tarif_agents_supplementaires' => 'decimal:2',
+        'tarif_par_employe' => 'decimal:2',
+        'tarif_employe_supplementaire' => 'decimal:2',
         'fonctionnalites' => 'array',
         'modules_accessibles' => 'array',
     ];
@@ -74,11 +80,30 @@ class Abonnement extends Model
     // ── Constantes ─────────────────────────────────────────────────────────
 
     public const FORMULES = [
-        'essai' => 'Essai',
         'basic' => 'Basic',
-        'standard' => 'Standard',
         'premium' => 'Premium',
         'enterprise' => 'Enterprise',
+    ];
+
+    // Prix fixes par formule (mensuel)
+    public const PRIX_MENSUEL = [
+        'basic' => 100000,      // 100,000 CFA/mois
+        'premium' => 150000,   // 150,000 CFA/mois
+        'enterprise' => 200000, // 200,000 CFA/mois
+    ];
+
+    // Limites d'employés par formule
+    public const LIMITES_EMPLOYES = [
+        'basic' => ['min' => 20, 'max' => 40],
+        'premium' => ['min' => 41, 'max' => 100],
+        'enterprise' => ['min' => 101, 'max' => 300],
+    ];
+
+    // Durée par défaut en mois (null = non limitée)
+    public const DUREES_DEFAUT = [
+        'basic' => 3,           // 3 mois
+        'premium' => null,     // Non limitée
+        'enterprise' => null,  // Non limitée
     ];
 
     public const STATUTS = [
@@ -209,16 +234,87 @@ class Abonnement extends Model
     }
 
     /**
+     * Calcul du montant mensuel (prix fixe selon la formule)
+     * Note: Le prix est maintenant fixe par formule, non plus par employé
+     */
+    public function calculerMontantMensuel(int $nombreEmployes = null): float
+    {
+        // Prix fixe selon la formule
+        return self::PRIX_MENSUEL[$this->formule] ?? 0;
+    }
+
+    /**
+     * Prix mensuel de l'abonnement (prix fixe)
+     */
+    public function getPrixMensuelAttribute(): float
+    {
+        return self::PRIX_MENSUEL[$this->formule] ?? 0;
+    }
+
+    /**
+     * Durée par défaut en mois (null = non limitée)
+     */
+    public function getDureeDefautAttribute(): ?int
+    {
+        return self::DUREES_DEFAUT[$this->formule] ?? null;
+    }
+
+    /**
+     * Durée maximale en mois (null = illimitée)
+     */
+    public function getDureeMaximaleAttribute(): ?int
+    {
+        return self::DUREES_DEFAUT[$this->formule] ?? null;
+    }
+
+    /**
+     * Nombre minimum d'employés
+     */
+    public function getEmployesMinAttribute(): int
+    {
+        return self::LIMITES_EMPLOYES[$this->formule]['min'] ?? 1;
+    }
+
+    /**
+     * Nombre maximum d'employés
+     */
+    public function getEmployesMaxAttribute(): int
+    {
+        return self::LIMITES_EMPLOYES[$this->formule]['max'] ?? 10;
+    }
+
+    /**
+     * Vérifier si le nombre d'employés est dans la limite
+     */
+    public function estDansLaLimite(int $nombreEmployes): bool
+    {
+        return $nombreEmployes >= $this->employes_min && $nombreEmployes <= $this->employes_max;
+    }
+
+    /**
+     * Obtenir la formule recommandée selon le nombre d'employés
+     */
+    public static function getFormuleRecommandée(int $nombreEmployes): string
+    {
+        foreach (self::LIMITES_EMPLOYES as $formule => $limites) {
+            if ($nombreEmployes >= $limites['min'] && $nombreEmployes <= $limites['max']) {
+                return $formule;
+            }
+        }
+        return 'enterprise';
+    }
+
+    /**
      * Montant total sur la période
      */
     public function getMontantPeriodeAttribute(): float
     {
         return match ($this->cycle_facturation) {
-            'mensuel' => $this->montant_mensuel,
-            'trimestriel' => $this->montant_mensuel * 3,
-            'semestriel' => $this->montant_mensuel * 6,
-            'annuel' => $this->montant_mensuel * 12,
-            default => $this->montant_mensuel,
+            'mensuel' => $this->montant_total ?? 0,
+            'trimestriel' => ($this->montant_total ?? 0) * 3,
+            'semestriel' => ($this->montant_total ?? 0) * 6,
+            'annuel' => ($this->montant_total ?? 0) * 12,
+            default => $this->montant_total ?? 0,
         };
     }
 
@@ -240,7 +336,9 @@ class Abonnement extends Model
         $this->update([
             'date_debut' => $data['date_debut'] ?? now(),
             'date_fin' => $data['date_fin'],
-            'montant_mensuel' => $data['montant_mensuel'] ?? $this->montant_mensuel,
+            'employes_min' => $data['employes_min'] ?? $this->employes_min,
+            'employes_max' => $data['employes_max'] ?? $this->employes_max,
+            'tarif_par_employe' => $data['tarif_par_employe'] ?? $this->tarif_par_employe,
             'cycle_facturation' => $data['cycle_facturation'] ?? $this->cycle_facturation,
             'est_active' => true,
             'est_en_essai' => false,
@@ -307,7 +405,7 @@ class Abonnement extends Model
     /**
      * Fin de la période d'essai - basculer vers abonnement normal
      */
-    public function cloturerEssai(string $formule, \Carbon\Carbon $dateFin, float $montantMensuel): self
+    public function cloturerEssai(string $formule, \Carbon\Carbon $dateFin, float $tarifParEmploye): self
     {
         $this->update([
             'est_en_essai' => false,
@@ -315,28 +413,14 @@ class Abonnement extends Model
             'date_fin_essai' => null,
             'date_debut' => now(),
             'date_fin' => $dateFin,
-            'montant_mensuel' => $montantMensuel,
+            'tarif_par_employe' => $tarifParEmploye,
+            'employes_min' => self::LIMITES_EMPLOYES[$formule]['min'] ?? 1,
+            'employes_max' => self::LIMITES_EMPLOYES[$formule]['max'] ?? 10,
             'est_active' => true,
             'statut' => 'actif',
         ]);
 
         return $this;
-    }
-
-    /**
-     * Peut ajouter un agent (dans la limite)
-     */
-    public function peutAjouterAgent(int $nombreAgentsActuels): bool
-    {
-        return $nombreAgentsActuels < $this->nombre_agents_max;
-    }
-
-    /**
-     * Nombre d'agents restants disponibles
-     */
-    public function agentsRestants(int $nombreAgentsActuels): int
-    {
-        return max(0, $this->nombre_agents_max - $nombreAgentsActuels);
     }
 
     /**

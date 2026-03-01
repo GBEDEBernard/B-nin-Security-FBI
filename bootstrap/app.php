@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'client' => \App\Http\Middleware\ClientMiddleware::class,
             // Middleware pour vérifier qu'aucun utilisateur n'est connecté (multi-guard)
             'multi-guest' => \App\Http\Middleware\MultiGuardGuest::class,
+            // Middleware de vérification d'abonnement
+            'abonnement.limite' => \App\Http\Middleware\CheckAbonnementLimite::class,
         ]);
 
         // MIDDLEWARE GLOBAL UNIQUEMENT pour le timeout de session

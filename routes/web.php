@@ -114,6 +114,10 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
     // Dashboard
     Route::get('/', [SuperAdminController::class, 'index'])->name('index');
 
+    // Profil
+    Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
+    Route::put('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update');
+
     // Gestion des entreprises (tenants)
     Route::prefix('entreprises')->name('entreprises.')->group(function () {
         Route::get('/', [SuperAdminController::class, 'entreprisesIndex'])->name('index');
@@ -311,7 +315,7 @@ Route::middleware(['tenant', 'entreprise'])->prefix('admin/entreprise')->name('a
     Route::prefix('employes')->name('employes.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Entreprise\EmployeController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\Entreprise\EmployeController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Entreprise\EmployeController::class, 'store'])->name('store');
+        Route::post('/', [\App\Http\Controllers\Entreprise\EmployeController::class, 'store'])->name('store')->middleware('abonnement.limite');
         Route::get('/{id}', [\App\Http\Controllers\Entreprise\EmployeController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [\App\Http\Controllers\Entreprise\EmployeController::class, 'edit'])->name('edit');
         Route::put('/{id}', [\App\Http\Controllers\Entreprise\EmployeController::class, 'update'])->name('update');

@@ -152,6 +152,63 @@ class Entreprise extends Model
         return data_get($this->parametres, $cle, $defaut);
     }
 
+    /**
+     * Obtenir la limite d'employés selon l'abonnement
+     */
+    public function getLimiteEmployesAttribute(): int
+    {
+        if ($this->abonnement) {
+            return $this->abonnement->employes_max;
+        }
+        return $this->nombre_agents_max ?? 0;
+    }
+
+    /**
+     * Obtenir le prix mensuel de l'abonnement
+     */
+    public function getPrixAbonnementAttribute(): float
+    {
+        if ($this->abonnement) {
+            return $this->abonnement->prix_mensuel;
+        }
+        return $this->montant_mensuel ?? 0;
+    }
+
+    /**
+     * Obtenir la formule de l'abonnement
+     */
+    public function getFormuleActuelleAttribute(): string
+    {
+        if ($this->abonnement) {
+            return $this->abonnement->formule;
+        }
+        return $this->formule ?? 'basic';
+    }
+
+    /**
+     * Vérifier si l'entreprise peut ajouter un employé
+     */
+    public function peutAjouterEmploye(): bool
+    {
+        return $this->nombreAgentsActifs() < $this->limite_employes;
+    }
+
+    /**
+     * Obtenir le nombre d'employés restants possibles
+     */
+    public function employesRestants(): int
+    {
+        return max(0, $this->limite_employes - $this->nombreAgentsActifs());
+    }
+
+    /**
+     * Obtenir la formule recommandée selon le nombre d'employés
+     */
+    public static function getFormuleRecommandee(int $nombreEmployes): string
+    {
+        return Abonnement::getFormuleRecommandée($nombreEmployes);
+    }
+
     public function getRayonGpsDefaut(): int
     {
         return $this->getParametre('rayon_gps_defaut', 300);
