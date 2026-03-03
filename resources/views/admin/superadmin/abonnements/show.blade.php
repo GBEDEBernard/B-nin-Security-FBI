@@ -452,7 +452,7 @@
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="factures-tab" data-bs-toggle="tab" data-bs-target="#factures" type="button" role="tab">
-                            <i class="bi bi-receipt me-2"></i>Factures ({{ $abonnement->factures->count() ?? 0 }})
+                            <i class="bi bi-receipt me-2"></i>Factures ({{ $factures->count() ?? 0 }})
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -669,7 +669,7 @@
 
                     <!-- Onglet Factures -->
                     <div class="tab-pane fade" id="factures" role="tabpanel" aria-labelledby="factures-tab">
-                        @if($abonnement->factures->count() > 0)
+                        @if($factures->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-ultra">
                                 <thead>
@@ -681,11 +681,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($abonnement->factures as $facture)
+                                    @foreach($factures as $facture)
                                     <tr>
                                         <td><span class="fw-semibold">{{ $facture->numero_facture ?? $facture->id }}</span></td>
                                         <td>{{ $facture->created_at->format('d/m/Y') }}</td>
-                                        <td class="fw-bold">{{ number_format($facture->montant ?? 0, 0, ',', ' ') }} FCAF</td>
+                                        <td class="fw-bold">{{ number_format($facture->montant_ttc ?? 0, 0, ',', ' ') }} FCAF</td>
                                         <td>
                                             @if($facture->statut == 'payee')
                                             <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Payée</span>

@@ -145,7 +145,11 @@ class AbonnementController extends Controller
     {
         $abonnement = Abonnement::with(['entreprises', 'factures'])->findOrFail($id);
 
-        return view('admin.superadmin.abonnements.show', compact('abonnement'));
+        // Charger les factures via les entreprises liées à cet abonnement
+        $entrepriseIds = $abonnement->entreprises->pluck('id');
+        $factures = \App\Models\Facture::whereIn('entreprise_id', $entrepriseIds)->latest()->get();
+
+        return view('admin.superadmin.abonnements.show', compact('abonnement', 'factures'));
     }
 
     /**

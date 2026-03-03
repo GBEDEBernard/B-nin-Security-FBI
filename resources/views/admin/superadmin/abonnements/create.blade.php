@@ -268,7 +268,7 @@
 
                                     <div class="mb-3">
                                         <label for="duree_mois" class="form-label">Durée (mois)</label>
-                                        <input type="number" class="form-control @error('duree_mois') is-invalid @-error"
+                                        <input type="number" class="form-control @error('duree_mois') is-invalid @enderror"
                                             id="duree_mois" name="duree_mois" value="{{ old('duree_mois') }}" min="1">
                                         <small class="text-muted">Laissez vide pour illimité</small>
                                         @error('duree_mois')
