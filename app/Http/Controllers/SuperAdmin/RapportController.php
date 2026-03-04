@@ -25,6 +25,7 @@ class RapportController extends Controller
      */
     public function index()
     {
+        // Statistiques de base
         $stats = [
             'total_entreprises' => Entreprise::count(),
             'entreprises_actives' => Entreprise::where('est_active', true)->count(),
@@ -36,7 +37,57 @@ class RapportController extends Controller
             'chiffre_affaires_paye' => Facture::sum('montant_paye'),
         ];
 
-        return view('admin.superadmin.rapports.index', compact('stats'));
+        // Entreprises avec leurs compteurs
+        $entreprises = Entreprise::withCount(['employes', 'clients', 'contratsPrestation', 'factures'])
+            ->with('factures')
+            ->orderBy('nom_entreprise')
+            ->get();
+
+        // Statistiques par catégorie d'employés
+        $statsParCategorie = Employe::select('categorie')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('categorie')
+            ->pluck('total', 'categorie')
+            ->toArray();
+
+        // Statistiques par type de client
+        $statsParTypeClient = Client::select('type_client')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('type_client')
+            ->pluck('total', 'type_client')
+            ->toArray();
+
+        // Chiffre d'affaires par mois (derniers 12 mois)
+        $caParMois = $this->getCaParMois();
+
+        return view('admin.superadmin.rapports.index', compact(
+            'stats',
+            'entreprises',
+            'statsParCategorie',
+            'statsParTypeClient',
+            'caParMois'
+        ));
+    }
+
+    /**
+     * Obtenir le CA par mois pour les 12 derniers mois
+     */
+    private function getCaParMois()
+    {
+        $labels = [];
+        $data = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $labels[] = $date->format('M');
+
+            $ca = Facture::whereYear('date_emission', $date->year)
+                ->whereMonth('date_emission', $date->month)
+                ->sum('montant_ttc');
+            $data[] = (float) $ca;
+        }
+
+        return ['labels' => $labels, 'data' => $data];
     }
 
     /**
@@ -47,6 +98,7 @@ class RapportController extends Controller
         $entrepriseId = $request->get('entreprise_id');
 
         $entreprises = Entreprise::withCount(['employes', 'clients', 'contratsPrestation', 'factures'])
+            ->with(['employes', 'clients', 'contratsPrestation', 'factures'])
             ->orderBy('nom_entreprise')
             ->get();
 
@@ -89,7 +141,9 @@ class RapportController extends Controller
             }),
         ];
 
-        return view('admin.superadmin.rapports.financier', compact('factures', 'stats', 'dateDebut', 'dateFin'));
+        $entreprises = Entreprise::orderBy('nom_entreprise')->get();
+
+        return view('admin.superadmin.rapports.financier', compact('factures', 'stats', 'dateDebut', 'dateFin', 'entreprises'));
     }
 
     /**
