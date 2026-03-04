@@ -34,6 +34,22 @@ class Facture extends Model
         'description',
     ];
 
+    /**
+     * Casts des attributs pour convertir les dates en objets Carbon
+     */
+    protected $casts = [
+        'date_emission' => 'datetime',
+        'date_echeance' => 'datetime',
+        'date_paiement' => 'datetime',
+        'mois' => 'integer',
+        'annee' => 'integer',
+        'montant_ht' => 'decimal:2',
+        'tva' => 'decimal:2',
+        'montant_ttc' => 'decimal:2',
+        'montant_paye' => 'decimal:2',
+        'montant_restant' => 'decimal:2',
+    ];
+
     public function entreprise(): BelongsTo
     {
         return $this->belongsTo(Entreprise::class);
@@ -52,5 +68,13 @@ class Facture extends Model
     public function paiements(): HasMany
     {
         return $this->hasMany(PaiementFacture::class, 'facture_id');
+    }
+
+    /**
+     * L'employé qui a créé la facture
+     */
+    public function createur(): BelongsTo
+    {
+        return $this->belongsTo(Employe::class, 'cree_par');
     }
 }

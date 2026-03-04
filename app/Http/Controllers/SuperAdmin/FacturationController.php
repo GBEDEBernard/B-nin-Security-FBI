@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Facture;
 use App\Models\Entreprise;
 use App\Models\Client;
+use App\Models\PaiementFacture;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FacturationController extends Controller
 {
@@ -23,38 +26,75 @@ class FacturationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Facture::with(['entreprise', 'client', 'contrat']);
+        $query = Facture::with(['entreprise', 'contrat'])
+            ->select('factures.*')
+            ->leftJoin('clients', 'factures.client_id', '=', 'clients.id');
 
         // Filtres
         if ($request->filled('entreprise_id')) {
-            $query->where('entreprise_id', $request->entreprise_id);
+            $query->where('factures.entreprise_id', $request->entreprise_id);
         }
 
         if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
+            $query->where('factures.statut', $request->statut);
         }
 
         if ($request->filled('date_debut')) {
-            $query->whereDate('date_emission', '>=', $request->date_debut);
+            $query->whereDate('factures.date_emission', '>=', $request->date_debut);
         }
 
         if ($request->filled('date_fin')) {
-            $query->whereDate('date_emission', '<=', $request->date_fin);
+            $query->whereDate('factures.date_emission', '<=', $request->date_fin);
         }
 
-        $factures = $query->orderByDesc('date_emission')->paginate(20);
+        $factures = $query->orderByDesc('factures.date_emission')->paginate(20);
+
+        // Charger les clients sans global scope
+        $factureIds = $factures->pluck('id');
+        $clientsMap = [];
+        if ($factureIds->isNotEmpty()) {
+            $clients = Client::withoutGlobalScopes()
+                ->whereIn('id', Facture::whereIn('id', $factureIds)->pluck('client_id')->unique())
+                ->get()
+                ->keyBy('id');
+
+            foreach ($factures as $facture) {
+                $facture->setRelation('client', $clients->get($facture->client_id));
+            }
+        }
 
         $entreprises = Entreprise::orderBy('nom_entreprise')->get();
 
+        // Stats calculées correctement
+        $allFacturesQuery = Facture::query();
+        if ($request->filled('entreprise_id')) {
+            $allFacturesQuery->where('entreprise_id', $request->entreprise_id);
+        }
+        if ($request->filled('statut')) {
+            $allFacturesQuery->where('statut', $request->statut);
+        }
+        if ($request->filled('date_debut')) {
+            $allFacturesQuery->whereDate('date_emission', '>=', $request->date_debut);
+        }
+        if ($request->filled('date_fin')) {
+            $allFacturesQuery->whereDate('date_emission', '<=', $request->date_fin);
+        }
+
+        $totalMontantPaye = $allFacturesQuery->clone()->sum('montant_paye');
+        $totalMontantRestant = $allFacturesQuery->clone()->sum('montant_restant');
+
         $stats = [
-            'total_factures' => Facture::count(),
-            'montant_total' => Facture::sum('montant_ttc'),
-            'montant_paye' => Facture::sum('montant_paye'),
-            'montant_restant' => Facture::sum('montant_restant'),
-            'factures_impayees' => Facture::where('statut', '!=', 'payee')->count(),
+            'total_factures' => $allFacturesQuery->clone()->count(),
+            'montant_total' => $allFacturesQuery->clone()->sum('montant_ttc'),
+            'montant_paye' => $totalMontantPaye,
+            'montant_restant' => $totalMontantRestant,
+            'factures_impayees' => $allFacturesQuery->clone()->where('statut', '!=', 'payee')->count(),
         ];
 
-        return view('admin.superadmin.facturation.index', compact('factures', 'entreprises', 'stats'));
+        return view(
+            'admin.superadmin.facturation.index',
+            compact('factures', 'entreprises', 'stats', 'request')
+        );
     }
 
     /**
@@ -62,10 +102,67 @@ class FacturationController extends Controller
      */
     public function show($id)
     {
-        $facture = Facture::with(['entreprise', 'client', 'contrat', 'paiements'])
+        $facture = Facture::with(['entreprise', 'contrat', 'paiements'])
             ->findOrFail($id);
 
+        // Charger le client sans global scope
+        $client = Client::withoutGlobalScopes()->find($facture->client_id);
+        $facture->setRelation('client', $client);
+
         return view('admin.superadmin.facturation.show', compact('facture'));
+    }
+
+    /**
+     * Générer le PDF d'une facture
+     */
+    public function generatePdf($id)
+    {
+        $facture = Facture::with(['entreprise', 'contrat', 'paiements'])
+            ->findOrFail($id);
+
+        // Charger le client sans global scope
+        $client = Client::withoutGlobalScopes()->find($facture->client_id);
+        $facture->setRelation('client', $client);
+
+        // Charger l'employé qui a créé la facture
+        $facture->load('createur');
+
+        $pdf = Pdf::loadView('admin.superadmin.facturation.pdf.facture', [
+            'facture' => $facture,
+            'client' => $client,
+            'entreprise' => $facture->entreprise,
+            'contrat' => $facture->contrat,
+            'paiements' => $facture->paiements,
+        ]);
+
+        $filename = 'Facture-' . $facture->numero_facture . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Imprimer une facture (vue navigateur)
+     */
+    public function printPdf($id)
+    {
+        $facture = Facture::with(['entreprise', 'contrat', 'paiements'])
+            ->findOrFail($id);
+
+        // Charger le client sans global scope
+        $client = Client::withoutGlobalScopes()->find($facture->client_id);
+        $facture->setRelation('client', $client);
+
+        // Charger l'employé qui a créé la facture
+        $facture->load('createur');
+
+        return view('admin.superadmin.facturation.pdf.facture', [
+            'facture' => $facture,
+            'client' => $client,
+            'entreprise' => $facture->entreprise,
+            'contrat' => $facture->contrat,
+            'paiements' => $facture->paiements,
+            'print' => true,
+        ]);
     }
 
     /**
@@ -73,7 +170,7 @@ class FacturationController extends Controller
      */
     public function paiements(Request $request)
     {
-        $query = \App\Models\PaiementFacture::with(['facture', 'facture.entreprise']);
+        $query = PaiementFacture::with(['facture', 'facture.entreprise']);
 
         if ($request->filled('entreprise_id')) {
             $query->whereHas('facture', function ($q) use ($request) {
@@ -104,7 +201,7 @@ class FacturationController extends Controller
      */
     public function creances(Request $request)
     {
-        $query = Facture::with(['entreprise', 'client'])
+        $query = Facture::with(['entreprise'])
             ->where('montant_restant', '>', 0)
             ->orderByDesc('date_echeance');
 
@@ -113,6 +210,19 @@ class FacturationController extends Controller
         }
 
         $creances = $query->paginate(20);
+
+        // Charger les clients sans global scope
+        $creanceIds = $creances->pluck('id');
+        if ($creanceIds->isNotEmpty()) {
+            $clients = Client::withoutGlobalScopes()
+                ->whereIn('id', Facture::whereIn('id', $creanceIds)->pluck('client_id')->unique())
+                ->get()
+                ->keyBy('id');
+
+            foreach ($creances as $creance) {
+                $creance->setRelation('client', $clients->get($creance->client_id));
+            }
+        }
 
         $stats = [
             'total_creances' => $creances->sum('montant_restant'),

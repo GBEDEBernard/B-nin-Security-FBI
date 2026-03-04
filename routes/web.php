@@ -227,7 +227,10 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::get('/paiements', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'paiements'])->name('paiements');
         Route::get('/creances', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'creances'])->name('creances');
         Route::get('/statistiques', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'statistiques'])->name('statistiques');
+        Route::get('/export', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'export'])->name('export');
         Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'generatePdf'])->name('pdf');
+        Route::get('/{id}/print', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'printPdf'])->name('print');
     });
 
     // Rapports globaux
