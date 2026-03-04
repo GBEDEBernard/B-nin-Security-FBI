@@ -6,24 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            // Rendre cree_par nullable et de type string pour accepter les deux formats
-            $table->string('cree_par', 100)->nullable()->change();
+            // 1. Supprimer la contrainte FK existante
+            $table->dropForeign(['cree_par']);
+
+            // 2. Rendre le champ nullable
+            $table->unsignedBigInteger('cree_par')->nullable()->change();
+
+            // 3. Rétablir la FK avec nullOnDelete
+            $table->foreign('cree_par')
+                  ->references('id')
+                  ->on('employes')
+                  ->nullOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            $table->unsignedBigInteger('cree_par')->change();
+            $table->dropForeign(['cree_par']);
+            $table->unsignedBigInteger('cree_par')->nullable(false)->change();
+            $table->foreign('cree_par')
+                  ->references('id')
+                  ->on('employes');
         });
     }
 };
