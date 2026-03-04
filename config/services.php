@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Configuration FEDAPAY pour les paiements
+    'fedapay' => [
+        'api_key' => env('FEDAPAY_API_KEY', ''),
+        'secret_key' => env('FEDAPAY_SECRET_KEY', ''),
+        'environment' => env('FEDAPAY_ENVIRONMENT', 'sandbox'), // 'sandbox' ou 'production'
+    ],
+
 ];

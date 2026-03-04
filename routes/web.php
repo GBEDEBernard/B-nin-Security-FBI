@@ -130,6 +130,15 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::post('/{id}/connect', [SuperAdminController::class, 'switchToEntreprise'])->name('connect');
         Route::post('/{id}/activate', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'activate'])->name('activate');
         Route::post('/{id}/deactivate', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'deactivate'])->name('deactivate');
+
+        // Flux d'abonnement et paiement FEDAPAY
+        Route::get('/{id}/abonnement', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'abonnement'])->name('abonnement');
+        Route::post('/{id}/formule', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'choisirFormule'])->name('formule');
+        Route::get('/{id}/payer', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'payer'])->name('payer');
+        Route::post('/{id}/initier-paiement', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'initierPaiement'])->name('initier-paiement');
+        Route::post('/{id}/callback', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'callback'])->name('callback');
+        Route::get('/{id}/paiement-succes', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'paiementSucces'])->name('paiement-succes');
+        Route::get('/{id}/facture/{facture}', [\App\Http\Controllers\SuperAdmin\EntrepriseController::class, 'afficherFacture'])->name('facture');
     });
 
     // Gestion des contrats (Super Admin - toutes entreprises)

@@ -17,6 +17,11 @@ class Paie extends Model
         // Références
         'entreprise_id',
         'employe_id',
+        'facture_id',
+
+        // Mode de paiement (pour les paiements d'abonnement)
+        'mode_paiement',
+        'reference_paiement',
 
         // Période
         'mois',
@@ -61,6 +66,9 @@ class Paie extends Model
         'statut',
         'bulletin_pdf',
         'details_calcul',
+
+        // Description (pour les paiements d'abonnement)
+        'description',
 
         // Utilisateurs
         'calcule_par',

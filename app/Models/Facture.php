@@ -31,6 +31,7 @@ class Facture extends Model
         'fichier_pdf',
         'notes',
         'cree_par',
+        'description',
     ];
 
     public function entreprise(): BelongsTo
