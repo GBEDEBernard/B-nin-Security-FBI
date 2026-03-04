@@ -264,6 +264,8 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::post('/', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'store'])->name('store');
         Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'show'])->name('show');
         Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/mark-read', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
         Route::get('/statistiques', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'statistiques'])->name('statistiques');
     });
 

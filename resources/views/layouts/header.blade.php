@@ -113,30 +113,96 @@
        <!--end::Messages Dropdown Menu-->
 
        <!--begin::Notifications Dropdown Menu-->
+       @php
+       // Récupérer les notifications pour l'utilisateur connecté
+       $userWeb = Auth::guard('web')->user();
+       $userEmploye = Auth::guard('employe')->user();
+       $userClient = Auth::guard('client')->user();
+
+       $currentUser = $userWeb ?? $userEmploye ?? $userClient;
+       $currentGuard = $userWeb ? 'web' : ($userEmploye ? 'employe' : ($userClient ? 'client' : null));
+
+       $notifications = [];
+       $notificationsCount = 0;
+
+       if ($currentUser && $currentGuard) {
+       $notifiableType = match($currentGuard) {
+       'web' => 'App\\Models\\User',
+       'employe' => 'App\\Models\\Employe',
+       'client' => 'App\\Models\\Client',
+       default => null
+       };
+
+       if ($notifiableType) {
+       $notifications = \App\Models\Notification::where('notifiable_type', $notifiableType)
+       ->where('notifiable_id', $currentUser->id)
+       ->orderBy('created_at', 'desc')
+       ->limit(10)
+       ->get();
+
+       $notificationsCount = \App\Models\Notification::where('notifiable_type', $notifiableType)
+       ->where('notifiable_id', $currentUser->id)
+       ->whereNull('lu_le')
+       ->count();
+       }
+       }
+       @endphp
        <li class="nav-item dropdown notifications-dropdown">
          <a class="nav-link" data-bs-toggle="dropdown" href="#">
            <i class="bi bi-bell-fill"></i>
-           <span class="navbar-badge badge text-bg-warning">5</span>
+           @if($notificationsCount > 0)
+           <span class="navbar-badge badge text-bg-danger">{{ $notificationsCount > 9 ? '9+' : $notificationsCount }}</span>
+           @endif
          </a>
          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <span class="dropdown-item dropdown-header">5 Notifications</span>
+           <span class="dropdown-item dropdown-header">{{ $notificationsCount }} Notification{{ $notificationsCount > 1 ? 's' : '' }} non lue{{ $notificationsCount > 1 ? 's' : '' }}</span>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-envelope me-2"></i> 4 nouveaux messages
-             <span class="float-end text-secondary fs-7">3 mins</span>
+
+           @if($notifications->count() > 0)
+           @foreach($notifications->take(5) as $notification)
+           <a href="#" class="dropdown-item notification-item {{ is_null($notification->lu_le) ? 'bg-light' : '' }}" data-id="{{ $notification->id }}">
+             <div class="d-flex align-items-start">
+               <div class="me-3">
+                 <i class="bi {{ $notification->type_icon ?? 'bi-bell-fill' }} fs-5"
+                   style="color: {{ match($notification->type) {
+                         'success' => '#198754',
+                         'warning' => '#ffc107',
+                         'error' => '#dc3545',
+                         default => '#0d6efd'
+                     } }};"></i>
+               </div>
+               <div class="flex-grow-1">
+                 <h6 class="dropdown-item-title mb-1">{{ $notification->titre }}</h6>
+                 <p class="fs-7 text-truncate mb-1" style="max-width: 200px;">{{ $notification->message }}</p>
+                 <p class="fs-7 text-secondary mb-0">
+                   <i class="bi bi-clock-fill me-1"></i> {{ $notification->temps_ecoule }}
+                 </p>
+               </div>
+               @if(is_null($notification->lu_le))
+               <div class="ms-2">
+                 <span class="badge bg-danger rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>
+               </div>
+               @endif
+             </div>
            </a>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-people-fill me-2"></i> 8 demandes de congés
-             <span class="float-end text-secondary fs-7">12 heures</span>
-           </a>
+           @endforeach
+           @else
+           <div class="dropdown-item text-center text-muted py-3">
+             <i class="bi bi-bell-slash fs-4 mb-2"></i>
+             <p class="mb-0">Aucune notification</p>
+           </div>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-exclamation-triangle me-2"></i> 3 nouveaux incidents
-             <span class="float-end text-secondary fs-7">2 jours</span>
+           @endif
+
+           <a href="{{ route('admin.superadmin.notifications.index') }}" class="dropdown-item dropdown-footer">
+             <i class="bi bi-list-ul me-1"></i> Voir toutes les notifications
            </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
+           @if($notificationsCount > 0)
+           <a href="#" class="dropdown-item dropdown-footer text-center text-success mark-all-read-btn" id="markAllReadBtn">
+             <i class="bi bi-check-all me-1"></i> Tout marquer comme lu
+           </a>
+           @endif
          </div>
        </li>
        <!--end::Notifications Dropdown Menu-->
@@ -670,6 +736,49 @@
    document.addEventListener('keypress', function() {
      if (!sessionWillExpire) {
        sendHeartbeat();
+     }
+   });
+ </script>
+
+ {{-- Notifications JavaScript --}}
+ <script>
+   document.addEventListener('DOMContentLoaded', function() {
+     // Marquer une notification comme lue au clic
+     var notificationItems = document.querySelectorAll('.notification-item');
+     notificationItems.forEach(function(item) {
+       item.addEventListener('click', function(e) {
+         e.preventDefault();
+         var notificationId = this.getAttribute('data-id');
+
+         fetch('/admin/superadmin/notifications/' + notificationId + '/mark-read', {
+           method: 'POST',
+           headers: {
+             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+             'Content-Type': 'application/json'
+           }
+         }).then(function() {
+           // Recharger la page
+           location.reload();
+         });
+       });
+     });
+
+     // Marquer toutes les notifications comme lues
+     var markAllReadBtn = document.getElementById('markAllReadBtn');
+     if (markAllReadBtn) {
+       markAllReadBtn.addEventListener('click', function(e) {
+         e.preventDefault();
+
+         fetch('{{ route("admin.superadmin.notifications.mark-all-read") }}', {
+           method: 'POST',
+           headers: {
+             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+             'Content-Type': 'application/json'
+           }
+         }).then(function() {
+           location.reload();
+         });
+       });
      }
    });
  </script>
