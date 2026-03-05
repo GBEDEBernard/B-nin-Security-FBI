@@ -188,6 +188,11 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
     // Paramètres globaux
     Route::prefix('parametres')->name('parametres.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'index'])->name('index');
+
+        // Route pour mettre à jour une catégorie de paramètres (utilisée par les formulaires dans index.blade.php)
+        Route::put('/categorie/{categorie}', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'updateCategorie'])->name('updateCategorie');
+
+        // Routes individuelles pour chaque catégorie (legacy - encore utilisées ailleurs)
         Route::put('/general', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'general'])->name('general');
         Route::put('/email', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'email'])->name('email');
         Route::put('/security', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'security'])->name('security');
@@ -197,6 +202,18 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::post('/clear-cache', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'clearCache'])->name('clear-cache');
         Route::get('/logs', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'logs'])->name('logs');
         Route::post('/optimize', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'optimize'])->name('optimize');
+
+        // Routes manquantes - Status et Backups
+        Route::get('/status', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'status'])->name('status');
+        Route::get('/backups', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'backups'])->name('backups');
+        Route::post('/backup', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'createBackup'])->name('create-backup');
+        Route::delete('/backup/{filename}', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'deleteBackup'])->name('delete-backup');
+        Route::get('/download-logs', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'downloadLogs'])->name('download-logs');
+        Route::post('/purge-logs', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'purgeLogs'])->name('purge-logs');
+        Route::get('/export', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'export'])->name('export');
+        Route::post('/import', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'import'])->name('import');
+        Route::post('/maintenance/enable', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'enableMaintenance'])->name('maintenance.enable');
+        Route::post('/maintenance/disable', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'disableMaintenance'])->name('maintenance.disable');
     });
 
     // Abonnements
@@ -264,6 +281,7 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::post('/', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'store'])->name('store');
         Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'show'])->name('show');
         Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'destroy'])->name('destroy');
+        Route::post('/destroy-multiple', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'destroyMultiple'])->name('destroyMultiple');
         Route::post('/{id}/mark-read', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'markAsRead'])->name('mark-read');
         Route::post('/mark-all-read', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
         Route::get('/statistiques', [\App\Http\Controllers\SuperAdmin\NotificationController::class, 'statistiques'])->name('statistiques');
