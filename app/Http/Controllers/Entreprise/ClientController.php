@@ -32,12 +32,24 @@ class ClientController extends Controller
 
         $query = Client::where('entreprise_id', $entrepriseId);
 
-        if ($request->filled('type')) {
-            $query->where('type_client', $request->type);
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                    ->orWhere('prenoms', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('telephone', 'like', "%{$search}%")
+                    ->orWhere('raison_sociale', 'like', "%{$search}%");
+            });
         }
 
-        if ($request->filled('statut')) {
-            $query->where('est_actif', $request->statut === 'active');
+        if ($request->filled('type_client')) {
+            $query->where('type_client', $request->type_client);
+        }
+
+        if ($request->filled('est_actif')) {
+            $query->where('est_actif', $request->est_actif == '1');
         }
 
         $clients = $query->orderBy('nom')->paginate(15);

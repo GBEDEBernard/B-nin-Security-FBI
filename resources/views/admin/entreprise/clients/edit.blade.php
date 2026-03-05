@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nouveau Client - Entreprise')
+@section('title', 'Modifier le client - Entreprise')
 
 @push('styles')
 <style>
@@ -43,15 +43,13 @@
         margin-bottom: 5px;
     }
 
-    .form-control,
-    .form-select {
+    .form-control, .form-select {
         border-radius: 8px;
         border: 1px solid #ced4da;
         padding: 10px 12px;
     }
 
-    .form-control:focus,
-    .form-select:focus {
+    .form-control:focus, .form-select:focus {
         border-color: #198754;
         box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
     }
@@ -113,6 +111,17 @@
         color: #0d6efd;
         margin-right: 8px;
     }
+
+    .avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 600;
+    }
 </style>
 @endpush
 
@@ -122,15 +131,15 @@
         <div class="row align-items-center">
             <div class="col-sm-6">
                 <h3 class="mb-0">
-                    <i class="bi bi-person-vcard me-2 text-success"></i>
-                    Nouveau Client
+                    <i class="bi bi-person-pen me-2 text-success"></i>
+                    Modifier le Client
                 </h3>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-end">
                     <li class="breadcrumb-item"><a href="{{ route('admin.entreprise.index') }}">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.entreprise.clients.index') }}">Clients</a></li>
-                    <li class="breadcrumb-item active">Créer</li>
+                    <li class="breadcrumb-item active">Modifier</li>
                 </ol>
             </div>
         </div>
@@ -140,8 +149,44 @@
 <div class="app-content">
     <div class="container-fluid">
 
-        <form action="{{ route('admin.entreprise.clients.store') }}" method="POST" id="clientForm">
+        <form action="{{ route('admin.entreprise.clients.update', $client->id) }}" method="POST" id="clientForm">
             @csrf
+            @method('PUT')
+
+            {{-- Header with Avatar --}}
+            <div class="card form-card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="avatar-lg bg-{{ $client->type_client == 'particulier' ? 'purple' : ($client->type_client == 'entreprise' ? 'primary' : 'warning') }} text-white">
+                                @if($client->type_client == 'particulier')
+                                    {{ strtoupper(substr($client->prenoms ?? 'N', 0, 1)) }}{{ strtoupper(substr($client->nom ?? 'A', 0, 1)) }}
+                                @else
+                                    {{ strtoupper(substr($client->raison_sociale ?? 'E', 0, 2)) }}
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h4 class="mb-1">{{ $client->nom_affichage }}</h4>
+                            <div class="text-muted">
+                                <span class="badge badge-type badge-{{ $client->type_client }}">
+                                    @switch($client->type_client)
+                                        @case('particulier') Particulier @break
+                                        @case('entreprise') Entreprise @break
+                                        @case('institution') Institution @break
+                                    @endswitch
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="est_actif" id="est_actif" value="1" {{ $client->est_actif ? 'checked' : '' }}>
+                                <label class="form-check-label" for="est_actif">Client actif</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {{-- Type de client selection --}}
             <div class="info-box">
@@ -152,7 +197,7 @@
             <div class="card form-card mb-4">
                 <div class="card-body">
                     <div class="section-title">Type de client</div>
-
+                    
                     <div class="row mb-4">
                         <div class="col-md-4">
                             <div class="type-client-card" onclick="selectType('particulier')" id="type-particulier">
@@ -177,7 +222,7 @@
                         </div>
                     </div>
 
-                    <input type="hidden" name="type_client" id="type_client" value="{{ old('type_client', 'particulier') }}">
+                    <input type="hidden" name="type_client" id="type_client" value="{{ old('type_client', $client->type_client) }}">
                 </div>
             </div>
 
@@ -189,7 +234,7 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="entreprise-tab" data-bs-toggle="tab" data-bs-target="#entreprise-info" type="button" style="display: none;">
+                    <button class="nav-link" id="entreprise-tab" data-bs-toggle="tab" data-bs-target="#entreprise-info" type="button">
                         <i class="bi bi-building me-1"></i> Informations entreprise
                     </button>
                 </li>
@@ -211,51 +256,51 @@
                     <div class="card form-card mb-4">
                         <div class="card-body">
                             <div class="section-title">Informations du client</div>
-
+                            
                             {{-- Particulier fields --}}
                             <div id="particulier-fields">
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label required-field">Nom</label>
-                                        <input type="text" name="nom" class="form-control @error('nom') is-invalid @enderror"
-                                            value="{{ old('nom') }}">
+                                        <input type="text" name="nom" class="form-control @error('nom') is-invalid @enderror" 
+                                               value="{{ old('nom', $client->nom) }}">
                                         @error('nom')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label required-field">Prénoms</label>
-                                        <input type="text" name="prenoms" class="form-control @error('prenoms') is-invalid @enderror"
-                                            value="{{ old('prenoms') }}">
+                                        <input type="text" name="prenoms" class="form-control @error('prenoms') is-invalid @enderror" 
+                                               value="{{ old('prenoms', $client->prenoms) }}">
                                         @error('prenoms')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Date de naissance</label>
-                                        <input type="date" name="date_naissance" class="form-control" value="{{ old('date_naissance') }}">
+                                        <input type="date" name="date_naissance" class="form-control" value="{{ old('date_naissance', $client->date_naissance?->format('Y-m-d')) }}">
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Entreprise/Institution fields --}}
-                            <div id="entreprise-fields" style="display: none;">
+                            <div id="entreprise-fields">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label required-field">Raison sociale</label>
-                                        <input type="text" name="raison_sociale" class="form-control @error('raison_sociale') is-invalid @enderror"
-                                            value="{{ old('raison_sociale') }}">
+                                        <input type="text" name="raison_sociale" class="form-control @error('raison_sociale') is-invalid @enderror" 
+                                               value="{{ old('raison_sociale', $client->raison_sociale) }}">
                                         @error('raison_sociale')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="col-md-3 mb-3">
-                                        <label class="form-label">NIF (Numéro d'Identification Fiscale)</label>
-                                        <input type="text" name="nif" class="form-control" value="{{ old('nif') }}">
+                                        <label class="form-label">NIF</label>
+                                        <input type="text" name="nif" class="form-control" value="{{ old('nif', $client->nif) }}">
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label">RCCM</label>
-                                        <input type="text" name="rc" class="form-control" value="{{ old('rc') }}">
+                                        <input type="text" name="rc" class="form-control" value="{{ old('rc', $client->rc) }}">
                                     </div>
                                 </div>
                             </div>
@@ -263,36 +308,36 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label required-field">Email</label>
-                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                        value="{{ old('email') }}" required>
+                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                           value="{{ old('email', $client->email) }}" required>
                                     @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Téléphone principal</label>
-                                    <input type="text" name="telephone" class="form-control"
-                                        value="{{ old('telephone') }}" placeholder="+229 XX XXX XX XX">
+                                    <input type="text" name="telephone" class="form-control" 
+                                           value="{{ old('telephone', $client->telephone) }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Téléphone secondaire</label>
-                                    <input type="text" name="telephone_secondaire" class="form-control"
-                                        value="{{ old('telephone_secondaire') }}" placeholder="+229 XX XXX XX XX">
+                                    <input type="text" name="telephone_secondaire" class="form-control" 
+                                           value="{{ old('telephone_secondaire', $client->telephone_secondaire) }}">
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Adresse</label>
-                                    <textarea name="adresse" class="form-control" rows="2">{{ old('adresse') }}</textarea>
+                                    <textarea name="adresse" class="form-control" rows="2">{{ old('adresse', $client->adresse) }}</textarea>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Ville</label>
-                                    <input type="text" name="ville" class="form-control" value="{{ old('ville') }}">
+                                    <input type="text" name="ville" class="form-control" value="{{ old('ville', $client->ville) }}">
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label class="form-label">Pays</label>
-                                    <input type="text" name="pays" class="form-control" value="{{ old('pays', 'Bénin') }}">
+                                    <input type="text" name="pays" class="form-control" value="{{ old('pays', $client->pays) }}">
                                 </div>
                             </div>
                         </div>
@@ -304,19 +349,19 @@
                     <div class="card form-card mb-4">
                         <div class="card-body">
                             <div class="section-title">Représentant légal</div>
-
+                            
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Nom du représentant</label>
-                                    <input type="text" name="representant_nom" class="form-control" value="{{ old('representant_nom') }}">
+                                    <input type="text" name="representant_nom" class="form-control" value="{{ old('representant_nom', $client->representant_nom) }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Prénoms du représentant</label>
-                                    <input type="text" name="representant_prenom" class="form-control" value="{{ old('representant_prenom') }}">
+                                    <input type="text" name="representant_prenom" class="form-control" value="{{ old('representant_prenom', $client->representant_prenom) }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Fonction</label>
-                                    <input type="text" name="representant_fonction" class="form-control" value="{{ old('representant_fonction') }}" placeholder="DG, Directeur, etc.">
+                                    <input type="text" name="representant_fonction" class="form-control" value="{{ old('representant_fonction', $client->representant_fonction) }}">
                                 </div>
                             </div>
                         </div>
@@ -328,24 +373,19 @@
                     <div class="card form-card mb-4">
                         <div class="card-body">
                             <div class="section-title">Personne à contacter</div>
-
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Cette personne sera le contact principal pour les communications relatives aux contrats et services.
-                            </div>
-
+                            
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Nom complet</label>
-                                    <input type="text" name="contact_principal_nom" class="form-control" value="{{ old('contact_principal_nom') }}">
+                                    <input type="text" name="contact_principal_nom" class="form-control" value="{{ old('contact_principal_nom', $client->contact_principal_nom) }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Fonction</label>
-                                    <input type="text" name="contact_principal_fonction" class="form-control" value="{{ old('contact_principal_fonction') }}">
+                                    <input type="text" name="contact_principal_fonction" class="form-control" value="{{ old('contact_principal_fonction', $client->contact_principal_fonction) }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" name="contact_email" class="form-control" value="{{ old('contact_email') }}">
+                                    <input type="email" name="contact_email" class="form-control" value="{{ old('contact_email', $client->contact_email) }}">
                                 </div>
                             </div>
                         </div>
@@ -356,40 +396,41 @@
                 <div class="tab-pane fade" id="acces" role="tabpanel">
                     <div class="card form-card mb-4">
                         <div class="card-body">
-                            <div class="section-title">Paramètres de connexion</div>
-
+                            <div class="section-title">Modifier le mot de passe</div>
+                            
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
-                                Ces informations permettront au client de se connecter à son espace. Laissez vide pour une création sans accès.
+                                Laissez les champs mot de passe vides si vous ne souhaitez pas modifier le mot de passe.
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" name="creer_compte" id="creer_compte" value="1" {{ old('creer_compte') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="creer_compte">Créer un compte de connexion</label>
-                                    </div>
+                                    <label class="form-label">Nouveau mot de passe</label>
+                                    <input type="password" name="password" class="form-control" id="password" placeholder="Nouveau mot de passe">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" name="est_actif" id="est_actif" value="1" checked>
-                                        <label class="form-check-label" for="est_actif">Compte actif</label>
-                                    </div>
+                                    <label class="form-label">Confirmer le mot de passe</label>
+                                    <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" placeholder="Confirmer le mot de passe">
                                 </div>
                             </div>
 
-                            <div id="compte-fields" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Mot de passe</label>
-                                        <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe">
+                            @if($client->last_login_at)
+                            <hr class="my-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="text-muted small">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Dernière connexion : {{ $client->last_login_at->format('d/m/Y à H:i') }}
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Confirmer le mot de passe</label>
-                                        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" placeholder="Confirmer le mot de passe">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-muted small">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        IP : {{ $client->last_login_ip ?? 'N/A' }}
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -402,7 +443,7 @@
                         <i class="bi bi-arrow-left me-1"></i> Retour
                     </a>
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-1"></i> Enregistrer le client
+                        <i class="bi bi-check-circle me-1"></i> Enregistrer les modifications
                     </button>
                 </div>
             </div>
@@ -414,16 +455,15 @@
 @push('scripts')
 <script>
     function selectType(type) {
-        document.querySelectorAll('.type-client-card').forEach(card => {
+        document.querySelectorAll('.type-client-card').forEach(function(card) {
             card.classList.remove('selected');
         });
         document.getElementById('type-' + type).classList.add('selected');
         document.getElementById('type_client').value = type;
 
-        // Show/hide fields based on type
-        const particulierFields = document.getElementById('particulier-fields');
-        const entrepriseFields = document.getElementById('entreprise-fields');
-        const entrepriseTab = document.getElementById('entreprise-tab');
+        var particulierFields = document.getElementById('particulier-fields');
+        var entrepriseFields = document.getElementById('entreprise-fields');
+        var entrepriseTab = document.getElementById('entreprise-tab');
 
         if (type === 'particulier') {
             particulierFields.style.display = 'block';
@@ -436,21 +476,11 @@
         }
     }
 
-    // Toggle compte fields
-    document.getElementById('creer_compte').addEventListener('change', function() {
-        document.getElementById('compte-fields').style.display = this.checked ? 'block' : 'none';
-    });
-
-    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        var oldType = "{{ old('type_client', 'particulier') }}";
-        selectType(oldType);
-
-        var creerCompte = document.getElementById('creer_compte');
-        if (creerCompte.checked) {
-            document.getElementById('compte-fields').style.display = 'block';
-        }
+        var currentType = "{{ old('type_client', $client->type_client) }}";
+        selectType(currentType);
     });
 </script>
 @endpush
 @endsection
+

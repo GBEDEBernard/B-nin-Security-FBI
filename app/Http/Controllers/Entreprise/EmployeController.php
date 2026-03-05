@@ -28,6 +28,17 @@ class EmployeController extends Controller
 
         $query = Employe::where('entreprise_id', $entrepriseId);
 
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                    ->orWhere('prenoms', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('matricule', 'like', "%{$search}%");
+            });
+        }
+
         if ($request->filled('categorie')) {
             $query->where('categorie', $request->categorie);
         }
@@ -36,13 +47,17 @@ class EmployeController extends Controller
             $query->where('statut', $request->statut);
         }
 
-        $employes = $query->orderBy('nom')->paginate(15);
+        if ($request->filled('disponible')) {
+            $query->where('disponible', $request->disponible == '1');
+        }
+
+        $employes = $query->orderBy('prenoms')->orderBy('nom')->paginate(15);
 
         $stats = [
             'total' => Employe::where('entreprise_id', $entrepriseId)->count(),
             'actifs' => Employe::where('entreprise_id', $entrepriseId)->where('est_actif', true)->where('statut', 'en_poste')->count(),
-            'en_conge' => Employe::where('entreprise_id', $entrepriseId)->where('statut', 'conge')->count(),
-            'disponibles' => Employe::where('entreprise_id', $entrepriseId)->where('disponible', true)->count(),
+            'conge' => Employe::where('entreprise_id', $entrepriseId)->where('statut', 'conge')->count(),
+            'disponibles' => Employe::where('entreprise_id', $entrepriseId)->where('disponible', true)->where('est_actif', true)->count(),
         ];
 
         return view('admin.entreprise.employes.index', compact('employes', 'stats'));
