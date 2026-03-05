@@ -548,13 +548,13 @@ $estAgent = $currentGuard === 'employe' && ($employeRole === 'agent' || $employe
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('admin.entreprise.sites.index') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Tous les sites</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="{{ route('admin.entreprise.sites.create') }}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un site</p>
               </a>

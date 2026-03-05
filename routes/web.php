@@ -380,10 +380,22 @@ Route::middleware(['tenant', 'entreprise'])->prefix('admin/entreprise')->name('a
         Route::get('/{id}/edit', [\App\Http\Controllers\Entreprise\ContratController::class, 'edit'])->name('edit');
         Route::put('/{id}', [\App\Http\Controllers\Entreprise\ContratController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Http\Controllers\Entreprise\ContratController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/resilier', [\App\Http\Controllers\Entreprise\ContratController::class, 'resilier'])->name('resilier');
-        Route::post('/{id}/renouveler', [\App\Http\Controllers\Entreprise\ContratController::class, 'renouveler'])->name('renouveler');
-        Route::post('/{id}/suspendre', [\App\Http\Controllers\Entreprise\ContratController::class, 'suspendre'])->name('suspendre');
-        Route::post('/{id}/reprendre', [\App\Http\Controllers\Entreprise\ContratController::class, 'reprendre'])->name('reprendre');
+        Route::post('/{id}/changer-statut', [\App\Http\Controllers\Entreprise\ContratController::class, 'changerStatut'])->name('changerStatut');
+        Route::get('/{id}/dupliquer', [\App\Http\Controllers\Entreprise\ContratController::class, 'dupliquer'])->name('dupliquer');
+        Route::post('/{id}/ajouter-site', [\App\Http\Controllers\Entreprise\ContratController::class, 'ajouterSite'])->name('ajouterSite');
+        Route::delete('/{id}/retirer-site/{siteId}', [\App\Http\Controllers\Entreprise\ContratController::class, 'retirerSite'])->name('retirerSite');
+    });
+
+    // Sites
+    Route::prefix('sites')->name('sites.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Entreprise\SiteController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Entreprise\SiteController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Entreprise\SiteController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\Entreprise\SiteController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Entreprise\SiteController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Entreprise\SiteController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Entreprise\SiteController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-statut', [\App\Http\Controllers\Entreprise\SiteController::class, 'toggleStatut'])->name('toggleStatut');
     });
 
     // Affectations

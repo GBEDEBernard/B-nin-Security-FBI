@@ -24,7 +24,13 @@ class EmployeController extends Controller
      */
     public function index(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
 
         $query = Employe::where('entreprise_id', $entrepriseId);
 
@@ -97,7 +103,19 @@ class EmployeController extends Controller
             'numero_cnss' => 'nullable|string|max:50',
         ]);
 
-        $validated['entreprise_id'] = Auth::user()->entreprise_id;
+        // Générer le matricule automatiquement si non fourni
+        if (empty($validated['matricule'])) {
+            $validated['matricule'] = 'EMP-' . strtoupper(uniqid());
+        }
+
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return back()->with('error', 'Aucune entreprise associée. Veuillez sélectionner une entreprise.');
+        }
+
+        $validated['entreprise_id'] = $entrepriseId;
         $validated['est_actif'] = true;
         $validated['statut'] = 'en_poste';
         $validated['disponible'] = true;
@@ -113,8 +131,16 @@ class EmployeController extends Controller
      */
     public function show($id)
     {
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
         $employe = Employe::with(['entreprise', 'affectations.site', 'pointages', 'conges', 'paies'])
-            ->where('entreprise_id', Auth::user()->entreprise_id)
+            ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.employes.show', compact('employe'));
@@ -125,10 +151,17 @@ class EmployeController extends Controller
      */
     public function edit($id)
     {
-        $employe = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
-        return view('admin.entreprise.employes.edit', compact('employe'));
     }
 
     /**
@@ -136,7 +169,15 @@ class EmployeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $employe = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $validated = $request->validate([
@@ -173,7 +214,15 @@ class EmployeController extends Controller
      */
     public function destroy($id)
     {
-        $employe = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $employe->delete();
@@ -187,7 +236,15 @@ class EmployeController extends Controller
      */
     public function mettreEnConge(Request $request, $id)
     {
-        $employe = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $employe->update(['statut' => 'conge', 'disponible' => false]);
@@ -200,7 +257,15 @@ class EmployeController extends Controller
      */
     public function reprendre($id)
     {
-        $employe = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $employe->update(['statut' => 'en_poste', 'disponible' => true]);
@@ -213,7 +278,14 @@ class EmployeController extends Controller
      */
     public function disponibles()
     {
-        $employes = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return response()->json(['error' => 'Aucune entreprise sélectionnée.'], 400);
+        }
+
+        $employes = Employe::where('entreprise_id', $entrepriseId)
             ->where('disponible', true)
             ->where('est_actif', true)
             ->where('categorie', 'agent')

@@ -28,7 +28,13 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
 
         $query = Client::where('entreprise_id', $entrepriseId);
 
@@ -95,7 +101,14 @@ class ClientController extends Controller
             'est_actif' => 'boolean',
         ]);
 
-        $validated['entreprise_id'] = Auth::user()->entreprise_id;
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return back()->with('error', 'Aucune entreprise associée. Veuillez sélectionner une entreprise.');
+        }
+
+        $validated['entreprise_id'] = $entrepriseId;
 
         Client::create($validated);
 
@@ -108,8 +121,16 @@ class ClientController extends Controller
      */
     public function show($id)
     {
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
         $client = Client::with(['sites', 'contrats', 'factures'])
-            ->where('entreprise_id', Auth::user()->entreprise_id)
+            ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.clients.show', compact('client'));
@@ -120,7 +141,15 @@ class ClientController extends Controller
      */
     public function edit($id)
     {
-        $client = Client::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $client = Client::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.clients.edit', compact('client'));
@@ -131,7 +160,15 @@ class ClientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $client = Client::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $client = Client::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $validated = $request->validate([
@@ -163,7 +200,15 @@ class ClientController extends Controller
      */
     public function destroy($id)
     {
-        $client = Client::where('entreprise_id', Auth::user()->entreprise_id)
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
+        $client = Client::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         $client->delete();
@@ -177,8 +222,16 @@ class ClientController extends Controller
      */
     public function sites($id)
     {
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
         $client = Client::with('sites')
-            ->where('entreprise_id', Auth::user()->entreprise_id)
+            ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.clients.sites', compact('client'));
@@ -189,8 +242,16 @@ class ClientController extends Controller
      */
     public function contrats($id)
     {
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
         $client = Client::with('contrats')
-            ->where('entreprise_id', Auth::user()->entreprise_id)
+            ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.clients.contrats', compact('client'));
@@ -201,8 +262,16 @@ class ClientController extends Controller
      */
     public function factures($id)
     {
+        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
+        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+
+        if (!$entrepriseId) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Aucune entreprise sélectionnée.');
+        }
+
         $client = Client::with('factures')
-            ->where('entreprise_id', Auth::user()->entreprise_id)
+            ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
         return view('admin.entreprise.clients.factures', compact('client'));
