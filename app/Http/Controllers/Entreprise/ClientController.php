@@ -4,35 +4,18 @@ namespace App\Http\Controllers\Entreprise;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
-use App\Models\Employe;
-use App\Models\ContratPrestation;
-use App\Models\SiteClient;
-use App\Models\Affectation;
 use App\Models\Facture;
-use App\Models\Incident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
     /**
-     * Constructeur
-     */
-    public function __construct()
-    {
-        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
-    }
-
-    /**
      * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
-     *
-     * Priorité :
-     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
-     *   2. Employé (guard employe) → son entreprise_id direct
      */
     private function getEntrepriseId(): ?int
     {
-        // SuperAdmin en contexte entreprise
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
             if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
@@ -40,7 +23,6 @@ class ClientController extends Controller
             }
         }
 
-        // Employé connecté via guard 'employe'
         if (Auth::guard('employe')->check()) {
             $employe = Auth::guard('employe')->user();
             return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
@@ -50,11 +32,22 @@ class ClientController extends Controller
     }
 
     /**
+     * Récupérer un client en bypassant le GlobalScope.
+     * Le GlobalScope 'entreprise' peut interférer si la session change.
+     */
+    private function findClient(int $id, int $entrepriseId): Client
+    {
+        return Client::withoutGlobalScope('entreprise')
+            ->where('id', $id)
+            ->where('entreprise_id', $entrepriseId)
+            ->firstOrFail();
+    }
+
+    /**
      * Liste des clients
      */
     public function index(Request $request)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
@@ -62,9 +55,9 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        $query = Client::where('entreprise_id', $entrepriseId);
+        $query = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId);
 
-        // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -72,7 +65,8 @@ class ClientController extends Controller
                     ->orWhere('prenoms', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('telephone', 'like', "%{$search}%")
-                    ->orWhere('raison_sociale', 'like', "%{$search}%");
+                    ->orWhere('raison_sociale', 'like', "%{$search}%")
+                    ->orWhere('nif', 'like', "%{$search}%");
             });
         }
 
@@ -84,20 +78,20 @@ class ClientController extends Controller
             $query->where('est_actif', $request->est_actif == '1');
         }
 
-        $clients = $query->orderBy('nom')->paginate(15);
+        $clients = $query->orderBy('created_at', 'desc')->paginate(15);
 
         $stats = [
-            'total' => Client::where('entreprise_id', $entrepriseId)->count(),
-            'actifs' => Client::where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
-            'particuliers' => Client::where('entreprise_id', $entrepriseId)->where('type_client', 'particulier')->count(),
-            'entreprises' => Client::where('entreprise_id', $entrepriseId)->where('type_client', 'entreprise')->count(),
+            'total'       => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->count(),
+            'actifs'      => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
+            'particuliers'=> Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('type_client', 'particulier')->count(),
+            'entreprises' => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->whereIn('type_client', ['entreprise', 'institution'])->count(),
         ];
 
         return view('admin.entreprise.clients.index', compact('clients', 'stats'));
     }
 
     /**
-     * Créer un client
+     * Formulaire de création
      */
     public function create()
     {
@@ -105,49 +99,58 @@ class ClientController extends Controller
     }
 
     /**
-     * Enregistrer un client
+     * Enregistrer un nouveau client
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type_client' => 'required|in:particulier,entreprise,institution',
-            'nom' => 'required|string|max:255',
-            'prenoms' => 'nullable|string|max:255',
-            'raison_sociale' => 'nullable|string|max:255',
-            'nif' => 'nullable|string|max:50',
-            'rc' => 'nullable|string|max:50',
-            'email' => 'required|email',
-            'telephone' => 'required|string|max:20',
-            'telephone_secondaire' => 'nullable|string|max:20',
-            'contact_principal_nom' => 'nullable|string|max:255',
-            'contact_principal_fonction' => 'nullable|string|max:255',
-            'adresse' => 'nullable|string',
-            'ville' => 'nullable|string|max:100',
-            'pays' => 'nullable|string|max:100',
-            'est_actif' => 'boolean',
-        ]);
-
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
-            return back()->with('error', 'Aucune entreprise associée. Veuillez sélectionner une entreprise.');
+            return back()->with('error', 'Aucune entreprise associée.');
         }
 
-        $validated['entreprise_id'] = $entrepriseId;
+        $validated = $request->validate([
+            'type_client'              => 'required|in:particulier,entreprise,institution',
+            'nom'                      => 'nullable|string|max:100',
+            'prenoms'                  => 'nullable|string|max:150',
+            'date_naissance'           => 'nullable|date',
+            'raison_sociale'           => 'nullable|string|max:255',
+            'nif'                      => 'nullable|string|max:100',
+            'rc'                       => 'nullable|string|max:100',
+            'representant_nom'         => 'nullable|string|max:255',
+            'representant_prenom'      => 'nullable|string|max:255',
+            'representant_fonction'    => 'nullable|string|max:255',
+            'email'                    => 'nullable|email|max:255',
+            'telephone'                => 'required|string|max:50',
+            'telephone_secondaire'     => 'nullable|string|max:50',
+            'contact_principal_nom'    => 'nullable|string|max:255',
+            'contact_principal_fonction' => 'nullable|string|max:255',
+            'contact_email'            => 'nullable|email|max:255',
+            'adresse'                  => 'required|string',
+            'ville'                    => 'nullable|string|max:100',
+            'pays'                     => 'nullable|string|max:100',
+            'notes'                    => 'nullable|string',
+        ]);
 
-        Client::create($validated);
+        $validated['entreprise_id'] = $entrepriseId;
+        $validated['est_actif']     = $request->has('est_actif') ? true : false;
+
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'string|min:8|confirmed']);
+            $validated['password'] = bcrypt($request->password);
+        }
+
+        Client::withoutGlobalScope('entreprise')->create($validated);
 
         return redirect()->route('admin.entreprise.clients.index')
             ->with('success', 'Client créé avec succès.');
     }
 
     /**
-     * Voir un client
+     * Afficher un client
      */
     public function show($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
@@ -155,7 +158,8 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        $client = Client::with(['sites', 'contrats', 'factures'])
+        $client = Client::withoutGlobalScope('entreprise')
+            ->with(['sites', 'contrats', 'factures'])
             ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
@@ -163,11 +167,10 @@ class ClientController extends Controller
     }
 
     /**
-     * Modifier un client
+     * Formulaire de modification
      */
     public function edit($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
@@ -175,18 +178,16 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        $client = Client::where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
+        $client = $this->findClient($id, $entrepriseId);
 
         return view('admin.entreprise.clients.edit', compact('client'));
     }
 
     /**
-     * Mettre à jour un client
+     * ✅ METTRE À JOUR UN CLIENT — version corrigée
      */
     public function update(Request $request, $id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
@@ -194,31 +195,50 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        $client = Client::where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
+        // ✅ withoutGlobalScope pour bypasser le GlobalScope 'entreprise'
+        $client = $this->findClient($id, $entrepriseId);
 
         $validated = $request->validate([
-            'type_client' => 'required|in:particulier,entreprise,institution',
-            'nom' => 'required|string|max:255',
-            'prenoms' => 'nullable|string|max:255',
-            'raison_sociale' => 'nullable|string|max:255',
-            'nif' => 'nullable|string|max:50',
-            'rc' => 'nullable|string|max:50',
-            'email' => 'required|email',
-            'telephone' => 'required|string|max:20',
-            'telephone_secondaire' => 'nullable|string|max:20',
-            'contact_principal_nom' => 'nullable|string|max:255',
+            'type_client'              => 'required|in:particulier,entreprise,institution',
+            'nom'                      => 'nullable|string|max:100',
+            'prenoms'                  => 'nullable|string|max:150',
+            'date_naissance'           => 'nullable|date',
+            'raison_sociale'           => 'nullable|string|max:255',
+            'nif'                      => 'nullable|string|max:100',
+            'rc'                       => 'nullable|string|max:100',
+            'representant_nom'         => 'nullable|string|max:255',
+            'representant_prenom'      => 'nullable|string|max:255',
+            'representant_fonction'    => 'nullable|string|max:255',
+            'email'                    => 'nullable|email|max:255',
+            'telephone'                => 'required|string|max:50',
+            'telephone_secondaire'     => 'nullable|string|max:50',
+            'contact_principal_nom'    => 'nullable|string|max:255',
             'contact_principal_fonction' => 'nullable|string|max:255',
-            'adresse' => 'nullable|string',
-            'ville' => 'nullable|string|max:100',
-            'pays' => 'nullable|string|max:100',
-            'est_actif' => 'boolean',
+            'contact_email'            => 'nullable|email|max:255',
+            'adresse'                  => 'required|string',
+            'ville'                    => 'nullable|string|max:100',
+            'pays'                     => 'nullable|string|max:100',
+            'notes'                    => 'nullable|string',
         ]);
+
+        // ✅ est_actif : la checkbox n'envoie rien si décochée
+        // Le formulaire envoie un hidden input value="0" + checkbox value="1"
+        // Donc $request->input('est_actif') vaut '1' ou '0'
+        $validated['est_actif'] = $request->input('est_actif', '0') == '1' ? true : false;
+
+        // ✅ Mot de passe : seulement si renseigné
+        if ($request->filled('password')) {
+            $request->validate([
+                'password' => 'string|min:8|confirmed',
+            ]);
+            $validated['password'] = bcrypt($request->password);
+        }
+        // Ne jamais écraser le password si le champ est vide
 
         $client->update($validated);
 
         return redirect()->route('admin.entreprise.clients.index')
-            ->with('success', 'Client mis à jour.');
+            ->with('success', 'Client mis à jour avec succès.');
     }
 
     /**
@@ -226,7 +246,6 @@ class ClientController extends Controller
      */
     public function destroy($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
@@ -234,9 +253,7 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        $client = Client::where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
-
+        $client = $this->findClient($id, $entrepriseId);
         $client->delete();
 
         return redirect()->route('admin.entreprise.clients.index')
@@ -248,17 +265,9 @@ class ClientController extends Controller
      */
     public function sites($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
-
-        if (!$entrepriseId) {
-            return redirect()->route('superadmin.dashboard')
-                ->with('error', 'Aucune entreprise sélectionnée.');
-        }
-
-        $client = Client::with('sites')
-            ->where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
+        $client = $this->findClient($id, $entrepriseId);
+        $client->load('sites');
 
         return view('admin.entreprise.clients.sites', compact('client'));
     }
@@ -268,17 +277,9 @@ class ClientController extends Controller
      */
     public function contrats($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
-
-        if (!$entrepriseId) {
-            return redirect()->route('superadmin.dashboard')
-                ->with('error', 'Aucune entreprise sélectionnée.');
-        }
-
-        $client = Client::with('contrats')
-            ->where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
+        $client = $this->findClient($id, $entrepriseId);
+        $client->load('contrats');
 
         return view('admin.entreprise.clients.contrats', compact('client'));
     }
@@ -288,17 +289,9 @@ class ClientController extends Controller
      */
     public function factures($id)
     {
-        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
         $entrepriseId = $this->getEntrepriseId();
-
-        if (!$entrepriseId) {
-            return redirect()->route('superadmin.dashboard')
-                ->with('error', 'Aucune entreprise sélectionnée.');
-        }
-
-        $client = Client::with('factures')
-            ->where('entreprise_id', $entrepriseId)
-            ->findOrFail($id);
+        $client = $this->findClient($id, $entrepriseId);
+        $client->load('factures');
 
         return view('admin.entreprise.clients.factures', compact('client'));
     }

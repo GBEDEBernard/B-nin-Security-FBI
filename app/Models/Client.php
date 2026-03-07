@@ -37,11 +37,17 @@ class Client extends Authenticatable
         // Si particulier
         'nom',
         'prenoms',
+        'date_naissance',
 
         // Si entreprise/institution
         'raison_sociale',
         'nif',
         'rc',
+
+        // Représentant légal (entreprise/institution)
+        'representant_nom',
+        'representant_prenom',
+        'representant_fonction',
 
         // Contact principal
         'email',
@@ -50,6 +56,7 @@ class Client extends Authenticatable
         'telephone_secondaire',
         'contact_principal_nom',
         'contact_principal_fonction',
+        'contact_email',
 
         // Adresse principale
         'adresse',
