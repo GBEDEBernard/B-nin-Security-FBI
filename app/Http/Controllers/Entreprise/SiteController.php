@@ -14,14 +14,6 @@ use Illuminate\Support\Facades\Auth;
 class SiteController extends Controller
 {
     /**
-     * Constructeur
-     */
-    public function __construct()
-    {
-        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
-    }
-
-    /**
      * Liste des sites
      */
     public function index(Request $request)
@@ -31,7 +23,6 @@ class SiteController extends Controller
         $query = SiteClient::where('entreprise_id', $entrepriseId)
             ->with('client');
 
-        // Filtres
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -55,18 +46,18 @@ class SiteController extends Controller
 
         $sites = $query->orderBy('nom_site')->paginate(15);
 
-        // Liste des clients pour le filtre
-        $clients = Client::where('entreprise_id', $entrepriseId)
+        // ✅ withoutGlobalScope pour éviter les problèmes de GlobalScope sur Client
+        $clients = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->orderBy('nom')
             ->get();
 
-        // Statistiques
         $stats = [
-            'total' => SiteClient::where('entreprise_id', $entrepriseId)->count(),
-            'actifs' => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
-            'inactifs' => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', false)->count(),
-            'haut_risque' => SiteClient::where('entreprise_id', $entrepriseId)->where('niveau_risque', 'haut')->count(),
+            'total'      => SiteClient::where('entreprise_id', $entrepriseId)->count(),
+            'actifs'     => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
+            'inactifs'   => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', false)->count(),
+            'haut_risque'=> SiteClient::where('entreprise_id', $entrepriseId)->whereIn('niveau_risque', ['haut', 'critique'])->count(),
         ];
 
         return view('admin.entreprise.sites.index', compact('sites', 'clients', 'stats'));
@@ -79,12 +70,13 @@ class SiteController extends Controller
     {
         $entrepriseId = $this->getEntrepriseId();
 
-        $clients = Client::where('entreprise_id', $entrepriseId)
+        // ✅ withoutGlobalScope pour charger les clients correctement
+        $clients = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->orderBy('nom')
             ->get();
 
-        // Pré-sélectionner un client
         $clientId = $request->get('client_id');
 
         return view('admin.entreprise.sites.create', compact('clients', 'clientId'));
@@ -98,38 +90,30 @@ class SiteController extends Controller
         $entrepriseId = $this->getEntrepriseId();
 
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'nom_site' => 'required|string|max:255',
-            'code_site' => 'nullable|string|max:50|unique:sites_clients,code_site',
-            'adresse' => 'required|string',
-            'ville' => 'nullable|string|max:100',
-            'commune' => 'nullable|string|max:100',
-            'quartier' => 'nullable|string|max:100',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'rayon_pointage' => 'nullable|integer|min:10|max:1000',
-            'contact_nom' => 'nullable|string|max:255',
-            'contact_telephone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email|max:255',
-            'niveau_risque' => 'nullable|in:faible,moyen,haut,critique',
-            'equipements' => 'nullable|array',
-            'consignes_specifiques' => 'nullable|string',
-            'photos' => 'nullable|array',
-            'est_actif' => 'boolean',
-            'notes' => 'nullable|string',
+            'client_id'              => 'required|exists:clients,id',
+            'nom_site'               => 'required|string|max:255',
+            'code_site'              => 'nullable|string|max:50|unique:sites_clients,code_site',
+            'adresse'                => 'required|string',
+            'ville'                  => 'nullable|string|max:100',
+            'commune'                => 'nullable|string|max:100',
+            'quartier'               => 'nullable|string|max:100',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
+            'rayon_pointage'         => 'nullable|integer|min:10|max:1000',
+            'contact_nom'            => 'nullable|string|max:255',
+            'contact_telephone'      => 'nullable|string|max:20',
+            'contact_email'          => 'nullable|email|max:255',
+            'niveau_risque'          => 'nullable|in:faible,moyen,haut,critique',
+            'equipements'            => 'nullable|array',
+            'consignes_specifiques'  => 'nullable|string',
+            'photos'                 => 'nullable|array',
+            'notes'                  => 'nullable|string',
         ]);
 
         $validated['entreprise_id'] = $entrepriseId;
-        $validated['est_actif'] = $validated['est_actif'] ?? true;
 
-        // Conversion JSON
-        if (isset($validated['equipements']) && is_array($validated['equipements'])) {
-            $validated['equipements'] = json_encode($validated['equipements']);
-        }
-
-        if (isset($validated['photos']) && is_array($validated['photos'])) {
-            $validated['photos'] = json_encode($validated['photos']);
-        }
+        // ✅ est_actif : la checkbox n'envoie rien quand décochée → on lit request directement
+        $validated['est_actif'] = $request->has('est_actif') ? true : false;
 
         // Générer code site si absent
         if (empty($validated['code_site'])) {
@@ -149,27 +133,19 @@ class SiteController extends Controller
     {
         $entrepriseId = $this->getEntrepriseId();
 
-        $site = SiteClient::with([
-            'client',
-            'contrats.contrat',
-            'affectations.employe' => function ($query) {
-                $query->where('est_actif', true);
-            }
-        ])
+        $site = SiteClient::with(['client'])
             ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
-        // Employés disponibles pour affectation
         $employesDisponibles = Employe::where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->where('disponible', true)
             ->orderBy('nom')
             ->get();
 
-        // Statistiques du site
         $statsSite = [
             'contrats_count' => $site->contrats()->count(),
-            'agents_count' => $site->affectations()->where('statut', 'en_cours')->count(),
+            'agents_count'   => $site->affectations()->where('statut', 'en_cours')->count(),
         ];
 
         return view('admin.entreprise.sites.show', compact('site', 'employesDisponibles', 'statsSite'));
@@ -184,7 +160,9 @@ class SiteController extends Controller
 
         $site = SiteClient::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        $clients = Client::where('entreprise_id', $entrepriseId)
+        // ✅ withoutGlobalScope pour charger les clients correctement
+        $clients = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->orderBy('nom')
             ->get();
@@ -202,42 +180,33 @@ class SiteController extends Controller
         $site = SiteClient::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'nom_site' => 'required|string|max:255',
-            'code_site' => 'nullable|string|max:50|unique:sites_clients,code_site,' . $id,
-            'adresse' => 'required|string',
-            'ville' => 'nullable|string|max:100',
-            'commune' => 'nullable|string|max:100',
-            'quartier' => 'nullable|string|max:100',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'rayon_pointage' => 'nullable|integer|min:10|max:1000',
-            'contact_nom' => 'nullable|string|max:255',
-            'contact_telephone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email|max:255',
-            'niveau_risque' => 'nullable|in:faible,moyen,haut,critique',
-            'equipements' => 'nullable|array',
-            'consignes_specifiques' => 'nullable|string',
-            'photos' => 'nullable|array',
-            'est_actif' => 'boolean',
-            'notes' => 'nullable|string',
+            'client_id'              => 'required|exists:clients,id',
+            'nom_site'               => 'required|string|max:255',
+            'code_site'              => 'nullable|string|max:50|unique:sites_clients,code_site,' . $id,
+            'adresse'                => 'required|string',
+            'ville'                  => 'nullable|string|max:100',
+            'commune'                => 'nullable|string|max:100',
+            'quartier'               => 'nullable|string|max:100',
+            'latitude'               => 'nullable|numeric|between:-90,90',
+            'longitude'              => 'nullable|numeric|between:-180,180',
+            'rayon_pointage'         => 'nullable|integer|min:10|max:1000',
+            'contact_nom'            => 'nullable|string|max:255',
+            'contact_telephone'      => 'nullable|string|max:20',
+            'contact_email'          => 'nullable|email|max:255',
+            'niveau_risque'          => 'nullable|in:faible,moyen,haut,critique',
+            'equipements'            => 'nullable|array',
+            'consignes_specifiques'  => 'nullable|string',
+            'photos'                 => 'nullable|array',
+            'notes'                  => 'nullable|string',
         ]);
 
-        // Conversion JSON
-        if (isset($validated['equipements']) && is_array($validated['equipements'])) {
-            $validated['equipements'] = json_encode($validated['equipements']);
-        }
-
-        if (isset($validated['photos']) && is_array($validated['photos'])) {
-            $validated['photos'] = json_encode($validated['photos']);
-        }
-
-        $validated['est_actif'] = $validated['est_actif'] ?? true;
+        // ✅ est_actif : checkbox non cochée = pas envoyée = false
+        $validated['est_actif'] = $request->has('est_actif') ? true : false;
 
         $site->update($validated);
 
         return redirect()->route('admin.entreprise.sites.show', $site->id)
-            ->with('success', 'Site mis à jour.');
+            ->with('success', 'Site mis à jour avec succès.');
     }
 
     /**
@@ -249,7 +218,6 @@ class SiteController extends Controller
 
         $site = SiteClient::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        // Vérifier les contraintes
         if ($site->contrats()->count() > 0) {
             return back()->with('error', 'Impossible de supprimer un site associé à des contrats.');
         }
@@ -272,7 +240,6 @@ class SiteController extends Controller
         $entrepriseId = $this->getEntrepriseId();
 
         $site = SiteClient::where('entreprise_id', $entrepriseId)->findOrFail($id);
-
         $site->update(['est_actif' => !$site->est_actif]);
 
         $status = $site->est_actif ? 'activé' : 'désactivé';
@@ -281,15 +248,10 @@ class SiteController extends Controller
     }
 
     /**
-     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
-     *
-     * Priorité :
-     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
-     *   2. Employé (guard employe) → son entreprise_id direct
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté
      */
     private function getEntrepriseId(): ?int
     {
-        // SuperAdmin en contexte entreprise
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
             if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
@@ -297,7 +259,6 @@ class SiteController extends Controller
             }
         }
 
-        // Employé connecté via guard 'employe'
         if (Auth::guard('employe')->check()) {
             $employe = Auth::guard('employe')->user();
             return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
@@ -317,11 +278,7 @@ class SiteController extends Controller
             ->orderBy('code_site', 'desc')
             ->first();
 
-        if ($dernier) {
-            $numero = (int) substr($dernier->code_site, -4) + 1;
-        } else {
-            $numero = 1;
-        }
+        $numero = $dernier ? ((int) substr($dernier->code_site, -4) + 1) : 1;
 
         return $prefix . str_pad($numero, 4, '0', STR_PAD_LEFT);
     }

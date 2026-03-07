@@ -173,6 +173,72 @@
       color: var(--bs-body-color);
     }
 
+    /* ============================================================
+       CORRECTIF CRITIQUE : Selects & Inputs - Contraste Visible
+       Le rendu natif des selects ne respecte pas toujours les
+       couleurs CSS du parent. On force des couleurs absolues.
+       ============================================================ */
+
+    /* Mode CLAIR (défaut) - couleurs explicites */
+    .form-control,
+    .form-select,
+    select.form-control,
+    select.form-select,
+    .site-control,
+    .site-select,
+    .site-input {
+      background-color: #ffffff !important;
+      color: #212529 !important;
+      border-color: #dee2e6 !important;
+    }
+
+    /* Options des selects en mode clair */
+    .form-control option,
+    .form-select option,
+    select.form-control option,
+    select.form-select option,
+    .site-control option,
+    .site-select option,
+    .site-input option {
+      background-color: #ffffff !important;
+      color: #212529 !important;
+    }
+
+    /* Mode SOMBRE - forces explicites */
+    [data-bs-theme="dark"] .form-control,
+    [data-bs-theme="dark"] .form-select,
+    [data-bs-theme="dark"] select.form-control,
+    [data-bs-theme="dark"] select.form-select,
+    [data-bs-theme="dark"] .site-control,
+    [data-bs-theme="dark"] .site-select,
+    [data-bs-theme="dark"] .site-input {
+      background-color: #2b2b2b !important;
+      color: #f0f0f0 !important;
+      border-color: #555555 !important;
+    }
+
+    /* Options des selects en mode sombre */
+    [data-bs-theme="dark"] .form-control option,
+    [data-bs-theme="dark"] .form-select option,
+    [data-bs-theme="dark"] select.form-control option,
+    [data-bs-theme="dark"] select.form-select option,
+    [data-bs-theme="dark"] .site-control option,
+    [data-bs-theme="dark"] .site-select option,
+    [data-bs-theme="dark"] .site-input option {
+      background-color: #2b2b2b !important;
+      color: #f0f0f0 !important;
+    }
+
+    /* Focus visible */
+    .form-control:focus,
+    .form-select:focus,
+    .site-control:focus,
+    .site-select:focus {
+      border-color: #198754 !important;
+      box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+      color: inherit !important;
+    }
+
     /* Alerts et badges */
     .alert {
       background-color: var(--bs-tertiary-bg);

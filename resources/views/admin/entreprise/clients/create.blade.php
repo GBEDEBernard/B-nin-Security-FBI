@@ -4,81 +4,179 @@
 
 @push('styles')
 <style>
-    .form-card {
+    /* ═══════════════════════════════════════════════════════════════
+       ULTRA PRO DESIGN - Nouveau Client
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Page Header ── */
+    .page-header {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        padding: 1.75rem 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 4px 20px rgba(25, 135, 84, 0.3);
+    }
+
+    .page-header h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-header .breadcrumb {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+    }
+
+    .page-header .breadcrumb-item,
+    .page-header .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.875rem;
+    }
+
+    .page-header .breadcrumb-item.active {
+        color: white;
+        font-weight: 600;
+    }
+
+    .page-header .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* ── Premium Card ── */
+    .premium-card {
         border: none;
-        border-radius: 12px;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        background: var(--bs-body-bg);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .nav-tabs-custom {
-        border-bottom: 2px solid #e9ecef;
-        margin-bottom: 20px;
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     }
 
-    .nav-tabs-custom .nav-link {
+    .premium-card .card-header {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        padding: 1rem 1.5rem;
         border: none;
-        color: #6c757d;
-        padding: 12px 20px;
-        font-weight: 500;
-        border-radius: 8px 8px 0 0;
-        transition: all 0.2s;
+        color: white;
     }
 
-    .nav-tabs-custom .nav-link:hover {
+    .premium-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .premium-card .card-body {
+        padding: 1.75rem;
+    }
+
+    /* ── Section Title ── */
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
         color: #198754;
-        background: rgba(25, 135, 84, 0.05);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #198754;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    .nav-tabs-custom .nav-link.active {
-        color: #198754;
-        background: white;
-        border: 2px solid #e9ecef;
-        border-bottom: 2px solid white;
-        margin-bottom: -2px;
-    }
-
+    /* ── Form Elements ── */
     .form-label {
-        font-weight: 500;
-        color: #495057;
-        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--bs-body-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .form-control,
     .form-select {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-        padding: 10px 12px;
+        border-radius: 12px;
+        border: 2px solid var(--bs-border-color);
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+        transition: all 0.25s ease;
     }
 
     .form-control:focus,
     .form-select:focus {
         border-color: #198754;
-        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15);
+        outline: none;
     }
 
-    .section-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #198754;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 15px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #198754;
+    .form-control::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.7;
     }
 
-    .required-field::after {
-        content: ' *';
+    /* ── Required Indicator ── */
+    .required-indicator {
+        color: #dc3545;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    /* ── Help Text ── */
+    .help-text {
+        font-size: 0.8125rem;
+        color: var(--bs-secondary-color);
+        margin-top: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .help-text.text-danger {
         color: #dc3545;
     }
 
+    /* ── Toggle Switch ── */
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .form-check-input:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15);
+    }
+
+    .form-check-label {
+        font-weight: 500;
+        color: var(--bs-body-color);
+    }
+
+    /* ── Type Client Cards ── */
     .type-client-card {
         cursor: pointer;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        padding: 20px;
+        border: 2px solid var(--bs-border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
         text-align: center;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
+        background: var(--bs-body-bg);
     }
 
     .type-client-card:hover {
@@ -93,322 +191,584 @@
 
     .type-client-card i {
         font-size: 2.5rem;
-        margin-bottom: 10px;
-        color: #6c757d;
+        margin-bottom: 0.75rem;
+        color: var(--bs-secondary-color);
     }
 
     .type-client-card.selected i {
         color: #198754;
     }
 
-    .info-box {
-        background: #e7f5ff;
-        border-left: 4px solid #0d6efd;
-        padding: 12px 15px;
-        border-radius: 4px;
-        margin-bottom: 20px;
+    .type-client-card .title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--bs-body-color);
     }
 
-    .info-box i {
-        color: #0d6efd;
-        margin-right: 8px;
+    .type-client-card .subtitle {
+        font-size: 0.8125rem;
+        color: var(--bs-secondary-color);
+        margin-top: 0.25rem;
+    }
+
+    /* ── Buttons ── */
+    .btn-save {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        border: none;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border-radius: 12px;
+        color: #fff;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(25, 135, 84, 0.35);
+        color: #fff;
+        background: linear-gradient(135deg, #146c43 0%, #1aa179 100%);
+    }
+
+    .btn-cancel {
+        background: var(--bs-body-bg);
+        border: 2px solid var(--bs-border-color);
+        color: var(--bs-body-color);
+        padding: 0.875rem 1.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        background: var(--bs-tertiary-bg);
+        border-color: var(--bs-body-color);
+        color: var(--bs-body-color);
+        transform: translateY(-2px);
+    }
+
+    /* ── Info Box ── */
+    .info-box {
+        background: linear-gradient(135deg, rgba(25, 135, 84, 0.08) 0%, rgba(32, 201, 151, 0.08) 100%);
+        border: 1px solid rgba(25, 135, 84, 0.2);
+        border-radius: 16px;
+        padding: 1.25rem;
+    }
+
+    .info-box .info-title {
+        font-weight: 700;
+        color: #198754;
+        font-size: 0.9375rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-box ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: var(--bs-secondary-color);
+        font-size: 0.875rem;
+    }
+
+    .info-box li {
+        margin-bottom: 0.5rem;
+    }
+
+    .info-box li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* ── Nav Tabs ── */
+    .nav-tabs-custom {
+        border-bottom: 2px solid var(--bs-border-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .nav-tabs-custom .nav-link {
+        border: none;
+        color: var(--bs-secondary-color);
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        border-radius: 10px 10px 0 0;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-tabs-custom .nav-link:hover {
+        color: #198754;
+        background: rgba(25, 135, 84, 0.05);
+    }
+
+    .nav-tabs-custom .nav-link.active {
+        color: #198754;
+        background: var(--bs-body-bg);
+        border: 2px solid var(--bs-border-color);
+        border-bottom: 2px solid var(--bs-body-bg);
+        margin-bottom: -2px;
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeInUp 0.4s ease-out both;
+    }
+
+    .animate-fade-in:nth-child(1) { animation-delay: 0.05s; }
+    .animate-fade-in:nth-child(2) { animation-delay: 0.1s; }
+    .animate-fade-in:nth-child(3) { animation-delay: 0.15s; }
+    .animate-fade-in:nth-child(4) { animation-delay: 0.2s; }
+    .animate-fade-in:nth-child(5) { animation-delay: 0.25s; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .page-header h3 {
+            font-size: 1.3rem;
+        }
+
+        .premium-card .card-body {
+            padding: 1.25rem;
+        }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="app-content-header">
-    <div class="container-fluid">
+<div class="container-fluid px-4">
+
+    {{-- ═══════════════════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════════════════ --}}
+    <div class="page-header animate-fade-in">
         <div class="row align-items-center">
-            <div class="col-sm-6">
-                <h3 class="mb-0">
-                    <i class="bi bi-person-vcard me-2 text-success"></i>
+            <div class="col-md-6">
+                <h3>
+                    <i class="bi bi-person-plus-fill"></i>
                     Nouveau Client
                 </h3>
             </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-end">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.entreprise.index') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.entreprise.clients.index') }}">Clients</a></li>
-                    <li class="breadcrumb-item active">Créer</li>
+            <div class="col-md-6">
+                <ol class="breadcrumb float-md-end">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('admin.entreprise.index') }}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('admin.entreprise.clients.index') }}">Clients</a>
+                    </li>
+                    <li class="breadcrumb-item active">Nouveau</li>
                 </ol>
             </div>
         </div>
     </div>
-</div>
 
-<div class="app-content">
-    <div class="container-fluid">
+    {{-- ═══════════════════════════════════════════════════════
+         FORMULAIRE
+    ═══════════════════════════════════════════════════════ --}}
+    <form action="{{ route('admin.entreprise.clients.store') }}" method="POST" id="clientForm" class="animate-fade-in">
+        @csrf
 
-        <form action="{{ route('admin.entreprise.clients.store') }}" method="POST" id="clientForm">
-            @csrf
-
-            {{-- Type de client selection --}}
-            <div class="info-box">
-                <i class="bi bi-info-circle"></i>
-                Les champs marqués d'un astérisque (*) sont obligatoires.
+        {{-- Info Box --}}
+        <div class="info-box mb-4">
+            <div class="info-title">
+                <i class="bi bi-info-circle-fill"></i>
+                Informations importantes
             </div>
+            <ul>
+                <li>Les champs marqués d'un astérisque (*) sont obligatoires.</li>
+                <li>Pour les entreprises et institutions, veuillez fournir le NIF et le RCCM.</li>
+                <li>Vous pouvez créer un compte de connexion pour permettre au client d'accéder à son espace.</li>
+            </ul>
+        </div>
 
-            <div class="card form-card mb-4">
-                <div class="card-body">
-                    <div class="section-title">Type de client</div>
-
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="type-client-card" onclick="selectType('particulier')" id="type-particulier">
-                                <i class="bi bi-person"></i>
-                                <div class="fw-semibold">Particulier</div>
-                                <div class="text-muted small">Personne physique</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="type-client-card" onclick="selectType('entreprise')" id="type-entreprise">
-                                <i class="bi bi-building"></i>
-                                <div class="fw-semibold">Entreprise</div>
-                                <div class="text-muted small">Personne morale</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="type-client-card" onclick="selectType('institution')" id="type-institution">
-                                <i class="bi bi-bank"></i>
-                                <div class="fw-semibold">Institution</div>
-                                <div class="text-muted small">Organisation publique</div>
-                            </div>
+        {{-- Type de client --}}
+        <div class="card premium-card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-tag-fill"></i>Type de client</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="type-client-card" onclick="selectType('particulier')" id="type-particulier">
+                            <i class="bi bi-person"></i>
+                            <div class="title">Particulier</div>
+                            <div class="subtitle">Personne physique</div>
                         </div>
                     </div>
-
-                    <input type="hidden" name="type_client" id="type_client" value="{{ old('type_client', 'particulier') }}">
+                    <div class="col-md-4">
+                        <div class="type-client-card" onclick="selectType('entreprise')" id="type-entreprise">
+                            <i class="bi bi-building"></i>
+                            <div class="title">Entreprise</div>
+                            <div class="subtitle">Personne morale</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="type-client-card" onclick="selectType('institution')" id="type-institution">
+                            <i class="bi bi-bank"></i>
+                            <div class="title">Institution</div>
+                            <div class="subtitle">Organisation publique</div>
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="type_client" id="type_client" value="{{ old('type_client', 'particulier') }}">
             </div>
+        </div>
 
-            {{-- Tabs --}}
-            <ul class="nav nav-tabs-custom" id="clientTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="coordonnees-tab" data-bs-toggle="tab" data-bs-target="#coordonnees" type="button">
-                        <i class="bi bi-person me-1"></i> Coordonnées
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="entreprise-tab" data-bs-toggle="tab" data-bs-target="#entreprise-info" type="button" style="display: none;">
-                        <i class="bi bi-building me-1"></i> Informations entreprise
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button">
-                        <i class="bi bi-telephone me-1"></i> Contact principal
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="acces-tab" data-bs-toggle="tab" data-bs-target="#acces" type="button">
-                        <i class="bi bi-shield-lock me-1"></i> Accès système
-                    </button>
-                </li>
-            </ul>
+        {{-- Tabs --}}
+        <ul class="nav nav-tabs-custom" id="clientTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="coordonnees-tab" data-bs-toggle="tab" data-bs-target="#coordonnees" type="button">
+                    <i class="bi bi-person"></i> Coordonnées
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="entreprise-tab" data-bs-toggle="tab" data-bs-target="#entreprise-info" type="button" style="display: none;">
+                    <i class="bi bi-building"></i> Infos entreprise
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button">
+                    <i class="bi bi-telephone"></i> Contact principal
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="acces-tab" data-bs-toggle="tab" data-bs-target="#acces" type="button">
+                    <i class="bi bi-shield-lock"></i> Accès système
+                </button>
+            </li>
+        </ul>
 
-            <div class="tab-content" id="clientTabsContent">
-                {{-- Tab 1: Coordonnées --}}
-                <div class="tab-pane fade show active" id="coordonnees" role="tabpanel">
-                    <div class="card form-card mb-4">
-                        <div class="card-body">
-                            <div class="section-title">Informations du client</div>
+        <div class="tab-content" id="clientTabsContent">
+            {{-- Tab 1: Coordonnées --}}
+            <div class="tab-pane fade show active" id="coordonnees" role="tabpanel">
+                <div class="card premium-card mb-4">
+                    <div class="card-body">
+                        <div class="section-title">
+                            <i class="bi bi-person"></i>
+                            Informations du client
+                        </div>
 
-                            {{-- Particulier fields --}}
-                            <div id="particulier-fields">
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label required-field">Nom</label>
-                                        <input type="text" name="nom" class="form-control @error('nom') is-invalid @enderror"
-                                            value="{{ old('nom') }}">
-                                        @error('nom')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label required-field">Prénoms</label>
-                                        <input type="text" name="prenoms" class="form-control @error('prenoms') is-invalid @enderror"
-                                            value="{{ old('prenoms') }}">
-                                        @error('prenoms')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Date de naissance</label>
-                                        <input type="date" name="date_naissance" class="form-control" value="{{ old('date_naissance') }}">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Entreprise/Institution fields --}}
-                            <div id="entreprise-fields" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label required-field">Raison sociale</label>
-                                        <input type="text" name="raison_sociale" class="form-control @error('raison_sociale') is-invalid @enderror"
-                                            value="{{ old('raison_sociale') }}">
-                                        @error('raison_sociale')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">NIF (Numéro d'Identification Fiscale)</label>
-                                        <input type="text" name="nif" class="form-control" value="{{ old('nif') }}">
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">RCCM</label>
-                                        <input type="text" name="rc" class="form-control" value="{{ old('rc') }}">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label required-field">Email</label>
-                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                        value="{{ old('email') }}" required>
-                                    @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                        {{-- Particulier fields --}}
+                        <div id="particulier-fields">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="bi bi-person"></i>
+                                        Nom <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="nom" class="form-control @error('nom') is-invalid @enderror"
+                                        value="{{ old('nom') }}" placeholder="Nom de famille" required>
+                                    @error('nom')
+                                    <div class="help-text text-danger"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Téléphone principal</label>
-                                    <input type="text" name="telephone" class="form-control"
-                                        value="{{ old('telephone') }}" placeholder="+229 XX XXX XX XX">
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="bi bi-person"></i>
+                                        Prénoms
+                                    </label>
+                                    <input type="text" name="prenoms" class="form-control"
+                                        value="{{ old('prenoms') }}" placeholder="Prénom(s)">
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Téléphone secondaire</label>
-                                    <input type="text" name="telephone_secondaire" class="form-control"
-                                        value="{{ old('telephone_secondaire') }}" placeholder="+229 XX XXX XX XX">
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Adresse</label>
-                                    <textarea name="adresse" class="form-control" rows="2">{{ old('adresse') }}</textarea>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Ville</label>
-                                    <input type="text" name="ville" class="form-control" value="{{ old('ville') }}">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Pays</label>
-                                    <input type="text" name="pays" class="form-control" value="{{ old('pays', 'Bénin') }}">
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar"></i>
+                                        Date de naissance
+                                    </label>
+                                    <input type="date" name="date_naissance" class="form-control" value="{{ old('date_naissance') }}">
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {{-- Tab 2: Informations entreprise --}}
-                <div class="tab-pane fade" id="entreprise-info" role="tabpanel">
-                    <div class="card form-card mb-4">
-                        <div class="card-body">
-                            <div class="section-title">Représentant légal</div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Nom du représentant</label>
-                                    <input type="text" name="representant_nom" class="form-control" value="{{ old('representant_nom') }}">
+                        {{-- Entreprise/Institution fields --}}
+                        <div id="entreprise-fields" style="display: none;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        <i class="bi bi-building"></i>
+                                        Raison sociale <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" name="raison_sociale" class="form-control @error('raison_sociale') is-invalid @enderror"
+                                        value="{{ old('raison_sociale') }}" placeholder="Nom officiel de l'entreprise">
+                                    @error('raison_sociale')
+                                    <div class="help-text text-danger"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
+                                    @enderror
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Prénoms du représentant</label>
-                                    <input type="text" name="representant_prenom" class="form-control" value="{{ old('representant_prenom') }}">
+                                <div class="col-md-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-upc-scan"></i>
+                                        NIF
+                                    </label>
+                                    <input type="text" name="nif" class="form-control"
+                                        value="{{ old('nif') }}" placeholder="Numéro d'Identification Fiscale">
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Fonction</label>
-                                    <input type="text" name="representant_fonction" class="form-control" value="{{ old('representant_fonction') }}" placeholder="DG, Directeur, etc.">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Tab 3: Contact principal --}}
-                <div class="tab-pane fade" id="contact" role="tabpanel">
-                    <div class="card form-card mb-4">
-                        <div class="card-body">
-                            <div class="section-title">Personne à contacter</div>
-
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Cette personne sera le contact principal pour les communications relatives aux contrats et services.
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Nom complet</label>
-                                    <input type="text" name="contact_principal_nom" class="form-control" value="{{ old('contact_principal_nom') }}">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Fonction</label>
-                                    <input type="text" name="contact_principal_fonction" class="form-control" value="{{ old('contact_principal_fonction') }}">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" name="contact_email" class="form-control" value="{{ old('contact_email') }}">
+                                <div class="col-md-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                        RCCM
+                                    </label>
+                                    <input type="text" name="rc" class="form-control"
+                                        value="{{ old('rc') }}" placeholder="Registre de Commerce">
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {{-- Tab 4: Accès système --}}
-                <div class="tab-pane fade" id="acces" role="tabpanel">
-                    <div class="card form-card mb-4">
-                        <div class="card-body">
-                            <div class="section-title">Paramètres de connexion</div>
+                        <div class="section-title mt-4">
+                            <i class="bi bi-envelope"></i>
+                            Coordonnées
+                        </div>
 
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Ces informations permettront au client de se connecter à son espace. Laissez vide pour une création sans accès.
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-envelope"></i>
+                                    Email <span class="required-indicator">*</span>
+                                </label>
+                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                    value="{{ old('email') }}" placeholder="email@exemple.com" required>
+                                @error('email')
+                                <div class="help-text text-danger"><i class="bi bi-exclamation-circle"></i> {{ $message }}</div>
+                                @enderror
                             </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" name="creer_compte" id="creer_compte" value="1" {{ old('creer_compte') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="creer_compte">Créer un compte de connexion</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" name="est_actif" id="est_actif" value="1" checked>
-                                        <label class="form-check-label" for="est_actif">Compte actif</label>
-                                    </div>
-                                </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-telephone"></i>
+                                    Téléphone principal
+                                </label>
+                                <input type="text" name="telephone" class="form-control"
+                                    value="{{ old('telephone') }}" placeholder="+229 XX XX XX XX">
                             </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-telephone"></i>
+                                    Téléphone secondaire
+                                </label>
+                                <input type="text" name="telephone_secondaire" class="form-control"
+                                    value="{{ old('telephone_secondaire') }}" placeholder="+229 XX XX XX XX">
+                            </div>
+                        </div>
 
-                            <div id="compte-fields" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Mot de passe</label>
-                                        <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Confirmer le mot de passe</label>
-                                        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" placeholder="Confirmer le mot de passe">
-                                    </div>
-                                </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="bi bi-geo-alt"></i>
+                                    Adresse
+                                </label>
+                                <textarea name="adresse" class="form-control" rows="2" placeholder="Adresse complète">{{ old('adresse') }}</textarea>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="bi bi-building"></i>
+                                    Ville
+                                </label>
+                                <input type="text" name="ville" class="form-control"
+                                    value="{{ old('ville') }}" placeholder="Ex : Cotonou">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    <i class="bi bi-globe"></i>
+                                    Pays
+                                </label>
+                                <input type="text" name="pays" class="form-control"
+                                    value="{{ old('pays', 'Bénin') }}">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Actions --}}
-            <div class="card form-card mb-4">
-                <div class="card-body d-flex justify-content-between">
-                    <a href="{{ route('admin.entreprise.clients.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Retour
-                    </a>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-1"></i> Enregistrer le client
-                    </button>
+            {{-- Tab 2: Informations entreprise --}}
+            <div class="tab-pane fade" id="entreprise-info" role="tabpanel">
+                <div class="card premium-card mb-4">
+                    <div class="card-body">
+                        <div class="section-title">
+                            <i class="bi bi-person-badge"></i>
+                            Représentant légal
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-person"></i>
+                                    Nom du représentant
+                                </label>
+                                <input type="text" name="representant_nom" class="form-control"
+                                    value="{{ old('representant_nom') }}" placeholder="Nom">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-person"></i>
+                                    Prénoms du représentant
+                                </label>
+                                <input type="text" name="representant_prenom" class="form-control"
+                                    value="{{ old('representant_prenom') }}" placeholder="Prénom(s)">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-briefcase"></i>
+                                    Fonction
+                                </label>
+                                <input type="text" name="representant_fonction" class="form-control"
+                                    value="{{ old('representant_fonction') }}" placeholder="DG, Directeur, etc.">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>
 
-    </div>
+            {{-- Tab 3: Contact principal --}}
+            <div class="tab-pane fade" id="contact" role="tabpanel">
+                <div class="card premium-card mb-4">
+                    <div class="card-body">
+                        <div class="section-title">
+                            <i class="bi bi-person-lines-fill"></i>
+                            Personne à contacter
+                        </div>
+
+                        <div class="info-box mb-4">
+                            <div class="info-title">
+                                <i class="bi bi-info-circle"></i>
+                                Note
+                            </div>
+                            <ul>
+                                <li>Cette personne sera le contact principal pour les communications relatives aux contrats et services.</li>
+                            </ul>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-person"></i>
+                                    Nom complet
+                                </label>
+                                <input type="text" name="contact_principal_nom" class="form-control"
+                                    value="{{ old('contact_principal_nom') }}" placeholder="Nom et prénom">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-briefcase"></i>
+                                    Fonction
+                                </label>
+                                <input type="text" name="contact_principal_fonction" class="form-control"
+                                    value="{{ old('contact_principal_fonction') }}" placeholder="Poste dans l'entreprise">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-envelope"></i>
+                                    Email
+                                </label>
+                                <input type="email" name="contact_email" class="form-control"
+                                    value="{{ old('contact_email') }}" placeholder="email@exemple.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tab 4: Accès système --}}
+            <div class="tab-pane fade" id="acces" role="tabpanel">
+                <div class="card premium-card mb-4">
+                    <div class="card-body">
+                        <div class="section-title">
+                            <i class="bi bi-shield-lock"></i>
+                            Paramètres de connexion
+                        </div>
+
+                        <div class="info-box mb-4">
+                            <div class="info-title">
+                                <i class="bi bi-info-circle"></i>
+                                Information
+                            </div>
+                            <ul>
+                                <li>Ces informations permettront au client de se connecter à son espace.</li>
+                                <li>Laissez vide pour une création sans accès au système.</li>
+                            </ul>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" name="creer_compte" id="creer_compte" value="1" {{ old('creer_compte') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="creer_compte">
+                                        Créer un compte de connexion
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" name="est_actif" id="est_actif" value="1" checked>
+                                    <label class="form-check-label" for="est_actif">
+                                        Compte actif
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="compte-fields" style="display: none;" class="mt-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        <i class="bi bi-key"></i>
+                                        Mot de passe
+                                    </label>
+                                    <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        <i class="bi bi-key-fill"></i>
+                                        Confirmer le mot de passe
+                                    </label>
+                                    <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" placeholder="Confirmer le mot de passe">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Actions --}}
+        <div class="card premium-card animate-fade-in">
+            <div class="card-body d-flex justify-content-between">
+                <a href="{{ route('admin.entreprise.clients.index') }}" class="btn btn-cancel">
+                    <i class="bi bi-arrow-left-circle"></i>
+                    Retour à la liste
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Enregistrer le client
+                </button>
+            </div>
+        </div>
+    </form>
+
 </div>
 
 @push('scripts')
@@ -420,7 +780,6 @@
         document.getElementById('type-' + type).classList.add('selected');
         document.getElementById('type_client').value = type;
 
-        // Show/hide fields based on type
         const particulierFields = document.getElementById('particulier-fields');
         const entrepriseFields = document.getElementById('entreprise-fields');
         const entrepriseTab = document.getElementById('entreprise-tab');
@@ -436,12 +795,10 @@
         }
     }
 
-    // Toggle compte fields
     document.getElementById('creer_compte').addEventListener('change', function() {
         document.getElementById('compte-fields').style.display = this.checked ? 'block' : 'none';
     });
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         var oldType = "{{ old('type_client', 'particulier') }}";
         selectType(oldType);
