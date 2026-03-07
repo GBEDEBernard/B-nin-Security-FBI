@@ -17,7 +17,33 @@ class AffectationController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'entreprise']);
+        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
+    }
+
+    /**
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
+     *
+     * Priorité :
+     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
+     *   2. Employé (guard employe) → son entreprise_id direct
+     */
+    private function getEntrepriseId(): ?int
+    {
+        // SuperAdmin en contexte entreprise
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
+                return (int) session('entreprise_id');
+            }
+        }
+
+        // Employé connecté via guard 'employe'
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
+        }
+
+        return null;
     }
 
     /**
@@ -25,7 +51,7 @@ class AffectationController extends Controller
      */
     public function index(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
             $q->where('entreprise_id', $entrepriseId);
@@ -59,13 +85,15 @@ class AffectationController extends Controller
      */
     public function create(Request $request)
     {
-        $employes = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        $entrepriseId = $this->getEntrepriseId();
+
+        $employes = Employe::where('entreprise_id', $entrepriseId)
             ->where('disponible', true)
             ->where('est_actif', true)
             ->orderBy('nom')
             ->get();
 
-        $contrats = ContratPrestation::where('entreprise_id', Auth::user()->entreprise_id)
+        $contrats = ContratPrestation::where('entreprise_id', $entrepriseId)
             ->where('statut', 'en_cours')
             ->with('client')
             ->get();
@@ -80,6 +108,8 @@ class AffectationController extends Controller
      */
     public function store(Request $request)
     {
+        $entrepriseId = $this->getEntrepriseId();
+
         $validated = $request->validate([
             'employe_id' => 'required|exists:employes,id',
             'site_id' => 'required|exists:client_sites,id',
@@ -93,7 +123,7 @@ class AffectationController extends Controller
             'statut' => 'required|in:active,terminee,annulee',
         ]);
 
-        $validated['entreprise_id'] = Auth::user()->entreprise_id;
+        $validated['entreprise_id'] = $entrepriseId;
 
         Affectation::create($validated);
 
@@ -106,9 +136,11 @@ class AffectationController extends Controller
      */
     public function show($id)
     {
+        $entrepriseId = $this->getEntrepriseId();
+
         $affectation = Affectation::with(['employe', 'site', 'contrat'])
-            ->whereHas('employe', function ($q) {
-                $q->where('entreprise_id', Auth::user()->entreprise_id);
+            ->whereHas('employe', function ($q) use ($entrepriseId) {
+                $q->where('entreprise_id', $entrepriseId);
             })
             ->findOrFail($id);
 
@@ -120,15 +152,17 @@ class AffectationController extends Controller
      */
     public function edit($id)
     {
-        $affectation = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $entrepriseId = $this->getEntrepriseId();
+
+        $affectation = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->findOrFail($id);
 
-        $employes = Employe::where('entreprise_id', Auth::user()->entreprise_id)
+        $employes = Employe::where('entreprise_id', $entrepriseId)
             ->orderBy('nom')
             ->get();
 
-        $contrats = ContratPrestation::where('entreprise_id', Auth::user()->entreprise_id)
+        $contrats = ContratPrestation::where('entreprise_id', $entrepriseId)
             ->where('statut', 'en_cours')
             ->get();
 
@@ -140,8 +174,10 @@ class AffectationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $affectation = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $entrepriseId = $this->getEntrepriseId();
+
+        $affectation = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->findOrFail($id);
 
         $validated = $request->validate([
@@ -168,8 +204,10 @@ class AffectationController extends Controller
      */
     public function destroy($id)
     {
-        $affectation = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $entrepriseId = $this->getEntrepriseId();
+
+        $affectation = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->findOrFail($id);
 
         $affectation->delete();
@@ -183,8 +221,10 @@ class AffectationController extends Controller
      */
     public function terminer($id)
     {
-        $affectation = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $entrepriseId = $this->getEntrepriseId();
+
+        $affectation = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->findOrFail($id);
 
         $affectation->update(['statut' => 'terminee']);
@@ -197,8 +237,10 @@ class AffectationController extends Controller
      */
     public function annuler($id)
     {
-        $affectation = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $entrepriseId = $this->getEntrepriseId();
+
+        $affectation = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->findOrFail($id);
 
         $affectation->update(['statut' => 'annulee']);
@@ -211,10 +253,11 @@ class AffectationController extends Controller
      */
     public function planning(Request $request)
     {
+        $entrepriseId = $this->getEntrepriseId();
         $date = $request->get('date', now());
 
-        $affectations = Affectation::whereHas('employe', function ($q) {
-            $q->where('entreprise_id', Auth::user()->entreprise_id);
+        $affectations = Affectation::whereHas('employe', function ($q) use ($entrepriseId) {
+            $q->where('entreprise_id', $entrepriseId);
         })->with(['employe', 'site'])
             ->whereDate('date_debut', '<=', $date)
             ->whereDate('date_fin', '>=', $date)

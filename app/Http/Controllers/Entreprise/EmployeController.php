@@ -16,7 +16,33 @@ class EmployeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'entreprise']);
+        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
+    }
+
+    /**
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
+     *
+     * Priorité :
+     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
+     *   2. Employé (guard employe) → son entreprise_id direct
+     */
+    private function getEntrepriseId(): ?int
+    {
+        // SuperAdmin en contexte entreprise
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
+                return (int) session('entreprise_id');
+            }
+        }
+
+        // Employé connecté via guard 'employe'
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
+        }
+
+        return null;
     }
 
     /**
@@ -24,8 +50,8 @@ class EmployeController extends Controller
      */
     public function index(Request $request)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -108,8 +134,8 @@ class EmployeController extends Controller
             $validated['matricule'] = 'EMP-' . strtoupper(uniqid());
         }
 
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return back()->with('error', 'Aucune entreprise associée. Veuillez sélectionner une entreprise.');
@@ -131,8 +157,8 @@ class EmployeController extends Controller
      */
     public function show($id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -151,8 +177,8 @@ class EmployeController extends Controller
      */
     public function edit($id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -161,7 +187,6 @@ class EmployeController extends Controller
 
         $employe = Employe::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
-
     }
 
     /**
@@ -169,8 +194,8 @@ class EmployeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -214,8 +239,8 @@ class EmployeController extends Controller
      */
     public function destroy($id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -236,8 +261,8 @@ class EmployeController extends Controller
      */
     public function mettreEnConge(Request $request, $id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -257,8 +282,8 @@ class EmployeController extends Controller
      */
     public function reprendre($id)
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return redirect()->route('superadmin.dashboard')
@@ -278,8 +303,8 @@ class EmployeController extends Controller
      */
     public function disponibles()
     {
-        // Récupérer l'entreprise_id depuis l'utilisateur connecté ou la session
-        $entrepriseId = Auth::user()->entreprise_id ?? session('entreprise_id');
+        // Récupérer l'entreprise_id depuis la méthode getEntrepriseId()
+        $entrepriseId = $this->getEntrepriseId();
 
         if (!$entrepriseId) {
             return response()->json(['error' => 'Aucune entreprise sélectionnée.'], 400);

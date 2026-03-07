@@ -36,8 +36,8 @@ class EntrepriseMiddleware
                     ->with('info', 'Veuillez sélectionner une entreprise pour accéder à ce tableau de bord.');
             }
 
-            // Un User (web) non-superadmin → son propre dashboard
-            return redirect()->route('admin.superadmin.index');
+            // Un User (web) non-superadmin → son propre dashboard (pas d'accès entreprise)
+            return redirect()->route('home');
         }
 
         // -----------------------------------------------------------
@@ -82,6 +82,9 @@ class EntrepriseMiddleware
             return redirect('/login')
                 ->with('error', 'Votre entreprise est inactive. Contactez l\'administrateur.');
         }
+
+        // Stocker l'entreprise_id en session pour les contrôles ultérieurs
+        session(['entreprise_id' => $employe->entreprise_id]);
 
         return $next($request);
     }

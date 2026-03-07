@@ -334,9 +334,10 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
 // ADMIN ENTREPRISE (Direction, Superviseur, Contrôleur)
 // ⚠️  PAS de 'role.redirect' dans ce groupe
 // Note: On utilise 'entreprise' middleware qui vérifie l'authentification
+// Utilise auth:employe,web pour accepter les deux types d'utilisateurs
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
+Route::middleware(['tenant', 'auth:employe,web', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Entreprise\DashboardController::class, 'index'])->name('index');
     Route::get('/statistiques', [\App\Http\Controllers\Entreprise\DashboardController::class, 'statistiques'])->name('statistiques');
@@ -429,7 +430,7 @@ Route::middleware(['tenant', 'entreprise'])->prefix('admin/entreprise')->name('a
 // Note: On utilise 'auth.employe' pour authenticate avec le guard employe
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['tenant', 'entreprise'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
+Route::middleware(['tenant', 'auth:employe', 'entreprise'])->prefix('admin/agent')->name('admin.agent.')->group(function () {
     // Dashboard
     Route::get('/', function () {
         return view('admin.agent');

@@ -18,7 +18,7 @@ class ContratController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'entreprise']);
+        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
     }
 
     /**
@@ -171,7 +171,7 @@ class ContratController extends Controller
         // Statistiques du contrat
         $statsContrat = [
             'sites_count' => $contrat->sites()->count(),
-            'agents_count' => $contrat->affectations()->where('est_actif', true)->count(),
+            'agents_count' => $contrat->affectations()->where('statut', 'en_cours')->count(),
             'factures_count' => $contrat->factures()->count(),
             'montant_total' => $contrat->factures()->where('statut', 'payee')->sum('montant_paye'),
         ];
@@ -383,15 +383,29 @@ class ContratController extends Controller
     }
 
     /**
-     * Obtenir l'ID de l'entreprise
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
+     *
+     * Priorité :
+     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
+     *   2. Employé (guard employe) → son entreprise_id direct
      */
-    private function getEntrepriseId(): int
+    private function getEntrepriseId(): ?int
     {
-        if (Auth::guard('employe')->check()) {
-            return Auth::guard('employe')->user()->entreprise_id;
+        // SuperAdmin en contexte entreprise
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
+                return (int) session('entreprise_id');
+            }
         }
 
-        return session('entreprise_id') ?? Auth::user()->entreprise_id;
+        // Employé connecté via guard 'employe'
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
+        }
+
+        return null;
     }
 
     /**

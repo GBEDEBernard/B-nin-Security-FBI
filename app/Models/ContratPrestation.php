@@ -221,7 +221,7 @@ class ContratPrestation extends Model
     public function nombreAgentsAffectes(): int
     {
         return $this->affectations()
-            ->where('est_actif', true)
+            ->where('statut', 'en_cours')
             ->count();
     }
 

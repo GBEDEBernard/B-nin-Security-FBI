@@ -19,7 +19,33 @@ class RapportController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'entreprise']);
+        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
+    }
+
+    /**
+     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
+     *
+     * Priorité :
+     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
+     *   2. Employé (guard employe) → son entreprise_id direct
+     */
+    private function getEntrepriseId(): ?int
+    {
+        // SuperAdmin en contexte entreprise
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
+            if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
+                return (int) session('entreprise_id');
+            }
+        }
+
+        // Employé connecté via guard 'employe'
+        if (Auth::guard('employe')->check()) {
+            $employe = Auth::guard('employe')->user();
+            return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
+        }
+
+        return null;
     }
 
     /**
@@ -35,7 +61,7 @@ class RapportController extends Controller
      */
     public function employes(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Employe::where('entreprise_id', $entrepriseId);
 
@@ -64,7 +90,7 @@ class RapportController extends Controller
      */
     public function clients(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Client::where('entreprise_id', $entrepriseId);
 
@@ -88,7 +114,7 @@ class RapportController extends Controller
      */
     public function financier(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Facture::where('entreprise_id', $entrepriseId);
 
@@ -123,7 +149,7 @@ class RapportController extends Controller
      */
     public function incidents(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Incident::where('entreprise_id', $entrepriseId);
 
@@ -155,7 +181,7 @@ class RapportController extends Controller
      */
     public function affectations(Request $request)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $query = Affectation::where('entreprise_id', $entrepriseId);
 

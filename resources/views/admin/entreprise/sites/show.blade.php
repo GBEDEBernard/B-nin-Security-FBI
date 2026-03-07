@@ -13,7 +13,7 @@
     .section-title {
         font-size: 0.9rem;
         font-weight: 600;
-        color: #198754;
+        color: #0d6efd;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 1rem;
@@ -38,8 +38,8 @@
     }
 
     .badge-faible {
-        background: rgba(25, 135, 84, 0.15);
-        color: #198754;
+        background: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
     }
 
     .badge-moyen {
