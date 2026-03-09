@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class ContratPrestation extends Model
 {
@@ -261,8 +262,10 @@ class ContratPrestation extends Model
      */
     public function nombreAgentsSurSites(): int
     {
-        return $this->sites()
-            ->sum('pivot.nombre_agents_site');
+        // Utiliser une requête avec join pour accéder à la colonne pivot
+        return \DB::table('sites_contrats')
+            ->where('contrat_prestation_id', $this->id)
+            ->sum('nombre_agents_site');
     }
 
     /**

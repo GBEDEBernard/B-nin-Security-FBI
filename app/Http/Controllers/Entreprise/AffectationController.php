@@ -125,9 +125,29 @@ class AffectationController extends Controller
 
         $validated['entreprise_id'] = $entrepriseId;
 
+        // Mapper les noms de champs pour correspondre à la base de données
+        $validated['site_client_id'] = $validated['site_id'];
+        $validated['contrat_prestation_id'] = $validated['contrat_id'];
+        $validated['date_affectation'] = $validated['date_debut'];
+        $validated['date_fin_affectation'] = $validated['date_fin'];
+        $validated['horaire_debut'] = $validated['heure_debut'];
+        $validated['horaire_fin'] = $validated['heure_fin'];
+        $validated['role_site'] = $validated['poste'];
+
+        // Supprimer les champs originaux qui ne sont pas dans la table
+        unset(
+            $validated['site_id'],
+            $validated['contrat_id'],
+            $validated['date_debut'],
+            $validated['date_fin'],
+            $validated['heure_debut'],
+            $validated['heure_fin'],
+            $validated['poste']
+        );
+
         Affectation::create($validated);
 
-        return redirect()->route('admin.entreprise.affectations.index')
+        return redirect()->route('admin.entreprise.sites.show', $validated['site_client_id'])
             ->with('success', 'Affectation créée avec succès.');
     }
 

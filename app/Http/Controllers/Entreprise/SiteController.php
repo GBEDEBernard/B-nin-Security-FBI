@@ -146,18 +146,37 @@ class SiteController extends Controller
             ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
+        // Charger les contrats du client (le client doit avoir un contrat pour créer un site)
+        $contrats = collect();
+        if ($site->client) {
+            $contrats = $site->client->contrats()
+                ->where('statut', 'en_cours')
+                ->get();
+        }
+
+        // Charger les affectations actives avec les données de l'employé
+        $affectations = $site->affectations()
+            ->where('statut', 'active')
+            ->with(['employe'])
+            ->get();
+
+        // Employés disponibles pour une nouvelle affectation
         $employesDisponibles = Employe::where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->where('disponible', true)
             ->orderBy('nom')
             ->get();
 
+        // Statistiques du site
         $statsSite = [
-            'contrats_count' => $site->contrats()->count(),
-            'agents_count'   => $site->affectations()->where('statut', 'en_cours')->count(),
+            'contrats_count' => $contrats->count(),
+            'agents_count'   => $affectations->count(),
+            'agents_requis'  => $site->agentsRequis(),
+            'agents_manquants' => $site->agentsManquants(),
+            'pourcentage_couverture' => $site->pourcentageCouverture(),
         ];
 
-        return view('admin.entreprise.sites.show', compact('site', 'employesDisponibles', 'statsSite'));
+        return view('admin.entreprise.sites.show', compact('site', 'contrats', 'affectations', 'employesDisponibles', 'statsSite'));
     }
 
     /**
