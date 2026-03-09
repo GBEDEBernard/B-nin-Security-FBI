@@ -37,9 +37,12 @@ class ContratPrestation extends Model
         'tva',
         'montant_mensuel_ttc',
         'periodicite_facturation',
+        'prix_par_agent',
+        'montant_total_ht',
 
         // Ressources
         'nombre_agents_requis',
+        'nombre_sites',
         'postes_requis',
 
         // Détails prestation

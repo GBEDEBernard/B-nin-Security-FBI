@@ -339,6 +339,23 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <!-- Nombre de sites -->
+                                <div class="col-md-6">
+                                    <label for="nombre_sites" class="form-label">
+                                        Nombre de sites autorisés
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="number" class="form-control @error('nombre_sites') is-invalid @enderror"
+                                            id="nombre_sites" name="nombre_sites"
+                                            value="{{ old('nombre_sites', $contrat->nombre_sites) }}" min="1" placeholder="Illimité si vide">
+                                    </div>
+                                    <small class="text-muted">Laissez vide pour aucun limite</small>
+                                    @error('nombre_sites')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 

@@ -38,12 +38,12 @@ class ContratController extends Controller
         $stats = [
             'total'    => ContratPrestation::where('entreprise_id', $entrepriseId)->count(),
             'actifs'   => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'en_cours')->count(),
-            'brouillon'=> ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'brouillon')->count(),
+            'brouillon' => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'brouillon')->count(),
             'resilies' => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'resilie')->count(),
             'expires'  => ContratPrestation::where('entreprise_id', $entrepriseId)
-                            ->where('date_fin', '<', now())
-                            ->where('statut', '!=', 'resilie')
-                            ->count(),
+                ->where('date_fin', '<', now())
+                ->where('statut', '!=', 'resilie')
+                ->count(),
         ];
 
         return view('admin.entreprise.contrats.index', compact('contrats', 'stats'));
@@ -82,10 +82,12 @@ class ContratController extends Controller
             'date_debut'               => 'required|date',
             'date_fin'                 => 'required|date|after:date_debut',
             'duree_preavis'            => 'nullable|integer|min:0',
-            'montant_mensuel_ht'       => 'required|numeric|min:0',
+            'montant_mensuel_ht'       => 'nullable|numeric|min:0',
+            'prix_par_agent'           => 'nullable|numeric|min:0',
             'tva'                      => 'nullable|numeric|min:0|max:100',
             'periodicite_facturation'  => 'required|in:mensuel,trimestriel,semestriel,annuel',
             'nombre_agents_requis'     => 'required|integer|min:1',
+            'nombre_sites'             => 'nullable|integer|min:1',
             'description_prestation'   => 'nullable|string',
             'conditions_particulieres' => 'nullable|string',
             'statut'                   => 'required|in:brouillon,en_cours',
@@ -108,11 +110,26 @@ class ContratController extends Controller
                 ->with('error', 'Ce client a déjà un contrat actif ou en brouillon (N° ' . $existingContrat->numero_contrat . ').');
         }
 
-        // Calculs financiers automatiques
+        // ============================================================
+        // CALCULS FINANCIERS AUTOMATIQUES
+        // ============================================================
+        $prixParAgent = $validated['prix_par_agent'] ?? 0;
+        $nombreAgents = $validated['nombre_agents_requis'] ?? 1;
         $tva = $validated['tva'] ?? 18;
+
+        // Si prix_par_agent est fourni, on calcule le montant mensuel
+        if ($prixParAgent > 0) {
+            $validated['montant_mensuel_ht'] = $nombreAgents * $prixParAgent;
+        } elseif (empty($validated['montant_mensuel_ht'])) {
+            // Valeur par défaut si aucun montant n'est fourni
+            $validated['montant_mensuel_ht'] = 0;
+        }
+
+        // Calculer montant total HT et TTC
         $validated['montant_mensuel_ttc'] = $validated['montant_mensuel_ht'] * (1 + $tva / 100);
         $validated['montant_annuel_ht']   = $validated['montant_mensuel_ht'] * 12;
-        $validated['entreprise_id']       = $entrepriseId;
+        $validated['montant_total_ht']    = $validated['montant_mensuel_ht'];
+        $validated['entreprise_id']        = $entrepriseId;
 
         // Numéro auto
         if (empty($validated['numero_contrat'])) {
@@ -127,7 +144,6 @@ class ContratController extends Controller
 
             return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
                 ->with('success', 'Contrat créé avec succès.');
-
         } catch (\Exception $e) {
             return back()->withInput()
                 ->with('error', 'Erreur lors de la création : ' . $e->getMessage());
@@ -153,7 +169,7 @@ class ContratController extends Controller
         $statsContrat = [
             'sites_count'   => $contrat->sites()->count(),
             'agents_count'  => $contrat->affectations()->where('statut', 'en_cours')->count(),
-            'factures_count'=> $contrat->factures()->count(),
+            'factures_count' => $contrat->factures()->count(),
             'montant_total' => $contrat->factures()->where('statut', 'payee')->sum('montant_paye'),
         ];
 
@@ -178,7 +194,7 @@ class ContratController extends Controller
                     $sub->whereIn('statut', ['brouillon', 'en_cours'])
                         ->where('id', '!=', $contrat->id);
                 })
-                ->orWhere('id', $contrat->client_id);
+                    ->orWhere('id', $contrat->client_id);
             })
             ->orderBy('nom')
             ->get();
@@ -205,10 +221,12 @@ class ContratController extends Controller
             'date_debut'               => 'required|date',
             'date_fin'                 => 'required|date|after:date_debut',
             'duree_preavis'            => 'nullable|integer|min:0',
-            'montant_mensuel_ht'       => 'required|numeric|min:0',
+            'montant_mensuel_ht'       => 'nullable|numeric|min:0',
+            'prix_par_agent'           => 'nullable|numeric|min:0',
             'tva'                      => 'nullable|numeric|min:0|max:100',
             'periodicite_facturation'  => 'required|in:mensuel,trimestriel,semestriel,annuel',
             'nombre_agents_requis'     => 'required|integer|min:1',
+            'nombre_sites'             => 'nullable|integer|min:1',
             'description_prestation'   => 'nullable|string',
             'conditions_particulieres' => 'nullable|string',
             'statut'                   => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
@@ -223,10 +241,25 @@ class ContratController extends Controller
         // ✅ est_renouvelable
         $validated['est_renouvelable'] = $request->input('est_renouvelable', '0') == '1';
 
-        // Calculs financiers
+        // ============================================================
+        // CALCULS FINANCIERS AUTOMATIQUES
+        // ============================================================
+        $prixParAgent = $validated['prix_par_agent'] ?? 0;
+        $nombreAgents = $validated['nombre_agents_requis'] ?? 1;
         $tva = $validated['tva'] ?? 18;
+
+        // Si prix_par_agent est fourni, on calcule le montant mensuel
+        if ($prixParAgent > 0) {
+            $validated['montant_mensuel_ht'] = $nombreAgents * $prixParAgent;
+        } elseif (empty($validated['montant_mensuel_ht'])) {
+            // Valeur par défaut si aucun montant n'est fourni
+            $validated['montant_mensuel_ht'] = 0;
+        }
+
+        // Calculer montant total HT et TTC
         $validated['montant_mensuel_ttc'] = $validated['montant_mensuel_ht'] * (1 + $tva / 100);
         $validated['montant_annuel_ht']   = $validated['montant_mensuel_ht'] * 12;
+        $validated['montant_total_ht']    = $validated['montant_mensuel_ht'];
 
         // ✅ Résiliation : si statut != resilie → on efface les champs résiliation
         if ($validated['statut'] !== 'resilie') {
@@ -242,7 +275,6 @@ class ContratController extends Controller
 
             return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
                 ->with('success', 'Contrat mis à jour avec succès.');
-
         } catch (\Exception $e) {
             return back()->withInput()
                 ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
@@ -279,7 +311,7 @@ class ContratController extends Controller
 
         $request->validate([
             'statut'           => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
-            'motif_resiliation'=> 'nullable|string|required_if:statut,resilie',
+            'motif_resiliation' => 'nullable|string|required_if:statut,resilie',
             'date_resiliation' => 'nullable|date|required_if:statut,resilie',
         ]);
 

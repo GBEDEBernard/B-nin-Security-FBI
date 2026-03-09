@@ -115,10 +115,12 @@ class ContratController extends Controller
             'date_fin' => 'required|date|after:date_debut',
             'est_renouvelable' => 'boolean',
             'duree_preavis' => 'nullable|integer|min:0',
-            'montant_mensuel_ht' => 'required|numeric|min:0',
+            'montant_mensuel_ht' => 'nullable|numeric|min:0',
+            'prix_par_agent' => 'nullable|numeric|min:0',
             'tva' => 'nullable|numeric|min:0|max:100',
             'periodicite_facturation' => 'required|in:mensuel,trimestriel,semestriel,annuel',
             'nombre_agents_requis' => 'required|integer|min:1',
+            'nombre_sites' => 'nullable|integer|min:1',
             'description_prestation' => 'nullable|string',
             'horaires_globaux' => 'nullable|array',
             'conditions_particulieres' => 'nullable|string',
@@ -129,12 +131,27 @@ class ContratController extends Controller
             'date_signature' => 'nullable|date',
         ]);
 
+        // Calculer le montant basé sur le prix par agent et le nombre d'agents
+        $prixParAgent = $validated['prix_par_agent'] ?? 0;
+        $nombreAgents = $validated['nombre_agents_requis'] ?? 1;
+
+        // Si prix_par_agent est fourni, on calcule le montant mensuel
+        if ($prixParAgent > 0) {
+            $validated['montant_mensuel_ht'] = $nombreAgents * $prixParAgent;
+        } elseif (empty($validated['montant_mensuel_ht'])) {
+            // Valeur par défaut si aucun montant n'est fourni
+            $validated['montant_mensuel_ht'] = 0;
+        }
+
+        // Calculer le montant total HT
+        $validated['montant_total_ht'] = $validated['montant_mensuel_ht'];
+
         // Calculer le montant TTC
         $tva = $validated['tva'] ?? 18;
         $validated['montant_mensuel_ttc'] = $validated['montant_mensuel_ht'] * (1 + $tva / 100);
         $validated['montant_annuel_ht'] = $validated['montant_mensuel_ht'] * 12;
 
-        // Convertir horaires en JSON si c'est un tableau
+        // Convertir horaires en JSON
         if (isset($validated['horaires_globaux']) && is_array($validated['horaires_globaux'])) {
             $validated['horaires_globaux'] = json_encode($validated['horaires_globaux']);
         }
@@ -195,10 +212,12 @@ class ContratController extends Controller
             'date_fin' => 'required|date|after:date_debut',
             'est_renouvelable' => 'boolean',
             'duree_preavis' => 'nullable|integer|min:0',
-            'montant_mensuel_ht' => 'required|numeric|min:0',
+            'montant_mensuel_ht' => 'nullable|numeric|min:0',
+            'prix_par_agent' => 'nullable|numeric|min:0',
             'tva' => 'nullable|numeric|min:0|max:100',
             'periodicite_facturation' => 'required|in:mensuel,trimestriel,semestriel,annuel',
             'nombre_agents_requis' => 'required|integer|min:1',
+            'nombre_sites' => 'nullable|integer|min:1',
             'description_prestation' => 'nullable|string',
             'horaires_globaux' => 'nullable|array',
             'conditions_particulieres' => 'nullable|string',
@@ -210,6 +229,21 @@ class ContratController extends Controller
             'motif_resiliation' => 'nullable|string|required_if:statut,resilie',
             'date_resiliation' => 'nullable|date|required_if:statut,resilie',
         ]);
+
+        // Calculer le montant basé sur le prix par agent et le nombre d'agents
+        $prixParAgent = $validated['prix_par_agent'] ?? 0;
+        $nombreAgents = $validated['nombre_agents_requis'] ?? 1;
+
+        // Si prix_par_agent est fourni, on calcule le montant mensuel
+        if ($prixParAgent > 0) {
+            $validated['montant_mensuel_ht'] = $nombreAgents * $prixParAgent;
+        } elseif (empty($validated['montant_mensuel_ht'])) {
+            // Valeur par défaut si aucun montant n'est fourni
+            $validated['montant_mensuel_ht'] = 0;
+        }
+
+        // Calculer le montant total HT
+        $validated['montant_total_ht'] = $validated['montant_mensuel_ht'];
 
         // Calculer le montant TTC
         $tva = $validated['tva'] ?? 18;

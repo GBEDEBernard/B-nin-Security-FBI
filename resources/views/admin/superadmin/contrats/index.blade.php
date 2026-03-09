@@ -10,22 +10,22 @@
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .contract-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.12);
     }
-    
+
     .stat-card {
         border: none;
         border-radius: 12px;
         transition: transform 0.3s ease;
     }
-    
+
     .stat-card:hover {
         transform: translateY(-3px);
     }
-    
+
     .stat-icon {
         width: 48px;
         height: 48px;
@@ -34,44 +34,44 @@
         align-items: center;
         justify-content: center;
     }
-    
+
     .badge-statut {
         padding: 0.4rem 0.8rem;
         border-radius: 20px;
         font-weight: 500;
         font-size: 0.75rem;
     }
-    
+
     .badge-brouillon {
         background: rgba(108, 117, 125, 0.15);
         color: #6c757d;
     }
-    
+
     .badge-en_cours {
         background: rgba(25, 135, 84, 0.15);
         color: #198754;
     }
-    
+
     .badge-suspendu {
         background: rgba(255, 193, 7, 0.15);
         color: #ffc107;
     }
-    
+
     .badge-termine {
         background: rgba(13, 110, 253, 0.15);
         color: #0d6efd;
     }
-    
+
     .badge-resilie {
         background: rgba(220, 53, 69, 0.15);
         color: #dc3545;
     }
-    
+
     .table-responsive {
         border-radius: 12px;
         overflow: hidden;
     }
-    
+
     .data-table thead th {
         background: #f8f9fa;
         border-bottom: 2px solid #e9ecef;
@@ -81,15 +81,15 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     .data-table tbody tr {
         transition: background 0.2s ease;
     }
-    
+
     .data-table tbody tr:hover {
         background: #f8f9fa;
     }
-    
+
     .entreprise-badge {
         display: inline-flex;
         align-items: center;
@@ -100,37 +100,44 @@
         font-size: 0.8rem;
         color: #198754;
     }
-    
+
     .search-box {
         border-radius: 10px;
         border: 1.5px solid #e9ecef;
         padding: 0.6rem 1rem;
         transition: all 0.2s ease;
     }
-    
+
     .search-box:focus {
         border-color: #198754;
         box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
     }
-    
+
     .btn-action {
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.2s ease;
     }
-    
+
     .btn-action:hover {
         transform: translateY(-2px);
     }
-    
+
     .page-animate {
         animation: fadeIn 0.4s ease;
     }
-    
+
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 @endpush
@@ -157,7 +164,7 @@
 <!--begin::App Content-->
 <div class="app-content">
     <div class="container-fluid">
-        
+
         <!-- Messages de session -->
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -293,8 +300,9 @@
                                 <th>N° Contrat</th>
                                 <th>Entreprise</th>
                                 <th>Client</th>
-                                <th>Date début</th>
-                                <th>Date fin</th>
+                                <th>Agents</th>
+                                <th>Sites</th>
+                                <th>Prix/Agent</th>
                                 <th>Montant</th>
                                 <th>Statut</th>
                                 <th class="text-end">Actions</th>
@@ -320,17 +328,23 @@
                                         {{ $contrat->client?->nom ?? 'N/A' }}
                                     </div>
                                 </td>
-                                <td>{{ $contrat->date_debut?->format('d/m/Y') ?? 'N/A' }}</td>
                                 <td>
-                                    @if($contrat->estExpire())
-                                    <span class="text-danger">{{ $contrat->date_fin?->format('d/m/Y') }}</span>
-                                    @else
-                                    {{ $contrat->date_fin?->format('d/m/Y') }}
-                                    @endif
+                                    <span class="fw-semibold">{{ $contrat->nombre_agents_requis ?? 0 }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">
+                                        {{ $contrat->nombre_sites ? $contrat->nombre_sites : '—' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-success fw-semibold">
+                                        {{ number_format($contrat->prix_par_agent ?? 0, 0, ',', ' ') }}
+                                    </span>
+                                    <small class="text-muted">FCFA</small>
                                 </td>
                                 <td>
                                     <span class="fw-semibold">{{ number_format($contrat->montant_mensuel_ht ?? 0, 0, ',', ' ') }}</span>
-                                    <small class="text-muted">FCFA/mois</small>
+                                    <small class="text-muted d-block">FCFA/mois</small>
                                 </td>
                                 <td>
                                     <span class="badge-statut badge-{{ $contrat->statut }}">
@@ -356,7 +370,7 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
-                                    
+
                                     <!-- Modal de confirmation de suppression -->
                                     <div class="modal fade" id="deleteModal{{ $contrat->id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ $contrat->id }}" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
@@ -419,4 +433,3 @@
 </div>
 <!--end::App Content-->
 @endsection
-

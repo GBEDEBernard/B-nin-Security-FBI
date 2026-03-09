@@ -539,6 +539,10 @@
                                             <div class="info-label">Nombre d'agents requis</div>
                                             <div class="info-value">{{ $contrat->nombre_agents_requis ?? 0 }}</div>
                                         </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Nombre de sites autorisés</div>
+                                            <div class="info-value">{{ $contrat->nombre_sites ? $contrat->nombre_sites : 'Illimité' }}</div>
+                                        </div>
                                         @if($contrat->conditions_particulieres)
                                         <div class="info-item">
                                             <div class="info-label">Conditions particulières</div>

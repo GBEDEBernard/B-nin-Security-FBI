@@ -350,15 +350,34 @@
                                 <!-- Nombre d'agents requis -->
                                 <div class="col-md-6">
                                     <label for="nombre_agents_requis" class="form-label">
+                                        <i class="bi bi-people"></i>
                                         Nombre d'agents requis <span class="required-indicator">*</span>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-people"></i></span>
                                         <input type="number" class="form-control @error('nombre_agents_requis') is-invalid @enderror"
                                             id="nombre_agents_requis" name="nombre_agents_requis"
-                                            value="{{ old('nombre_agents_requis', 2) }}" min="1" required>
+                                            value="{{ old('nombre_agents_requis', 2) }}" min="1" required
+                                            oninput="updateMontantPreview()">
                                     </div>
                                     @error('nombre_agents_requis')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Nombre de sites -->
+                                <div class="col-md-6">
+                                    <label for="nombre_sites" class="form-label">
+                                        Nombre de sites autorisés
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="number" class="form-control @error('nombre_sites') is-invalid @enderror"
+                                            id="nombre_sites" name="nombre_sites"
+                                            value="{{ old('nombre_sites') }}" min="1" placeholder="Illimité si vide">
+                                    </div>
+                                    <small class="text-muted">Laissez vide pour aucun limite</small>
+                                    @error('nombre_sites')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -370,6 +389,25 @@
                             <div class="row g-4">
                                 <div class="col-12">
                                     <h6 class="section-title"><i class="bi bi-cash-stack me-2 text-success"></i>Aspects financiers</h6>
+                                </div>
+
+                                <!-- Prix par agent -->
+                                <div class="col-md-6">
+                                    <label for="prix_par_agent" class="form-label">
+                                        <i class="bi bi-currency-exchange"></i>
+                                        Prix par agent <span class="required-indicator">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control @error('prix_par_agent') is-invalid @enderror"
+                                            id="prix_par_agent" name="prix_par_agent"
+                                            value="{{ old('prix_par_agent', 50000) }}" min="0" step="100" required
+                                            oninput="updateMontantPreview()">
+                                        <span class="input-group-text">FCFA</span>
+                                    </div>
+                                    <small class="text-muted">Prix unitaire par agent (ex: 50000)</small>
+                                    @error('prix_par_agent')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <!-- Montant mensuel HT -->
@@ -393,7 +431,26 @@
                                 <div class="col-md-6">
                                     <label for="tva" class="form-label">TVA (%)</label>
                                     <input type="number" class="form-control" id="tva"
-                                        name="tva" value="{{ old('tva', 18) }}" min="0" max="100" step="0.5">
+                                        name="tva" value="{{ old('tva', 18) }}" min="0" max="100" step="0.5"
+                                        oninput="updateMontantPreview()">
+                                </div>
+
+                                <!-- Aperçu des montants calculés -->
+                                <div class="col-12">
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="bi bi-calculator me-2"></i>
+                                        <div class="flex-grow-1">
+                                            <strong>Montant calculé automatiquement :</strong>
+                                            <span id="previewMontant" class="ms-2 fw-bold text-success">—</span>
+                                            <small class="text-muted ms-2">(Mensuel HT)</small>
+                                            <span class="mx-2">|</span>
+                                            <span id="previewTTC" class="text-primary fw-bold">—</span>
+                                            <small class="text-muted">(TTC)</small>
+                                            <span class="mx-2">|</span>
+                                            <span id="previewAnnuel" class="text-info fw-bold">—</span>
+                                            <small class="text-muted">(Annuel)</small>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Périodicité -->
@@ -477,6 +534,38 @@
 
 @push('scripts')
 <script>
+    // Calculer automatiquement le montant basé sur prix_par_agent et nombre_agents_requis
+    function updateMontantPreview() {
+        var prixParAgent = parseFloat(document.getElementById('prix_par_agent').value) || 0;
+        var nombreAgents = parseInt(document.getElementById('nombre_agents_requis').value) || 0;
+        var tva = parseFloat(document.getElementById('tva').value) || 18;
+
+        // Calculer le montant mensuel HT
+        var montantMensuelHT = prixParAgent * nombreAgents;
+
+        // Calculer le montant TTC
+        var montantMensuelTTC = montantMensuelHT * (1 + tva / 100);
+        var montantAnnuelHT = montantMensuelHT * 12;
+
+        // Mettre à jour les champs
+        document.getElementById('montant_mensuel_ht').value = montantMensuelHT;
+
+        // Afficher l'aperçu
+        if (montantMensuelHT > 0) {
+            document.getElementById('previewMontant').textContent = formatFCFA(montantMensuelHT);
+            document.getElementById('previewTTC').textContent = formatFCFA(montantMensuelTTC);
+            document.getElementById('previewAnnuel').textContent = formatFCFA(montantAnnuelHT);
+        } else {
+            document.getElementById('previewMontant').textContent = '—';
+            document.getElementById('previewTTC').textContent = '—';
+            document.getElementById('previewAnnuel').textContent = '—';
+        }
+    }
+
+    function formatFCFA(val) {
+        return new Intl.NumberFormat('fr-FR').format(Math.round(val)) + ' FCAF';
+    }
+
     // Charger les clients lors du changement d'entreprise
     function loadClients(entrepriseId) {
         const clientSelect = document.getElementById('client_id');
@@ -510,6 +599,8 @@
         if (entrepriseSelect.value) {
             loadClients(entrepriseSelect.value);
         }
+        // Initialiser l'aperçu
+        updateMontantPreview();
     });
 </script>
 @endpush

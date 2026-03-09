@@ -202,8 +202,8 @@
                 <div class="stat-card card bg-warning bg-opacity-10 h-100">
                     <div class="card-body">
                         <div class="info-label">Sites</div>
-                        <div class="info-value">{{ $statsContrat['sites_count'] }}</div>
-                        <small class="text-muted">associés</small>
+                        <div class="info-value">{{ $contrat->nombre_sites ?? 0 }}</div>
+                        <small class="text-muted">sites</small>
                     </div>
                 </div>
             </div>
@@ -227,6 +227,10 @@
                             <div class="col-md-6">
                                 <div class="info-label">Périodicité de facturation</div>
                                 <div class="info-value">{{ ucfirst($contrat->periodicite_facturation) }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label">Prix par agent</div>
+                                <div class="info-value">{{ number_format($contrat->prix_par_agent ?? 0, 0, ',', ' ') }} FCA/mois</div>
                             </div>
                             <div class="col-md-6">
                                 <div class="info-label">TVA</div>

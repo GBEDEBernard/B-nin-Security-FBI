@@ -129,6 +129,24 @@ class SiteController extends Controller
             $validated['code_site'] = $this->genererCodeSite($entrepriseId);
         }
 
+        // Vérifier si le client a un contrat avec limite de sites
+        $client = \App\Models\Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
+            ->findOrFail($validated['client_id']);
+
+        // Vérifier le nombre de sites existants pour ce client avec contrats actifs
+        $contratsActifs = $client->contrats()->where('statut', 'en_cours')->get();
+
+        foreach ($contratsActifs as $contrat) {
+            if ($contrat->nombre_sites) {
+                $sitesExistants = $client->sites()->count();
+                if ($sitesExistants >= $contrat->nombre_sites) {
+                    return back()->withInput()
+                        ->with('error', "Le nombre maximum de sites ({$contrat->nombre_sites}) pour ce client a été atteint. Veuillez d'abord modifier le contrat.");
+                }
+            }
+        }
+
         $site = SiteClient::create($validated);
 
         return redirect()->route('admin.entreprise.sites.show', $site->id)
