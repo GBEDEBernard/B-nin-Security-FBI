@@ -5,25 +5,15 @@ namespace App\Http\Controllers\Entreprise;
 use App\Http\Controllers\Controller;
 use App\Models\ContratPrestation;
 use App\Models\Client;
-use App\Models\SiteClient;
 use App\Models\Affectation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class ContratController extends Controller
 {
-    /**
-     * Constructeur
-     */
-    public function __construct()
-    {
-        // Le middleware 'auth' et 'entreprise' est appliqué au niveau des routes
-    }
-
-    /**
-     * Liste des contrats
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  LISTE
+    // ═══════════════════════════════════════════════════════════════════
     public function index(Request $request)
     {
         $entrepriseId = $this->getEntrepriseId();
@@ -31,7 +21,6 @@ class ContratController extends Controller
         $query = ContratPrestation::where('entreprise_id', $entrepriseId)
             ->with(['client', 'sites']);
 
-        // Filtres
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -46,30 +35,30 @@ class ContratController extends Controller
 
         $contrats = $query->orderByDesc('created_at')->paginate(15);
 
-        // Statistiques
         $stats = [
-            'total' => ContratPrestation::where('entreprise_id', $entrepriseId)->count(),
-            'actifs' => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'en_cours')->count(),
-            'brouillon' => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'brouillon')->count(),
+            'total'    => ContratPrestation::where('entreprise_id', $entrepriseId)->count(),
+            'actifs'   => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'en_cours')->count(),
+            'brouillon'=> ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'brouillon')->count(),
             'resilies' => ContratPrestation::where('entreprise_id', $entrepriseId)->where('statut', 'resilie')->count(),
-            'expires' => ContratPrestation::where('entreprise_id', $entrepriseId)
-                ->where('date_fin', '<', now())
-                ->where('statut', '!=', 'resilie')
-                ->count(),
+            'expires'  => ContratPrestation::where('entreprise_id', $entrepriseId)
+                            ->where('date_fin', '<', now())
+                            ->where('statut', '!=', 'resilie')
+                            ->count(),
         ];
 
         return view('admin.entreprise.contrats.index', compact('contrats', 'stats'));
     }
 
-    /**
-     * Formulaire de création
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  CRÉATION
+    // ═══════════════════════════════════════════════════════════════════
     public function create(Request $request)
     {
         $entrepriseId = $this->getEntrepriseId();
 
-        // Clients actifs (un seul contrat par client)
-        $clients = Client::where('entreprise_id', $entrepriseId)
+        // Clients actifs sans contrat actif ou brouillon
+        $clients = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
             ->whereDoesntHave('contrats', function ($query) {
                 $query->whereIn('statut', ['brouillon', 'en_cours']);
@@ -77,80 +66,77 @@ class ContratController extends Controller
             ->orderBy('nom')
             ->get();
 
-        // Pré-sélectionner un client si fourni
         $clientId = $request->get('client_id');
 
         return view('admin.entreprise.contrats.create', compact('clients', 'clientId'));
     }
 
-    /**
-     * Enregistrer un nouveau contrat
-     */
     public function store(Request $request)
     {
         $entrepriseId = $this->getEntrepriseId();
 
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'intitule' => 'required|string|max:255',
-            'numero_contrat' => 'nullable|string|unique:contrats_prestation,numero_contrat',
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after:date_debut',
-            'est_renouvelable' => 'boolean',
-            'duree_preavis' => 'nullable|integer|min:0',
-            'montant_mensuel_ht' => 'required|numeric|min:0',
-            'tva' => 'nullable|numeric|min:0|max:100',
-            'periodicite_facturation' => 'required|in:mensuel,trimestriel,semestriel,annuel',
-            'nombre_agents_requis' => 'required|integer|min:1',
-            'description_prestation' => 'nullable|string',
-            'horaires_globaux' => 'nullable|array',
+            'client_id'                => 'required|exists:clients,id',
+            'intitule'                 => 'required|string|max:255',
+            'numero_contrat'           => 'nullable|string|unique:contrats_prestation,numero_contrat',
+            'date_debut'               => 'required|date',
+            'date_fin'                 => 'required|date|after:date_debut',
+            'duree_preavis'            => 'nullable|integer|min:0',
+            'montant_mensuel_ht'       => 'required|numeric|min:0',
+            'tva'                      => 'nullable|numeric|min:0|max:100',
+            'periodicite_facturation'  => 'required|in:mensuel,trimestriel,semestriel,annuel',
+            'nombre_agents_requis'     => 'required|integer|min:1',
+            'description_prestation'   => 'nullable|string',
             'conditions_particulieres' => 'nullable|string',
-            'statut' => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
-            'signataire_client_nom' => 'nullable|string|max:255',
+            'statut'                   => 'required|in:brouillon,en_cours',
+            'signataire_client_nom'    => 'nullable|string|max:255',
             'signataire_client_fonction' => 'nullable|string|max:255',
-            'date_signature' => 'nullable|date',
-        ]);
+            'date_signature'           => 'nullable|date',
+        ], $this->messages());
 
-        // Vérifier que le client n'a pas déjà un contrat actif
-        $client = Client::find($validated['client_id']);
+        // ✅ est_renouvelable : hidden="0" + checkbox="1"
+        $validated['est_renouvelable'] = $request->input('est_renouvelable', '0') == '1';
+
+        // Vérifier unicité contrat actif/brouillon pour ce client
+        $client = Client::withoutGlobalScope('entreprise')->find($validated['client_id']);
         $existingContrat = $client->contrats()
             ->whereIn('statut', ['brouillon', 'en_cours'])
             ->first();
 
         if ($existingContrat) {
-            return back()->with('error', 'Ce client a déjà un contrat actif ou en brouillon.');
+            return back()->withInput()
+                ->with('error', 'Ce client a déjà un contrat actif ou en brouillon (N° ' . $existingContrat->numero_contrat . ').');
         }
 
-        // Calculs financiers
+        // Calculs financiers automatiques
         $tva = $validated['tva'] ?? 18;
         $validated['montant_mensuel_ttc'] = $validated['montant_mensuel_ht'] * (1 + $tva / 100);
-        $validated['montant_annuel_ht'] = $validated['montant_mensuel_ht'] * 12;
+        $validated['montant_annuel_ht']   = $validated['montant_mensuel_ht'] * 12;
+        $validated['entreprise_id']       = $entrepriseId;
 
-        // Conversion JSON
-        if (isset($validated['horaires_globaux']) && is_array($validated['horaires_globaux'])) {
-            $validated['horaires_globaux'] = json_encode($validated['horaires_globaux']);
-        }
-
-        $validated['est_renouvelable'] = $validated['est_renouvelable'] ?? false;
-        $validated['entreprise_id'] = $entrepriseId;
-
-        // Définir l'employé créateur du contrat
-        $validated['cree_par'] = $this->getCurrentEmployeId();
-
-        // Générer numéro si absent
+        // Numéro auto
         if (empty($validated['numero_contrat'])) {
             $validated['numero_contrat'] = $this->genererNumeroContrat($entrepriseId);
         }
 
-        $contrat = ContratPrestation::create($validated);
+        // Créateur
+        $validated['cree_par'] = $this->getCurrentEmployeId();
 
-        return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
-            ->with('success', 'Contrat créé avec succès.');
+        try {
+            $contrat = ContratPrestation::create($validated);
+
+            return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
+                ->with('success', 'Contrat créé avec succès.');
+
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur lors de la création : ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Afficher les détails d'un contrat
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  AFFICHAGE
+    // ═══════════════════════════════════════════════════════════════════
     public function show($id)
     {
         $entrepriseId = $this->getEntrepriseId();
@@ -158,38 +144,42 @@ class ContratController extends Controller
         $contrat = ContratPrestation::with([
             'client',
             'sites.site',
-            'factures' => function ($query) {
-                $query->orderByDesc('created_at')->limit(5);
-            },
-            'affectations.employe' => function ($query) {
-                $query->where('est_actif', true);
-            }
+            'factures' => fn($q) => $q->orderByDesc('created_at')->limit(5),
+            'affectations.employe',
         ])
             ->where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
-        // Statistiques du contrat
         $statsContrat = [
-            'sites_count' => $contrat->sites()->count(),
-            'agents_count' => $contrat->affectations()->where('statut', 'en_cours')->count(),
-            'factures_count' => $contrat->factures()->count(),
+            'sites_count'   => $contrat->sites()->count(),
+            'agents_count'  => $contrat->affectations()->where('statut', 'en_cours')->count(),
+            'factures_count'=> $contrat->factures()->count(),
             'montant_total' => $contrat->factures()->where('statut', 'payee')->sum('montant_paye'),
         ];
 
         return view('admin.entreprise.contrats.show', compact('contrat', 'statsContrat'));
     }
 
-    /**
-     * Formulaire de modification
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  ÉDITION
+    // ═══════════════════════════════════════════════════════════════════
     public function edit($id)
     {
         $entrepriseId = $this->getEntrepriseId();
 
         $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        $clients = Client::where('entreprise_id', $entrepriseId)
+        // Tous les clients actifs + le client actuel du contrat (même s'il a déjà un contrat)
+        $clients = Client::withoutGlobalScope('entreprise')
+            ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
+            ->where(function ($q) use ($contrat) {
+                $q->whereDoesntHave('contrats', function ($sub) use ($contrat) {
+                    $sub->whereIn('statut', ['brouillon', 'en_cours'])
+                        ->where('id', '!=', $contrat->id);
+                })
+                ->orWhere('id', $contrat->client_id);
+            })
             ->orderBy('nom')
             ->get();
 
@@ -197,94 +187,99 @@ class ContratController extends Controller
     }
 
     /**
-     * Mettre à jour un contrat
+     * ✅ UPDATE — Règles clés :
+     * - est_renouvelable : input() == '1' (hidden + checkbox)
+     * - Résiliation : champs requis uniquement si statut = resilie
+     * - Si statut != resilie : on efface date_resiliation et motif_resiliation
+     * - Calculs financiers automatiques
      */
     public function update(Request $request, $id)
     {
         $entrepriseId = $this->getEntrepriseId();
-
         $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'intitule' => 'required|string|max:255',
-            'numero_contrat' => 'required|string|unique:contrats_prestation,numero_contrat,' . $id,
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after:date_debut',
-            'est_renouvelable' => 'boolean',
-            'duree_preavis' => 'nullable|integer|min:0',
-            'montant_mensuel_ht' => 'required|numeric|min:0',
-            'tva' => 'nullable|numeric|min:0|max:100',
-            'periodicite_facturation' => 'required|in:mensuel,trimestriel,semestriel,annuel',
-            'nombre_agents_requis' => 'required|integer|min:1',
-            'description_prestation' => 'nullable|string',
-            'horaires_globaux' => 'nullable|array',
+            'client_id'                => 'required|exists:clients,id',
+            'intitule'                 => 'required|string|max:255',
+            'numero_contrat'           => 'required|string|unique:contrats_prestation,numero_contrat,' . $id,
+            'date_debut'               => 'required|date',
+            'date_fin'                 => 'required|date|after:date_debut',
+            'duree_preavis'            => 'nullable|integer|min:0',
+            'montant_mensuel_ht'       => 'required|numeric|min:0',
+            'tva'                      => 'nullable|numeric|min:0|max:100',
+            'periodicite_facturation'  => 'required|in:mensuel,trimestriel,semestriel,annuel',
+            'nombre_agents_requis'     => 'required|integer|min:1',
+            'description_prestation'   => 'nullable|string',
             'conditions_particulieres' => 'nullable|string',
-            'statut' => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
-            'signataire_client_nom' => 'nullable|string|max:255',
+            'statut'                   => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
+            'signataire_client_nom'    => 'nullable|string|max:255',
             'signataire_client_fonction' => 'nullable|string|max:255',
-            'date_signature' => 'nullable|date',
-            'motif_resiliation' => 'nullable|string|required_if:statut,resilie',
-            'date_resiliation' => 'nullable|date|required_if:statut,resilie',
-        ]);
+            'date_signature'           => 'nullable|date',
+            // Résiliation : requis seulement si statut = resilie
+            'date_resiliation'         => 'nullable|date|required_if:statut,resilie',
+            'motif_resiliation'        => 'nullable|string|required_if:statut,resilie',
+        ], $this->messages());
+
+        // ✅ est_renouvelable
+        $validated['est_renouvelable'] = $request->input('est_renouvelable', '0') == '1';
 
         // Calculs financiers
         $tva = $validated['tva'] ?? 18;
         $validated['montant_mensuel_ttc'] = $validated['montant_mensuel_ht'] * (1 + $tva / 100);
-        $validated['montant_annuel_ht'] = $validated['montant_mensuel_ht'] * 12;
+        $validated['montant_annuel_ht']   = $validated['montant_mensuel_ht'] * 12;
 
-        // Conversion JSON
-        if (isset($validated['horaires_globaux']) && is_array($validated['horaires_globaux'])) {
-            $validated['horaires_globaux'] = json_encode($validated['horaires_globaux']);
-        }
-
-        $validated['est_renouvelable'] = $validated['est_renouvelable'] ?? false;
-
-        // Gestion résiliation
-        if ($validated['statut'] === 'resilie' && !empty($validated['date_resiliation'])) {
+        // ✅ Résiliation : si statut != resilie → on efface les champs résiliation
+        if ($validated['statut'] !== 'resilie') {
+            $validated['date_resiliation']  = null;
+            $validated['motif_resiliation'] = null;
+        } elseif (!empty($validated['date_resiliation'])) {
+            // Si résilié, la date de fin = date de résiliation
             $validated['date_fin'] = $validated['date_resiliation'];
         }
 
-        $contrat->update($validated);
+        try {
+            $contrat->update($validated);
 
-        return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
-            ->with('success', 'Contrat mis à jour.');
+            return redirect()->route('admin.entreprise.contrats.show', $contrat->id)
+                ->with('success', 'Contrat mis à jour avec succès.');
+
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Supprimer un contrat
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  SUPPRESSION
+    // ═══════════════════════════════════════════════════════════════════
     public function destroy($id)
     {
         $entrepriseId = $this->getEntrepriseId();
-
         $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        // Vérifier les contraintes
         if ($contrat->factures()->count() > 0) {
-            return back()->with('error', 'Impossible de supprimer un contrat avec des factures.');
+            return back()->with('error', 'Impossible de supprimer : ce contrat possède des factures.');
         }
-
         if ($contrat->affectations()->count() > 0) {
-            return back()->with('error', 'Impossible de supprimer un contrat avec des agents affectés.');
+            return back()->with('error', 'Impossible de supprimer : des agents sont affectés à ce contrat.');
         }
 
         $contrat->delete();
 
         return redirect()->route('admin.entreprise.contrats.index')
-            ->with('success', 'Contrat supprimé.');
+            ->with('success', 'Contrat supprimé avec succès.');
     }
 
-    /**
-     * Changer le statut
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  CHANGER STATUT (action rapide)
+    // ═══════════════════════════════════════════════════════════════════
     public function changerStatut(Request $request, $id)
     {
         $entrepriseId = $this->getEntrepriseId();
 
         $request->validate([
-            'statut' => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
-            'motif_resiliation' => 'nullable|string|required_if:statut,resilie',
+            'statut'           => 'required|in:brouillon,en_cours,suspendu,termine,resilie',
+            'motif_resiliation'=> 'nullable|string|required_if:statut,resilie',
             'date_resiliation' => 'nullable|date|required_if:statut,resilie',
         ]);
 
@@ -294,104 +289,76 @@ class ContratController extends Controller
 
         if ($request->statut === 'resilie') {
             $data['motif_resiliation'] = $request->motif_resiliation;
-            $data['date_resiliation'] = $request->date_resiliation;
-            $data['date_fin'] = $request->date_resiliation;
+            $data['date_resiliation']  = $request->date_resiliation;
+            if ($request->date_resiliation) {
+                $data['date_fin'] = $request->date_resiliation;
+            }
         }
 
         $contrat->update($data);
 
-        return back()->with('success', 'Statut mis à jour.');
+        return back()->with('success', 'Statut du contrat mis à jour.');
     }
 
-    /**
-     * Dupliquer un contrat
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  DUPLIQUER
+    // ═══════════════════════════════════════════════════════════════════
     public function dupliquer($id)
     {
         $entrepriseId = $this->getEntrepriseId();
-
         $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        $nouveauContrat = $contrat->replicate();
-        $nouveauContrat->numero_contrat = $this->genererNumeroContrat($entrepriseId);
-        $nouveauContrat->statut = 'brouillon';
-        $nouveauContrat->date_signature = null;
-        $nouveauContrat->date_debut = null;
-        $nouveauContrat->date_fin = null;
-        $nouveauContrat->save();
+        $nouveau = $contrat->replicate();
+        $nouveau->numero_contrat  = $this->genererNumeroContrat($entrepriseId);
+        $nouveau->statut          = 'brouillon';
+        $nouveau->date_signature  = null;
+        $nouveau->date_debut      = null;
+        $nouveau->date_fin        = null;
+        $nouveau->date_resiliation = null;
+        $nouveau->motif_resiliation = null;
+        $nouveau->save();
 
-        return redirect()->route('admin.entreprise.contrats.edit', $nouveauContrat->id)
-            ->with('success', 'Contrat dupliqué. Vous pouvez le modifier.');
+        return redirect()->route('admin.entreprise.contrats.edit', $nouveau->id)
+            ->with('success', 'Contrat dupliqué en brouillon. Vous pouvez le modifier.');
     }
 
-    /**
-     * Ajouter un site au contrat
-     */
+    // ═══════════════════════════════════════════════════════════════════
+    //  GESTION DES SITES
+    // ═══════════════════════════════════════════════════════════════════
     public function ajouterSite(Request $request, $id)
     {
         $entrepriseId = $this->getEntrepriseId();
 
         $request->validate([
-            'site_client_id' => 'required|exists:sites_clients,id',
+            'site_client_id'     => 'required|exists:sites_clients,id',
             'nombre_agents_site' => 'required|integer|min:1',
-            'horaires_site' => 'nullable|array',
-            'consignes_site' => 'nullable|string',
+            'consignes_site'     => 'nullable|string',
         ]);
 
         $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        // Vérifier si le site est déjà associé
-        $exists = $contrat->sites()->where('site_client_id', $request->site_client_id)->exists();
-        if ($exists) {
+        if ($contrat->sites()->where('site_client_id', $request->site_client_id)->exists()) {
             return back()->with('error', 'Ce site est déjà associé au contrat.');
         }
 
         $contrat->sites()->create([
-            'site_client_id' => $request->site_client_id,
+            'site_client_id'     => $request->site_client_id,
             'nombre_agents_site' => $request->nombre_agents_site,
-            'horaires_site' => $request->horaires_site ? json_encode($request->horaires_site) : null,
-            'consignes_site' => $request->consignes_site,
+            'consignes_site'     => $request->consignes_site,
         ]);
 
         return back()->with('success', 'Site ajouté au contrat.');
     }
 
-    /**
-     * Retirer un site du contrat
-     */
-    public function retirerSite($id, $siteId)
-    {
-        $entrepriseId = $this->getEntrepriseId();
-
-        $contrat = ContratPrestation::where('entreprise_id', $entrepriseId)->findOrFail($id);
-
-        $siteContrat = $contrat->sites()->where('id', $siteId)->first();
-
-        if (!$siteContrat) {
-            return back()->with('error', 'Site non trouvé sur ce contrat.');
-        }
-
-        // Vérifier s'il y a des affectations
-        $affectations = Affectation::where('site_contrat_id', $siteId)->count();
-        if ($affectations > 0) {
-            return back()->with('error', 'Impossible de retirer ce site : des agents y sont affectés.');
-        }
-
-        $siteContrat->delete();
-
-        return back()->with('success', 'Site retiré du contrat.');
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    //  HELPERS PRIVÉS
+    // ═══════════════════════════════════════════════════════════════════
 
     /**
-     * Obtenir l'entreprise_id selon le type d'utilisateur connecté.
-     *
-     * Priorité :
-     *   1. SuperAdmin (guard web) avec une entreprise sélectionnée en session
-     *   2. Employé (guard employe) → son entreprise_id direct
+     * Obtenir l'entreprise_id selon le guard actif.
      */
     private function getEntrepriseId(): ?int
     {
-        // SuperAdmin en contexte entreprise
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
             if ($user->estSuperAdmin() && session()->has('entreprise_id')) {
@@ -399,7 +366,6 @@ class ContratController extends Controller
             }
         }
 
-        // Employé connecté via guard 'employe'
         if (Auth::guard('employe')->check()) {
             $employe = Auth::guard('employe')->user();
             return $employe->entreprise_id ? (int) $employe->entreprise_id : null;
@@ -409,40 +375,58 @@ class ContratController extends Controller
     }
 
     /**
-     * Générer un numéro de contrat unique
+     * Générer un numéro unique de contrat.
      */
     private function genererNumeroContrat(int $entrepriseId): string
     {
-        $prefix = 'CTR-' . date('Y') . '-';
+        $prefix  = 'CTR-' . date('Y') . '-';
         $dernier = ContratPrestation::where('entreprise_id', $entrepriseId)
             ->where('numero_contrat', 'like', "{$prefix}%")
             ->orderBy('numero_contrat', 'desc')
             ->first();
 
-        if ($dernier) {
-            $numero = (int) substr($dernier->numero_contrat, -4) + 1;
-        } else {
-            $numero = 1;
-        }
+        $numero = $dernier
+            ? (int) substr($dernier->numero_contrat, -4) + 1
+            : 1;
 
         return $prefix . str_pad($numero, 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Obtenir l'ID de l'employé connecté
+     * Obtenir l'ID de l'employé connecté.
      */
     private function getCurrentEmployeId(): ?int
     {
-        // Guard 'employe' pour les employés de l'entreprise
         if (Auth::guard('employe')->check()) {
             return Auth::guard('employe')->user()->id;
         }
-
-        // Fallback: utilisateur web avec lien vers employé
         if (Auth::guard('web')->check() && Auth::user()->employe_id) {
             return Auth::user()->employe_id;
         }
-
         return null;
+    }
+
+    /**
+     * Messages de validation en français.
+     */
+    private function messages(): array
+    {
+        return [
+            'client_id.required'               => 'Veuillez sélectionner un client.',
+            'client_id.exists'                 => 'Le client sélectionné est invalide.',
+            'intitule.required'                => "L'intitulé du contrat est obligatoire.",
+            'numero_contrat.unique'            => 'Ce numéro de contrat est déjà utilisé.',
+            'date_debut.required'              => 'La date de début est obligatoire.',
+            'date_fin.required'                => 'La date de fin est obligatoire.',
+            'date_fin.after'                   => 'La date de fin doit être postérieure à la date de début.',
+            'montant_mensuel_ht.required'      => 'Le montant mensuel HT est obligatoire.',
+            'montant_mensuel_ht.min'           => 'Le montant ne peut pas être négatif.',
+            'periodicite_facturation.required' => 'La périodicité de facturation est obligatoire.',
+            'nombre_agents_requis.required'    => "Le nombre d'agents requis est obligatoire.",
+            'nombre_agents_requis.min'         => "Le nombre d'agents doit être d'au moins 1.",
+            'statut.required'                  => 'Le statut est obligatoire.',
+            'date_resiliation.required_if'     => 'La date de résiliation est obligatoire pour un contrat résilié.',
+            'motif_resiliation.required_if'    => 'Le motif de résiliation est obligatoire pour un contrat résilié.',
+        ];
     }
 }

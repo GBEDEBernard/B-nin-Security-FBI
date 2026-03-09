@@ -153,6 +153,16 @@ Route::middleware(['tenant', 'superadmin'])->prefix('admin/superadmin')->name('a
         Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/statut', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'changerStatut'])->name('changerStatut');
         Route::get('/{id}/dupliquer', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'dupliquer'])->name('dupliquer');
+
+        // Gestion des sites du contrat
+        Route::post('/{id}/ajouter-site', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'ajouterSite'])->name('ajouterSite');
+        Route::delete('/{id}/retirer-site/{siteId}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'retirerSite'])->name('retirerSite');
+        Route::put('/{id}/modifier-site/{siteId}', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'updateSite'])->name('updateSite');
+        Route::get('/{id}/sites-disponibles', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'getSitesDisponibles'])->name('sitesDisponibles');
+
+        // Gestion des agents du contrat
+        Route::post('/{id}/reaffecter-agent', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'reaffecterAgent'])->name('reaffecterAgent');
+        Route::get('/{id}/agents-disponibles', [\App\Http\Controllers\SuperAdmin\ContratController::class, 'getAgentsDisponibles'])->name('agentsDisponibles');
     });
 
     // Gestion des propositions de contrat

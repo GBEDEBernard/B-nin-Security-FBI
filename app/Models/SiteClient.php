@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SiteClient extends Model
@@ -54,12 +55,13 @@ class SiteClient extends Model
     }
 
     /**
-     * Contrats liés à ce site (via la table pivot site_contrat ou ContratPrestation directement)
-     * Adaptez selon votre structure réelle.
+     * Contrats liés à ce site (via la table pivot sites_contrats)
      */
-    public function contrats(): HasMany
+    public function contrats(): BelongsToMany
     {
-        return $this->hasMany(ContratPrestation::class, 'site_id');
+        return $this->belongsToMany(ContratPrestation::class, 'sites_contrats', 'site_client_id', 'contrat_prestation_id')
+            ->withPivot('nombre_agents_site', 'horaires_site', 'consignes_site')
+            ->withTimestamps();
     }
 
     /**
@@ -67,6 +69,6 @@ class SiteClient extends Model
      */
     public function affectations(): HasMany
     {
-        return $this->hasMany(Affectation::class, 'site_id');
+        return $this->hasMany(Affectation::class, 'site_client_id');
     }
 }

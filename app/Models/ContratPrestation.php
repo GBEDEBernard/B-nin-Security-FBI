@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContratPrestation extends Model
@@ -139,11 +140,13 @@ class ContratPrestation extends Model
     }
 
     /**
-     * Les sites associés à ce contrat
+     * Les sites associés à ce contrat (via la table pivot sites_contrats)
      */
-    public function sites(): HasMany
+    public function sites(): BelongsToMany
     {
-        return $this->hasMany(SiteContrat::class);
+        return $this->belongsToMany(SiteClient::class, 'sites_contrats', 'contrat_prestation_id', 'site_client_id')
+            ->withPivot('nombre_agents_site', 'horaires_site', 'consignes_site')
+            ->withTimestamps();
     }
 
     /**
@@ -243,5 +246,48 @@ class ContratPrestation extends Model
         return $this->factures()
             ->whereIn('statut', ['emise', 'partiellement_payee'])
             ->sum('montant_restant');
+    }
+
+    /**
+     * Nombre de sites associés
+     */
+    public function nombreSites(): int
+    {
+        return $this->sites()->count();
+    }
+
+    /**
+     * Nombre total d'agents déployés sur tous les sites
+     */
+    public function nombreAgentsSurSites(): int
+    {
+        return $this->sites()
+            ->sum('pivot.nombre_agents_site');
+    }
+
+    /**
+     * Vérifier si un site est associé au contrat
+     */
+    public function aPourSite(SiteClient $site): bool
+    {
+        return $this->sites()->where('sites_clients.id', $site->id)->exists();
+    }
+
+    /**
+     * Obtenir les sites disponibles du client (non associés à ce contrat)
+     */
+    public function getSitesDisponibles()
+    {
+        if (!$this->client_id) {
+            return collect();
+        }
+
+        $siteIds = $this->sites()->pluck('sites_clients.id');
+
+        return SiteClient::where('client_id', $this->client_id)
+            ->where('est_actif', true)
+            ->whereNotIn('id', $siteIds)
+            ->orderBy('nom_site')
+            ->get();
     }
 }

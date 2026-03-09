@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Entreprise;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
-use App\Models\Facture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
@@ -33,7 +31,6 @@ class ClientController extends Controller
 
     /**
      * Récupérer un client en bypassant le GlobalScope.
-     * Le GlobalScope 'entreprise' peut interférer si la session change.
      */
     private function findClient(int $id, int $entrepriseId): Client
     {
@@ -81,10 +78,10 @@ class ClientController extends Controller
         $clients = $query->orderBy('created_at', 'desc')->paginate(15);
 
         $stats = [
-            'total'       => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->count(),
-            'actifs'      => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
-            'particuliers'=> Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('type_client', 'particulier')->count(),
-            'entreprises' => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->whereIn('type_client', ['entreprise', 'institution'])->count(),
+            'total'        => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->count(),
+            'actifs'       => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
+            'particuliers' => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->where('type_client', 'particulier')->count(),
+            'entreprises'  => Client::withoutGlobalScope('entreprise')->where('entreprise_id', $entrepriseId)->whereIn('type_client', ['entreprise', 'institution'])->count(),
         ];
 
         return view('admin.entreprise.clients.index', compact('clients', 'stats'));
@@ -109,41 +106,58 @@ class ClientController extends Controller
             return back()->with('error', 'Aucune entreprise associée.');
         }
 
-        $validated = $request->validate([
-            'type_client'              => 'required|in:particulier,entreprise,institution',
-            'nom'                      => 'nullable|string|max:100',
-            'prenoms'                  => 'nullable|string|max:150',
-            'date_naissance'           => 'nullable|date',
-            'raison_sociale'           => 'nullable|string|max:255',
-            'nif'                      => 'nullable|string|max:100',
-            'rc'                       => 'nullable|string|max:100',
-            'representant_nom'         => 'nullable|string|max:255',
-            'representant_prenom'      => 'nullable|string|max:255',
-            'representant_fonction'    => 'nullable|string|max:255',
-            'email'                    => 'nullable|email|max:255',
-            'telephone'                => 'required|string|max:50',
-            'telephone_secondaire'     => 'nullable|string|max:50',
-            'contact_principal_nom'    => 'nullable|string|max:255',
+        // ✅ input() == '1' et non has() — car hidden value="0" + checkbox value="1"
+        $creerCompte = $request->input('creer_compte') == '1';
+
+        $rules = [
+            'type_client'                => 'required|in:particulier,entreprise,institution',
+            'nom'                        => 'nullable|string|max:100',
+            'prenoms'                    => 'nullable|string|max:150',
+            'date_naissance'             => 'nullable|date',
+            'raison_sociale'             => 'nullable|string|max:255',
+            'nif'                        => 'nullable|string|max:100',
+            'rc'                         => 'nullable|string|max:100',
+            'representant_nom'           => 'nullable|string|max:255',
+            'representant_prenom'        => 'nullable|string|max:255',
+            'representant_fonction'      => 'nullable|string|max:255',
+            'email'                      => 'nullable|email|max:255',
+            'telephone'                  => 'required|string|max:50',
+            'telephone_secondaire'       => 'nullable|string|max:50',
+            'contact_principal_nom'      => 'nullable|string|max:255',
             'contact_principal_fonction' => 'nullable|string|max:255',
-            'contact_email'            => 'nullable|email|max:255',
-            'adresse'                  => 'required|string',
-            'ville'                    => 'nullable|string|max:100',
-            'pays'                     => 'nullable|string|max:100',
-            'notes'                    => 'nullable|string',
-        ]);
+            'contact_email'              => 'nullable|email|max:255',
+            'adresse'                    => 'required|string',
+            'ville'                      => 'nullable|string|max:100',
+            'pays'                       => 'nullable|string|max:100',
+            'notes'                      => 'nullable|string',
+        ];
 
-        $validated['entreprise_id'] = $entrepriseId;
-        $validated['est_actif']     = $request->has('est_actif') ? true : false;
-
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'string|min:8|confirmed']);
-            $validated['password'] = bcrypt($request->password);
+        if ($creerCompte) {
+            $rules['email']    = 'required|email|max:255';
+            $rules['password'] = 'required|string|min:8|confirmed';
         }
 
-        Client::withoutGlobalScope('entreprise')->create($validated);
+        $validated = $request->validate($rules);
 
-        return redirect()->route('admin.entreprise.clients.index')
-            ->with('success', 'Client créé avec succès.');
+        $validated['est_actif']     = $request->input('est_actif', '0') == '1';
+        $validated['entreprise_id'] = $entrepriseId;
+
+        if ($creerCompte && $request->filled('password')) {
+            $validated['password'] = bcrypt($request->password);
+        } else {
+            unset($validated['password']);
+        }
+
+        try {
+            Client::withoutGlobalScope('entreprise')->create($validated);
+
+            return redirect()->route('admin.entreprise.clients.index')
+                ->with('success', 'Client créé avec succès.');
+
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur lors de la création : ' . $e->getMessage());
+        }
     }
 
     /**
@@ -184,7 +198,14 @@ class ClientController extends Controller
     }
 
     /**
-     * ✅ METTRE À JOUR UN CLIENT — version corrigée
+     * ✅ Mettre à jour un client
+     *
+     * RÈGLE MOT DE PASSE :
+     * - Champ vide  → on ne touche PAS au password en base (unset)
+     * - Champ rempli → on valide (min:8, confirmed) puis on hache
+     *
+     * Ainsi l'utilisateur peut modifier n'importe quel autre champ
+     * sans être obligé de resaisir le mot de passe.
      */
     public function update(Request $request, $id)
     {
@@ -195,50 +216,69 @@ class ClientController extends Controller
                 ->with('error', 'Aucune entreprise sélectionnée.');
         }
 
-        // ✅ withoutGlobalScope pour bypasser le GlobalScope 'entreprise'
         $client = $this->findClient($id, $entrepriseId);
 
-        $validated = $request->validate([
-            'type_client'              => 'required|in:particulier,entreprise,institution',
-            'nom'                      => 'nullable|string|max:100',
-            'prenoms'                  => 'nullable|string|max:150',
-            'date_naissance'           => 'nullable|date',
-            'raison_sociale'           => 'nullable|string|max:255',
-            'nif'                      => 'nullable|string|max:100',
-            'rc'                       => 'nullable|string|max:100',
-            'representant_nom'         => 'nullable|string|max:255',
-            'representant_prenom'      => 'nullable|string|max:255',
-            'representant_fonction'    => 'nullable|string|max:255',
-            'email'                    => 'nullable|email|max:255',
-            'telephone'                => 'required|string|max:50',
-            'telephone_secondaire'     => 'nullable|string|max:50',
-            'contact_principal_nom'    => 'nullable|string|max:255',
+        // ── Règles de base (sans password) ────────────────────────────────────
+        $rules = [
+            'type_client'                => 'required|in:particulier,entreprise,institution',
+            'nom'                        => 'nullable|string|max:100',
+            'prenoms'                    => 'nullable|string|max:150',
+            'date_naissance'             => 'nullable|date',
+            'raison_sociale'             => 'nullable|string|max:255',
+            'nif'                        => 'nullable|string|max:100',
+            'rc'                         => 'nullable|string|max:100',
+            'representant_nom'           => 'nullable|string|max:255',
+            'representant_prenom'        => 'nullable|string|max:255',
+            'representant_fonction'      => 'nullable|string|max:255',
+            'email'                      => 'nullable|email|max:255',
+            'telephone'                  => 'required|string|max:50',
+            'telephone_secondaire'       => 'nullable|string|max:50',
+            'contact_principal_nom'      => 'nullable|string|max:255',
             'contact_principal_fonction' => 'nullable|string|max:255',
-            'contact_email'            => 'nullable|email|max:255',
-            'adresse'                  => 'required|string',
-            'ville'                    => 'nullable|string|max:100',
-            'pays'                     => 'nullable|string|max:100',
-            'notes'                    => 'nullable|string',
+            'contact_email'              => 'nullable|email|max:255',
+            'adresse'                    => 'required|string',
+            'ville'                      => 'nullable|string|max:100',
+            'pays'                       => 'nullable|string|max:100',
+            'notes'                      => 'nullable|string',
+        ];
+
+        // ✅ PASSWORD : on ajoute la règle SEULEMENT si le champ est rempli
+        // Si vide → on ignore complètement, le mot de passe existant est conservé
+        $passwordRempli = $request->filled('password');
+        if ($passwordRempli) {
+            $rules['password'] = 'string|min:8|confirmed';
+        }
+
+        $validated = $request->validate($rules, [
+            'telephone.required' => 'Le téléphone principal est obligatoire.',
+            'adresse.required'   => "L'adresse est obligatoire.",
+            'type_client.required' => 'Le type de client est obligatoire.',
+            'password.min'       => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
-        // ✅ est_actif : la checkbox n'envoie rien si décochée
-        // Le formulaire envoie un hidden input value="0" + checkbox value="1"
-        // Donc $request->input('est_actif') vaut '1' ou '0'
-        $validated['est_actif'] = $request->input('est_actif', '0') == '1' ? true : false;
+        // ✅ est_actif : input() car hidden="0" + checkbox="1"
+        $validated['est_actif'] = $request->input('est_actif', '0') == '1';
 
-        // ✅ Mot de passe : seulement si renseigné
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'string|min:8|confirmed',
-            ]);
+        // ✅ PASSWORD :
+        // - Rempli  → hasher et inclure dans la mise à jour
+        // - Vide    → retirer du tableau pour NE PAS écraser l'ancien mot de passe
+        if ($passwordRempli) {
             $validated['password'] = bcrypt($request->password);
+        } else {
+            unset($validated['password']);
         }
-        // Ne jamais écraser le password si le champ est vide
 
-        $client->update($validated);
+        try {
+            $client->update($validated);
 
-        return redirect()->route('admin.entreprise.clients.index')
-            ->with('success', 'Client mis à jour avec succès.');
+            return redirect()->route('admin.entreprise.clients.index')
+                ->with('success', 'Client mis à jour avec succès.');
+
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
+        }
     }
 
     /**
@@ -268,7 +308,6 @@ class ClientController extends Controller
         $entrepriseId = $this->getEntrepriseId();
         $client = $this->findClient($id, $entrepriseId);
         $client->load('sites');
-
         return view('admin.entreprise.clients.sites', compact('client'));
     }
 
@@ -280,7 +319,6 @@ class ClientController extends Controller
         $entrepriseId = $this->getEntrepriseId();
         $client = $this->findClient($id, $entrepriseId);
         $client->load('contrats');
-
         return view('admin.entreprise.clients.contrats', compact('client'));
     }
 
@@ -292,7 +330,6 @@ class ClientController extends Controller
         $entrepriseId = $this->getEntrepriseId();
         $client = $this->findClient($id, $entrepriseId);
         $client->load('factures');
-
         return view('admin.entreprise.clients.factures', compact('client'));
     }
 }

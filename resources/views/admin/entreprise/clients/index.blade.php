@@ -653,7 +653,7 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th><i class="bi bi-hash me-1"></i>ID</th>
+                            <th><i class="bi bi-hash me-1"></i>N°</th>
                             <th><i class="bi bi-person me-1"></i>Client</th>
                             <th><i class="bi bi-tag me-1"></i>Type</th>
                             <th><i class="bi bi-envelope me-1"></i>Email</th>
@@ -669,7 +669,7 @@
                         @foreach($clients as $client)
                         <tr>
                             <td>
-                                <span class="fw-semibold">#{{ $client->id }}</span>
+                                <span class="fw-semibold"></span>
                             </td>
                             <td>
                                 <div class="client-name">{{ $client->nom }}</div>

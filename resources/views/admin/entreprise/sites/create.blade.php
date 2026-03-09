@@ -7,7 +7,7 @@
     /* ═══════════════════════════════════════════════════════════════
        ULTRA PRO DESIGN - Nouveau Site
        ═══════════════════════════════════════════════════════════════ */
-    
+
     .page-header {
         background: linear-gradient(135deg, #198754 0%, #20c997 100%);
         padding: 1.75rem 2rem;
@@ -43,7 +43,7 @@
         font-weight: 600;
     }
 
-    .page-header .breadcrumb-item + .breadcrumb-item::before {
+    .page-header .breadcrumb-item+.breadcrumb-item::before {
         color: rgba(255, 255, 255, 0.6);
     }
 
@@ -124,6 +124,24 @@
         border-color: #198754;
         box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15);
         outline: none;
+    }
+
+    /* Custom Select with Icons */
+    .custom-select-green {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23198754' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 12px 12px;
+        padding-right: 2.5rem;
+    }
+
+    .form-select optgroup {
+        font-weight: 600;
+        color: #198754;
+    }
+
+    .form-select option {
+        padding: 0.5rem 0.75rem;
     }
 
     .form-control::placeholder {
@@ -252,6 +270,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -263,11 +282,25 @@
     }
 
     /* Stagger animations */
-    .animate-fade-in:nth-child(1) { animation-delay: 0.05s; }
-    .animate-fade-in:nth-child(2) { animation-delay: 0.1s; }
-    .animate-fade-in:nth-child(3) { animation-delay: 0.15s; }
-    .animate-fade-in:nth-child(4) { animation-delay: 0.2s; }
-    .animate-fade-in:nth-child(5) { animation-delay: 0.25s; }
+    .animate-fade-in:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .animate-fade-in:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .animate-fade-in:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .animate-fade-in:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    .animate-fade-in:nth-child(5) {
+        animation-delay: 0.25s;
+    }
 
     /* ── Icon Boxes ── */
     .icon-box {
@@ -286,7 +319,7 @@
         .page-header {
             padding: 1.25rem 1.5rem;
         }
-        
+
         .page-header h3 {
             font-size: 1.3rem;
         }
@@ -359,15 +392,49 @@
                                     <i class="bi bi-person-vcard"></i>
                                     Client <span class="required-indicator">*</span>
                                 </label>
-                                <select name="client_id" class="form-select" required>
+
+                                @if($clients->isEmpty())
+                                <div class="alert alert-warning py-2 px-3 mb-2">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    <small>Aucun client avec contrat actif. <a href="{{ route('admin.entreprise.contrats.create') }}">Créer un contrat</a></small>
+                                </div>
+                                @endif
+
+                                <select name="client_id" class="form-select custom-select-green" required {{ $clients->isEmpty() ? 'disabled' : '' }}>
                                     <option value="">— Sélectionner un client —</option>
-                                    @foreach($clients as $client)
-                                    <option value="{{ $client->id }}"
-                                        {{ old('client_id', $clientId ?? '') == $client->id ? 'selected' : '' }}>
-                                        {{ $client->nom }}
-                                    </option>
-                                    @endforeach
+
+                                    @php
+                                    $particuliers = $clients->where('type_client', 'particulier');
+                                    $entreprises = $clients->whereIn('type_client', ['entreprise', 'institution']);
+                                    @endphp
+
+                                    @if($particuliers->isNotEmpty())
+                                    <optgroup label="Particuliers">
+                                        @foreach($particuliers as $client)
+                                        <option value="{{ $client->id }}"
+                                            {{ old('client_id', $clientId ?? '') == $client->id ? 'selected' : '' }}>
+                                            {{ trim(($client->prenoms ? $client->prenoms . ' ' : '') . strtoupper($client->nom ?? '')) }}
+                                        </option>
+                                        @endforeach
+                                    </optgroup>
+                                    @endif
+
+                                    @if($entreprises->isNotEmpty())
+                                    <optgroup label="Entreprises & Institutions">
+                                        @foreach($entreprises as $client)
+                                        <option value="{{ $client->id }}"
+                                            {{ old('client_id', $clientId ?? '') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->raison_sociale ?? $client->nom ?? 'Sans nom' }}
+                                        </option>
+                                        @endforeach
+                                    </optgroup>
+                                    @endif
+
                                 </select>
+                                <div class="help-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Seuls les clients avec contrat actif apparaissent
+                                </div>
                                 @error('client_id')
                                 <div class="help-text text-danger">
                                     <i class="bi bi-exclamation-circle"></i>

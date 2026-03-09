@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ContratPrestation;
 use App\Models\Entreprise;
 use App\Models\Client;
+use App\Models\SiteClient;
+use App\Models\Affectation;
+use App\Models\Employe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -339,5 +342,176 @@ class ContratController extends Controller
             ->get();
 
         return view('admin.superadmin.contrats.statistiques', compact('stats', 'contratsParEntreprise', 'contratsParMois'));
+    }
+
+    /**
+     * Ajouter un site au contrat
+     */
+    public function ajouterSite(Request $request, $id)
+    {
+        $contrat = ContratPrestation::findOrFail($id);
+
+        $validated = $request->validate([
+            'site_client_id' => 'required|exists:sites_clients,id',
+            'nombre_agents_site' => 'required|integer|min:0',
+            'horaires_site' => 'nullable|array',
+            'consignes_site' => 'nullable|string',
+        ]);
+
+        // Vérifier que le site appartient au client du contrat
+        $site = SiteClient::findOrFail($validated['site_client_id']);
+        if ($site->client_id !== $contrat->client_id) {
+            return back()->with('error', 'Le site doit appartenir au client du contrat.');
+        }
+
+        // Vérifier que le site n'est pas déjà associé
+        if ($contrat->aPourSite($site)) {
+            return back()->with('error', 'Ce site est déjà associé au contrat.');
+        }
+
+        // Convertir horaires en JSON
+        if (isset($validated['horaires_site']) && is_array($validated['horaires_site'])) {
+            $validated['horaires_site'] = json_encode($validated['horaires_site']);
+        }
+
+        $contrat->sites()->attach($validated['site_client_id'], [
+            'nombre_agents_site' => $validated['nombre_agents_site'],
+            'horaires_site' => $validated['horaires_site'] ?? null,
+            'consignes_site' => $validated['consignes_site'] ?? null,
+        ]);
+
+        return back()->with('success', 'Site ajouté au contrat avec succès.');
+    }
+
+    /**
+     * Retirer un site du contrat
+     */
+    public function retirerSite($id, $siteId)
+    {
+        $contrat = ContratPrestation::findOrFail($id);
+
+        // Vérifier s'il y a des agents affectés à ce site
+        $affectationsExistantes = Affectation::where('contrat_prestation_id', $id)
+            ->where('site_client_id', $siteId)
+            ->where('statut', 'en_cours')
+            ->count();
+
+        if ($affectationsExistantes > 0) {
+            return back()->with('error', "Impossible de retirer ce site : $affectationsExistantes agent(s) sont encore affectés à ce site.");
+        }
+
+        $contrat->sites()->detach($siteId);
+
+        return back()->with('success', 'Site retiré du contrat.');
+    }
+
+    /**
+     * Mettre à jour les informations d'un site dans le contrat
+     */
+    public function updateSite(Request $request, $id, $siteId)
+    {
+        $contrat = ContratPrestation::findOrFail($id);
+
+        $validated = $request->validate([
+            'nombre_agents_site' => 'required|integer|min:0',
+            'horaires_site' => 'nullable|array',
+            'consignes_site' => 'nullable|string',
+        ]);
+
+        // Convertir horaires en JSON
+        if (isset($validated['horaires_site']) && is_array($validated['horaires_site'])) {
+            $validated['horaires_site'] = json_encode($validated['horaires_site']);
+        }
+
+        $contrat->sites()->updateExistingPivot($siteId, [
+            'nombre_agents_site' => $validated['nombre_agents_site'],
+            'horaires_site' => $validated['horaires_site'] ?? null,
+            'consignes_site' => $validated['consignes_site'] ?? null,
+        ]);
+
+        return back()->with('success', 'Site mis à jour.');
+    }
+
+    /**
+     * Obtenir les sites disponibles pour un contrat (pour AJAX)
+     */
+    public function getSitesDisponibles($id)
+    {
+        $contrat = ContratPrestation::findOrFail($id);
+        $sites = $contrat->getSitesDisponibles();
+
+        return response()->json($sites);
+    }
+
+    /**
+     * Réaffecter un agent à un autre site
+     */
+    public function reaffecterAgent(Request $request, $id)
+    {
+        $request->validate([
+            'affectation_id' => 'required|exists:affectations,id',
+            'site_client_id' => 'required|exists:sites_clients,id',
+            'date_reaffectation' => 'required|date',
+            'motif_reaffectation' => 'nullable|string',
+        ]);
+
+        $contrat = ContratPrestation::findOrFail($id);
+        $affectation = Affectation::findOrFail($request->affectation_id);
+
+        // Vérifier que l'affectation appartient au contrat
+        if ($affectation->contrat_prestation_id != $id) {
+            return back()->with('error', 'Cette affectation n\'appartient pas au contrat.');
+        }
+
+        // Vérifier que le nouveau site appartient au client du contrat
+        $nouveauSite = SiteClient::findOrFail($request->site_client_id);
+        if ($nouveauSite->client_id !== $contrat->client_id) {
+            return back()->with('error', 'Le nouveau site doit appartenir au client du contrat.');
+        }
+
+        // Mettre à jour l'affectation
+        $affectation->update([
+            'site_client_id' => $request->site_client_id,
+            'date_fin_affectation' => $request->date_reaffectation,
+        ]);
+
+        // Créer une nouvelle affectation pour le nouveau site
+        Affectation::create([
+            'entreprise_id' => $contrat->entreprise_id,
+            'employe_id' => $affectation->employe_id,
+            'contrat_prestation_id' => $id,
+            'site_client_id' => $request->site_client_id,
+            'role_site' => $affectation->role_site,
+            'date_debut' => $request->date_reaffectation,
+            'date_affectation' => now(),
+            'horaire_debut' => $affectation->horaire_debut,
+            'horaire_fin' => $affectation->horaire_fin,
+            'jours_travail' => $affectation->jours_travail,
+            'responsabilites' => $affectation->responsabilites,
+            'statut' => 'en_cours',
+            'affecte_par' => $affectation->affecte_par,
+        ]);
+
+        return back()->with('success', 'Agent réaffecté avec succès.');
+    }
+
+    /**
+     * Obtenir les agents disponibles pour réaffectation
+     */
+    public function getAgentsDisponibles($id)
+    {
+        $contrat = ContratPrestation::findOrFail($id);
+
+        // Agents affectés à ce contrat
+        $agentIds = $contrat->affectations()
+            ->where('statut', 'en_cours')
+            ->pluck('employe_id');
+
+        $agents = Employe::whereIn('id', $agentIds)
+            ->where('entreprise_id', $contrat->entreprise_id)
+            ->orderBy('nom')
+            ->get(['id', 'nom', 'prenom']);
+
+        return response()->json($agents);
     }
 }

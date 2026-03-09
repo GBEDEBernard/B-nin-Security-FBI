@@ -46,10 +46,13 @@ class SiteController extends Controller
 
         $sites = $query->orderBy('nom_site')->paginate(15);
 
-        // ✅ withoutGlobalScope pour éviter les problèmes de GlobalScope sur Client
+        // ✅ FILTRER: Clients avec contrat actif uniquement pour le filtre
         $clients = Client::withoutGlobalScope('entreprise')
             ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
+            ->whereHas('contrats', function ($query) {
+                $query->where('statut', 'en_cours');
+            })
             ->orderBy('nom')
             ->get();
 
@@ -57,7 +60,7 @@ class SiteController extends Controller
             'total'      => SiteClient::where('entreprise_id', $entrepriseId)->count(),
             'actifs'     => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', true)->count(),
             'inactifs'   => SiteClient::where('entreprise_id', $entrepriseId)->where('est_actif', false)->count(),
-            'haut_risque'=> SiteClient::where('entreprise_id', $entrepriseId)->whereIn('niveau_risque', ['haut', 'critique'])->count(),
+            'haut_risque' => SiteClient::where('entreprise_id', $entrepriseId)->whereIn('niveau_risque', ['haut', 'critique'])->count(),
         ];
 
         return view('admin.entreprise.sites.index', compact('sites', 'clients', 'stats'));
@@ -70,10 +73,16 @@ class SiteController extends Controller
     {
         $entrepriseId = $this->getEntrepriseId();
 
-        // ✅ withoutGlobalScope pour charger les clients correctement
+        // ✅ FILTRER: Clients avec contrat actif uniquement (statut = 'en_cours')
         $clients = Client::withoutGlobalScope('entreprise')
             ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
+            ->whereHas('contrats', function ($query) {
+                $query->where('statut', 'en_cours');
+            })
+            ->with(['contrats' => function ($query) {
+                $query->where('statut', 'en_cours')->select('id', 'client_id', 'intitule', 'numero_contrat');
+            }])
             ->orderBy('nom')
             ->get();
 
@@ -160,10 +169,17 @@ class SiteController extends Controller
 
         $site = SiteClient::where('entreprise_id', $entrepriseId)->findOrFail($id);
 
-        // ✅ withoutGlobalScope pour charger les clients correctement
+        // ✅ FILTRER: Clients avec contrat actif uniquement + garder le client actuel du site
         $clients = Client::withoutGlobalScope('entreprise')
             ->where('entreprise_id', $entrepriseId)
             ->where('est_actif', true)
+            ->where(function ($query) use ($site) {
+                // Inclure le client actuel du site même s'il n'a plus de contrat actif
+                $query->whereHas('contrats', function ($q) {
+                    $q->where('statut', 'en_cours');
+                })
+                    ->orWhere('id', $site->client_id);
+            })
             ->orderBy('nom')
             ->get();
 

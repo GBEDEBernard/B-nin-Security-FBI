@@ -110,6 +110,24 @@
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
     }
 
+    /* Custom Select with Icons */
+    .custom-select-green {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230d6efd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 12px 12px;
+        padding-right: 2.5rem;
+    }
+
+    .form-select optgroup {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .form-select option {
+        padding: 0.5rem 0.75rem;
+    }
+
     /* Style spécifique pour le select afin que le texte soit bien visible */
     .form-select {
         color: var(--bs-body-color);
@@ -272,14 +290,50 @@
                                 <label class="form-label">
                                     Client <span class="required-indicator">*</span>
                                 </label>
-                                <select name="client_id" class="form-select" required>
-                                    <option value="">Sélectionner un client...</option>
-                                    @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ old('client_id', $site->client_id) == $client->id ? 'selected' : '' }}>
-                                        {{ $client->nom }}
-                                    </option>
-                                    @endforeach
+
+                                @if($clients->isEmpty())
+                                <div class="alert alert-warning py-2 px-3 mb-2">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    <small>Aucun client avec contrat actif disponible.</small>
+                                </div>
+                                @endif
+
+                                <select name="client_id" class="form-select custom-select-green" required>
+                                    <option value="">— Sélectionner un client —</option>
+
+                                    @php
+                                    $particuliers = $clients->where('type_client', 'particulier');
+                                    $entreprises = $clients->whereIn('type_client', ['entreprise', 'institution']);
+                                    @endphp
+
+                                    @if($particuliers->isNotEmpty())
+                                    <optgroup label="Particuliers">
+                                        @foreach($particuliers as $client)
+                                        <option value="{{ $client->id }}"
+                                            {{ old('client_id', $site->client_id) == $client->id ? 'selected' : '' }}>
+                                            {{ trim(($client->prenoms ? $client->prenoms . ' ' : '') . strtoupper($client->nom ?? '')) }}
+                                        </option>
+                                        @endforeach
+                                    </optgroup>
+                                    @endif
+
+                                    @if($entreprises->isNotEmpty())
+                                    <optgroup label="Entreprises & Institutions">
+                                        @foreach($entreprises as $client)
+                                        <option value="{{ $client->id }}"
+                                            {{ old('client_id', $site->client_id) == $client->id ? 'selected' : '' }}>
+                                            {{ $client->raison_sociale ?? $client->nom ?? 'Sans nom' }}
+                                        </option>
+                                        @endforeach
+                                    </optgroup>
+                                    @endif
+
                                 </select>
+                                <div class="help-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Seuls les clients avec contrat actif apparaissent
+                                </div>
+
                                 @error('client_id')
                                 <div class="help-text text-danger">{{ $message }}</div>
                                 @enderror
