@@ -20,6 +20,14 @@ class RapportController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_reports|view_analytics')->only([
+            'index', 'employes', 'clients', 'financier', 'incidents', 'affectations',
+        ]);
+
+        $this->middleware('permission:export_reports')->only([
+            'exportPdf', 'exportExcel',
+        ]);
     }
 
     /**

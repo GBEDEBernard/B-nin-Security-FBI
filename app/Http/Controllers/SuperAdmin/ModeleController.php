@@ -15,6 +15,22 @@ class ModeleController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_documents')->only([
+            'index', 'show', 'preview', 'download',
+        ]);
+
+        $this->middleware('permission:create_documents')->only([
+            'create', 'store', 'duplicate',
+        ]);
+
+        $this->middleware('permission:edit_documents')->only([
+            'edit', 'update',
+        ]);
+
+        $this->middleware('permission:delete_documents')->only([
+            'destroy',
+        ]);
     }
 
     /**

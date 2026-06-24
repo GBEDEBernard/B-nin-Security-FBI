@@ -15,6 +15,15 @@ class ParametreController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_settings')->only([
+            'index', 'logs',
+        ]);
+
+        $this->middleware('permission:edit_settings')->only([
+            'general', 'email', 'security', 'api', 'mobile',
+            'testEmail', 'clearCache', 'optimize',
+        ]);
     }
 
     /**

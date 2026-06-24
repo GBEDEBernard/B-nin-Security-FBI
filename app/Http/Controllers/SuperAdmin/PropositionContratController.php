@@ -18,6 +18,26 @@ class PropositionContratController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_documents')->only([
+            'index', 'show',
+        ]);
+
+        $this->middleware('permission:create_documents')->only([
+            'create', 'edit', 'update', 'soumettre',
+        ]);
+
+        $this->middleware('permission:delete_documents')->only([
+            'destroy',
+        ]);
+
+        $this->middleware('permission:create_tenants')->only([
+            'creerEntreprise',
+        ]);
+
+        $this->middleware('permission:edit_documents')->only([
+            'telechargerContrat', 'envoyerContrat', 'soumettreSigne', 'rejeter',
+        ]);
     }
 
     /**

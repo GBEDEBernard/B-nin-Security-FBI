@@ -13,6 +13,11 @@ class ApkController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:manage_tenant_settings')->only([
+            'index', 'show', 'create', 'store', 'activate', 'deactivate',
+            'destroy', 'qrcode', 'configurations', 'updateConfigurations', 'download',
+        ]);
     }
 
     /**

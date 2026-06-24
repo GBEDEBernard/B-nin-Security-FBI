@@ -17,6 +17,26 @@ class EmployeController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_agents|view_managers|view_supervisors|view_controllers')->only([
+            'index', 'show', 'disponibles',
+        ]);
+
+        $this->middleware('permission:create_agents|create_managers|create_supervisors|create_controllers')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:edit_agents|edit_managers|edit_supervisors|edit_controllers')->only([
+            'edit', 'update',
+        ]);
+
+        $this->middleware('permission:delete_agents|delete_managers|delete_supervisors|delete_controllers')->only([
+            'destroy',
+        ]);
+
+        $this->middleware('permission:manage_agent_status')->only([
+            'mettreEnConge', 'reprendre',
+        ]);
     }
 
     /**

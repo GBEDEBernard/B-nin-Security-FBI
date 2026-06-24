@@ -20,6 +20,14 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_dashboard')->only([
+            'index', 'statistiques',
+        ]);
+
+        $this->middleware('permission:update_personal_profile')->only([
+            'profile', 'updateProfile',
+        ]);
     }
 
     /**

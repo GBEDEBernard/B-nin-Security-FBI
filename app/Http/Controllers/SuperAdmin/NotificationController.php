@@ -4,70 +4,38 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Employe;
+use App\Models\Client;
 use App\Models\Entreprise;
+use App\Notifications\PushNotification;
+use App\Services\OneSignalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    /**
-     * Constructeur
-     */
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
     }
 
-    /**
-     * Liste des notifications
-     */
     public function index(Request $request)
     {
-        $notifications = collect([
-            (object)[
-                'id' => 1,
-                'titre' => 'Mise à jour disponible',
-                'message' => 'Une nouvelle version de l\'application est disponible',
-                'type' => 'info',
-                'destinataires' => 'Tous',
-                'statut' => 'envoyee',
-                'created_at' => now()->subHours(2),
-            ],
-            (object)[
-                'id' => 2,
-                'titre' => 'Nouveau contrat signé',
-                'message' => 'Un nouveau contrat a été signé avec l\'entreprise ABC',
-                'type' => 'success',
-                'destinataires' => 'Direction',
-                'statut' => 'envoyee',
-                'created_at' => now()->subDays(1),
-            ],
-            (object)[
-                'id' => 3,
-                'titre' => 'Rappel pointage',
-                'message' => 'N\'oubliez pas de pointer ce soir',
-                'type' => 'warning',
-                'destinataires' => 'Agents',
-                'statut' => 'envoyee',
-                'created_at' => now()->subDays(2),
-            ],
-        ]);
+        $notifications = \App\Models\Notification::query()
+            ->where('notifiable_type', User::class)
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         $stats = [
-            'total' => $notifications->count(),
-            'envoyees' => $notifications->where('statut', 'envoyee')->count(),
-            'today' => $notifications->filter(function ($n) {
-                return $n->created_at->isToday();
-            })->count(),
+            'total' => \App\Models\Notification::count(),
+            'envoyees' => \App\Models\Notification::count(),
+            'today' => \App\Models\Notification::whereDate('created_at', today())->count(),
         ];
 
         return view('admin.superadmin.notifications.index', compact('notifications', 'stats'));
     }
 
-    /**
-     * Formulaire d'envoi
-     */
     public function create()
     {
         $entreprises = Entreprise::orderBy('nom_entreprise')->get();
@@ -76,9 +44,6 @@ class NotificationController extends Controller
         return view('admin.superadmin.notifications.create', compact('entreprises', 'roles'));
     }
 
-    /**
-     * Envoyer une notification
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -91,32 +56,85 @@ class NotificationController extends Controller
             'url' => 'nullable|url',
         ]);
 
-        // Logique d'envoi de notification
-        // 1. Récupérer les utilisateurs cibles
-        $users = collect();
+        $notifiables = collect();
 
         if ($validated['type_envoi'] === 'all') {
-            $users = User::where('is_active', true)->get();
+            $notifiables = User::where('is_active', true)->get()
+                ->merge(Employe::where('est_actif', true)->get())
+                ->merge(Client::where('est_actif', true)->get());
         } elseif ($validated['type_envoi'] === 'entreprise' && !empty($validated['entreprise_id'])) {
-            $users = User::where('entreprise_id', $validated['entreprise_id'])->get();
+            $notifiables = User::where('is_active', true)
+                ->where('entreprise_id', $validated['entreprise_id'])->get()
+                ->merge(
+                    Employe::where('est_actif', true)
+                        ->where('entreprise_id', $validated['entreprise_id'])->get()
+                )
+                ->merge(
+                    Client::where('est_actif', true)
+                        ->where('entreprise_id', $validated['entreprise_id'])->get()
+                );
         } elseif ($validated['type_envoi'] === 'role' && !empty($validated['role'])) {
-            $users = User::whereHas('roles', function ($q) use ($validated) {
-                $q->where('name', $validated['role']);
-            })->get();
+            $notifiables = User::where('is_active', true)
+                ->whereHas('roles', function ($q) use ($validated) {
+                    $q->where('name', $validated['role']);
+                })->get()
+                ->merge(
+                    Employe::where('est_actif', true)
+                        ->where('categorie', $validated['role'])->get()
+                );
         }
 
-        // 2. Envoyer la notification (à implémenter avec Firebase/OneSignal)
-        // Notification::send($users, new \App\Notifications\NotificationPush(...));
+        $pushNotification = new PushNotification(
+            title: $validated['titre'],
+            message: $validated['message'],
+            type: $validated['type'],
+            url: $validated['url'] ?? null,
+            data: ['type_envoi' => $validated['type_envoi']],
+        );
 
-        // 3. Logger l'envoi
+        $oneSignal = app(OneSignalService::class);
+        if ($oneSignal->isConfigured()) {
+            $playerIds = $notifiables->map(fn ($n) => $n->routeNotificationForOneSignal())->flatten()->filter()->unique()->toArray();
+
+            if (!empty($playerIds)) {
+                $result = $oneSignal->sendToUsers(
+                    playerIds: $playerIds,
+                    title: $validated['titre'],
+                    message: $validated['message'],
+                    data: [
+                        'url' => $validated['url'],
+                        'type' => $validated['type'],
+                        'type_envoi' => $validated['type_envoi'],
+                    ],
+                );
+
+                if (!$result['success']) {
+                    Log::warning('Échec envoi OneSignal', $result);
+                }
+            }
+        }
+
+        foreach ($notifiables as $notifiable) {
+            $notifiable->notifications()->create([
+                'type' => PushNotification::class,
+                'donnees' => json_encode([
+                    'titre' => $validated['titre'],
+                    'message' => $validated['message'],
+                    'type' => $validated['type'],
+                    'url' => $validated['url'],
+                ]),
+            ]);
+        }
+
         Log::info('Notification push envoyée', [
             'titre' => $validated['titre'],
-            'destinataires' => $users->count(),
+            'destinataires' => $notifiables->count(),
             'type' => $validated['type'],
+            'type_envoi' => $validated['type_envoi'],
         ]);
 
         return redirect()->route('admin.superadmin.notifications.index')
-            ->with('success', 'Notification envoyée à ' . $users->count() . ' utilisateur(s).');
+            ->with('success', 'Notification envoyée à ' . $notifiables->count() . ' destinataire(s).');
     }
 
     /**
@@ -124,19 +142,11 @@ class NotificationController extends Controller
      */
     public function show($id)
     {
-        $notification = (object)[
-            'id' => $id,
-            'titre' => 'Notification',
-            'message' => 'Contenu de la notification',
-            'type' => 'info',
-            'destinataires' => 'Tous',
-            'statut' => 'envoyee',
-            'created_at' => now(),
-            'destinataires_detail' => 150,
-            'lus' => 145,
-        ];
+        $notification = \App\Models\Notification::findOrFail($id);
 
-        return view('admin.superadmin.notifications.show', compact('notification'));
+        $donnees = json_decode($notification->donnees, true) ?? [];
+
+        return view('admin.superadmin.notifications.show', compact('notification', 'donnees'));
     }
 
     /**
@@ -144,6 +154,9 @@ class NotificationController extends Controller
      */
     public function destroy($id)
     {
+        $notification = \App\Models\Notification::findOrFail($id);
+        $notification->delete();
+
         return redirect()->route('admin.superadmin.notifications.index')
             ->with('success', 'Notification supprimée.');
     }
@@ -154,16 +167,18 @@ class NotificationController extends Controller
     public function statistiques()
     {
         $stats = [
-            'total_envoyees' => 156,
-            'aujourdhui' => 3,
-            'this_week' => 12,
-            'this_month' => 45,
-            'taux_lecture' => 98,
+            'total_envoyees' => \App\Models\Notification::count(),
+            'aujourdhui' => \App\Models\Notification::whereDate('created_at', today())->count(),
+            'this_week' => \App\Models\Notification::where('created_at', '>=', now()->startOfWeek())->count(),
+            'this_month' => \App\Models\Notification::where('created_at', '>=', now()->startOfMonth())->count(),
+            'taux_lecture' => \App\Models\Notification::whereNotNull('lu_le')->count() > 0
+                ? round((\App\Models\Notification::whereNotNull('lu_le')->count() / \App\Models\Notification::count()) * 100)
+                : 0,
             'par_type' => [
-                'info' => 45,
-                'success' => 30,
-                'warning' => 50,
-                'error' => 31,
+                'info' => \App\Models\Notification::where('type', 'info')->count(),
+                'success' => \App\Models\Notification::where('type', 'success')->count(),
+                'warning' => \App\Models\Notification::where('type', 'warning')->count(),
+                'error' => \App\Models\Notification::where('type', 'error')->count(),
             ],
         ];
 
@@ -183,7 +198,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Envoyer un test
+     * Envoyer un test (email + push)
      */
     public function test(Request $request)
     {
@@ -194,8 +209,14 @@ class NotificationController extends Controller
             'email' => 'required|email',
         ]);
 
-        // Envoyer un email de test
-        // Mail::to($validated['email'])->send(new TestNotification(...));
+        $oneSignal = app(\App\Services\OneSignalService::class);
+        if ($oneSignal->isConfigured()) {
+            $oneSignal->sendToAll(
+                title: $validated['titre'],
+                message: $validated['message'],
+                data: ['type' => $validated['type'], 'test' => true],
+            );
+        }
 
         return back()->with('success', 'Notification de test envoyée.');
     }

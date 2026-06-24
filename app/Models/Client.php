@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Traits\HasDeviceTokens;
 
 class Client extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasDeviceTokens;
 
     protected $table = 'clients';
 
@@ -64,6 +66,13 @@ class Client extends Model
         'est_connecte' => 'boolean',
         'last_login_at' => 'datetime',
     ];
+
+    // ── Notifications personnalisées ────────────────────────────────────────
+
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Notification::class, 'notifiable')->orderByDesc('created_at');
+    }
 
     // ── Constantes ─────────────────────────────────────────────────────────
 

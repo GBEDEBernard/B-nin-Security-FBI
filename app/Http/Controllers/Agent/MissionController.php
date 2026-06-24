@@ -17,6 +17,14 @@ class MissionController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_my_assignments')->only([
+            'index', 'show',
+        ]);
+
+        $this->middleware('permission:view_assignments')->only([
+            'accepter', 'refuser', 'terminer',
+        ]);
     }
 
     /**

@@ -16,6 +16,19 @@ class AbonnementController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_payments')->only([
+            'index', 'show',
+        ]);
+
+        $this->middleware('permission:create_invoices')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:manage_billing')->only([
+            'edit', 'update', 'destroy', 'assigner', 'retirer',
+            'renew', 'suspend', 'activate', 'mettreEnEssai', 'resilier',
+        ]);
     }
 
     /**

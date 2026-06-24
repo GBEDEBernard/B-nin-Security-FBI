@@ -18,6 +18,16 @@ class SuperAdminController extends Controller
             }
             return $next($request);
         });
+
+        $this->middleware('permission:view_dashboard')->only(['index']);
+        $this->middleware('permission:view_tenants')->only([
+            'entreprisesIndex', 'entreprisesCreate', 'entreprisesEdit',
+            'entreprisesShow', 'switchToEntreprise', 'returnToSuperAdmin',
+        ]);
+        $this->middleware('permission:view_users')->only([
+            'utilisateursIndex', 'utilisateursCreate',
+        ]);
+        $this->middleware('permission:view_settings')->only(['parametresIndex']);
     }
 
     public function index()

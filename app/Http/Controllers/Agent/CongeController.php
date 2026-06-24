@@ -17,6 +17,14 @@ class CongeController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_personal_dashboard')->only([
+            'index', 'show', 'soldes', 'calendrier',
+        ]);
+
+        $this->middleware('permission:update_personal_profile')->only([
+            'store', 'annuler',
+        ]);
     }
 
     /**

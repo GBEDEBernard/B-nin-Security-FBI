@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Traits\HasDeviceTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles, HasDeviceTokens;
 
     protected $table      = 'users';
     protected $guard_name = 'web';
@@ -37,6 +39,13 @@ class User extends Authenticatable
         'is_active'         => 'boolean',
         'last_login_at'     => 'datetime',
     ];
+
+    // ── Notifications personnalisées ────────────────────────────────────────
+
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Notification::class, 'notifiable')->orderByDesc('created_at');
+    }
 
     // ── Vérifications de rôle ────────────────────────────────────────────────
 

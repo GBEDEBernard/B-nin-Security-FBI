@@ -16,6 +16,22 @@ class EntrepriseController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_tenants')->only([
+            'statistiques', 'exporter',
+        ]);
+
+        $this->middleware('permission:create_tenants')->only([
+            'store',
+        ]);
+
+        $this->middleware('permission:edit_tenants')->only([
+            'update', 'activate', 'deactivate', 'mettreEnEssai', 'subscribe',
+        ]);
+
+        $this->middleware('permission:delete_tenants')->only([
+            'destroy',
+        ]);
     }
 
     /**

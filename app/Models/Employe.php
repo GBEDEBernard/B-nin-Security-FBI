@@ -7,14 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Traits\HasDeviceTokens;
 
 class Employe extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasRoles, HasDeviceTokens;
 
     protected $table = 'employes';
     protected $guard_name = 'web';
@@ -79,6 +81,13 @@ class Employe extends Authenticatable
         'salaire_base' => 'decimal:2',
         'last_login_at' => 'datetime',
     ];
+
+    // ── Notifications personnalisées ────────────────────────────────────────
+
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Notification::class, 'notifiable')->orderByDesc('created_at');
+    }
 
     // ── Constantes ─────────────────────────────────────────────────────────
 

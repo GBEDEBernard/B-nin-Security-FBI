@@ -16,6 +16,18 @@ class ContratController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_clients')->only([
+            'index', 'show',
+        ]);
+
+        $this->middleware('permission:create_invoices')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:manage_billing')->only([
+            'edit', 'update', 'destroy', 'resilier', 'renouveler', 'suspendre', 'reprendre',
+        ]);
     }
 
     /**

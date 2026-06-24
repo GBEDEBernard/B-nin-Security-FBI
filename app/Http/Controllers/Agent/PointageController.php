@@ -17,6 +17,14 @@ class PointageController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_shifts')->only([
+            'index', 'show', 'today',
+        ]);
+
+        $this->middleware('permission:view_my_assignments')->only([
+            'pointerEntree', 'pointerSortie', 'signalerProbleme',
+        ]);
     }
 
     /**

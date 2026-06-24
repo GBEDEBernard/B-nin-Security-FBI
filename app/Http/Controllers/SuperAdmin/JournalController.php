@@ -15,6 +15,14 @@ class JournalController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_audit_logs')->only([
+            'index', 'show', 'parUtilisateur', 'parModule', 'export', 'statistiques',
+        ]);
+
+        $this->middleware('permission:edit_settings')->only([
+            'purge',
+        ]);
     }
 
     /**

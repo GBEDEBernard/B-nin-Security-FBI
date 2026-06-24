@@ -21,6 +21,22 @@ class ClientController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_clients')->only([
+            'index', 'show', 'sites', 'contrats', 'factures',
+        ]);
+
+        $this->middleware('permission:create_clients')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:edit_clients')->only([
+            'edit', 'update',
+        ]);
+
+        $this->middleware('permission:delete_clients')->only([
+            'destroy',
+        ]);
     }
 
     /**

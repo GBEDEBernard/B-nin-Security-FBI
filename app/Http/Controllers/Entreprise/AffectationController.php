@@ -18,6 +18,26 @@ class AffectationController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'entreprise']);
+
+        $this->middleware('permission:view_assignments')->only([
+            'index', 'show', 'planning',
+        ]);
+
+        $this->middleware('permission:create_assignments|assign_agents')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:edit_assignments')->only([
+            'edit', 'update',
+        ]);
+
+        $this->middleware('permission:delete_assignments')->only([
+            'destroy',
+        ]);
+
+        $this->middleware('permission:validate_assignments')->only([
+            'terminer', 'annuler',
+        ]);
     }
 
     /**

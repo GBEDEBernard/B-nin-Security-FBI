@@ -16,6 +16,18 @@ class FacturationController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_payments')->only([
+            'index', 'show', 'paiements', 'creances',
+        ]);
+
+        $this->middleware('permission:create_invoices')->only([
+            'export',
+        ]);
+
+        $this->middleware('permission:view_analytics')->only([
+            'statistiques',
+        ]);
     }
 
     /**

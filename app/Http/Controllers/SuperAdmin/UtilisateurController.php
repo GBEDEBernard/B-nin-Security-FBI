@@ -17,6 +17,26 @@ class UtilisateurController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_users')->only([
+            'index', 'show', 'export',
+        ]);
+
+        $this->middleware('permission:create_users')->only([
+            'create', 'store',
+        ]);
+
+        $this->middleware('permission:edit_users')->only([
+            'edit', 'update',
+        ]);
+
+        $this->middleware('permission:delete_users')->only([
+            'destroy',
+        ]);
+
+        $this->middleware('permission:manage_user_roles')->only([
+            'activate', 'deactivate', 'resetPassword',
+        ]);
     }
 
     /**
