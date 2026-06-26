@@ -4,6 +4,25 @@
 
 @push('styles')
 <style>
+    :root {
+        --ep-surface: #ffffff;
+        --ep-border: #e9ecef;
+        --ep-text: #212529;
+        --ep-text-muted: #6c757d;
+        --ep-bg-soft: #f8f9fa;
+        --ep-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.05);
+        --ep-shadow-lg: 0 0.5rem 1rem rgba(0,0,0,0.08);
+    }
+    :root[data-bs-theme="dark"] {
+        --ep-surface: #1a1d27;
+        --ep-border: #2a2d3a;
+        --ep-text: #f0f2f8;
+        --ep-text-muted: #8b90a8;
+        --ep-bg-soft: #1a1d27;
+        --ep-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.3);
+        --ep-shadow-lg: 0 0.5rem 1rem rgba(0,0,0,0.4);
+    }
+
     .profile-header {
         border-radius: 16px;
         padding: 2rem;
@@ -32,15 +51,28 @@
         background: white;
     }
 
+    [data-bs-theme="dark"] .profile-logo {
+        background: #1a1d27;
+    }
+
     .stat-card {
         border: none;
         border-radius: 12px;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+        box-shadow: var(--ep-shadow-lg);
         transition: transform 0.3s ease;
+        background: var(--ep-surface);
     }
 
     .stat-card:hover {
         transform: translateY(-5px);
+    }
+
+    .stat-card h3 {
+        color: var(--ep-text);
+    }
+
+    .stat-card .text-muted {
+        color: var(--ep-text-muted) !important;
     }
 
     .stat-icon {
@@ -56,12 +88,13 @@
     .info-card {
         border: none;
         border-radius: 12px;
-        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+        box-shadow: var(--ep-shadow);
+        background: var(--ep-surface);
     }
 
     .info-item {
         padding: 1rem 0;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid var(--ep-border);
     }
 
     .info-item:last-child {
@@ -70,13 +103,17 @@
 
     .info-label {
         font-size: 0.85rem;
-        color: #6c757d;
+        color: var(--ep-text-muted);
         margin-bottom: 0.25rem;
     }
 
     .info-value {
         font-weight: 500;
-        color: #212529;
+        color: var(--ep-text);
+    }
+
+    .info-value a {
+        color: var(--bs-link-color);
     }
 
     .badge-formule {
@@ -86,25 +123,15 @@
         font-size: 0.85rem;
     }
 
-    .badge-essai {
-        background: rgba(255, 193, 7, 0.15);
-        color: #ffc107;
-    }
+    .badge-essai { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
+    .badge-basic { background: rgba(13, 110, 253, 0.15); color: #0d6efd; }
+    .badge-standard { background: rgba(25, 135, 84, 0.15); color: #198754; }
+    .badge-premium { background: rgba(111, 66, 193, 0.15); color: #6f42c1; }
 
-    .badge-basic {
-        background: rgba(13, 110, 253, 0.15);
-        color: #0d6efd;
-    }
-
-    .badge-standard {
-        background: rgba(25, 135, 84, 0.15);
-        color: #198754;
-    }
-
-    .badge-premium {
-        background: rgba(111, 66, 193, 0.15);
-        color: #6f42c1;
-    }
+    [data-bs-theme="dark"] .badge-essai { background: rgba(255,193,7,0.2); color: #fbbf24; }
+    [data-bs-theme="dark"] .badge-basic { background: rgba(13,110,253,0.2); color: #60a5fa; }
+    [data-bs-theme="dark"] .badge-standard { background: rgba(25,135,84,0.2); color: #4ade80; }
+    [data-bs-theme="dark"] .badge-premium { background: rgba(111,66,193,0.2); color: #a855f7; }
 
     .action-btn {
         padding: 0.5rem 1rem;
@@ -119,7 +146,7 @@
 
     .nav-tabs-custom .nav-link {
         border: none;
-        color: #6c757d;
+        color: var(--ep-text-muted);
         font-weight: 500;
         padding: 1rem 1.5rem;
         position: relative;
@@ -136,13 +163,15 @@
         transition: width 0.3s ease;
     }
 
-    .nav-tabs-custom .nav-link:hover {
-        color: #198754;
-    }
-
+    .nav-tabs-custom .nav-link:hover,
     .nav-tabs-custom .nav-link.active {
         color: #198754;
         background: transparent;
+    }
+
+    [data-bs-theme="dark"] .nav-tabs-custom .nav-link:hover,
+    [data-bs-theme="dark"] .nav-tabs-custom .nav-link.active {
+        color: #4ade80;
     }
 
     .nav-tabs-custom .nav-link.active::after {
@@ -159,17 +188,25 @@
     }
 
     .data-table thead th {
-        background: #f8f9fa;
-        border-bottom: 2px solid #e9ecef;
+        background: var(--ep-bg-soft);
+        border-bottom: 2px solid var(--ep-border);
         font-weight: 600;
-        color: #495057;
+        color: var(--ep-text);
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
+    .data-table tbody td {
+        color: var(--ep-text);
+    }
+
     .data-table tbody tr:hover {
-        background: #f8f9fa;
+        background: var(--ep-bg-soft);
+    }
+
+    [data-bs-theme="dark"] .data-table tbody tr:hover {
+        background: #2a2d3a;
     }
 
     .avatar-sm {
@@ -183,76 +220,96 @@
         font-size: 0.75rem;
     }
 
-    [data-bs-theme="dark"] .stat-card {
-        background: #1a1d27;
-        border: 1px solid #2a2d3a;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    .card-header.bg-white {
+        background: var(--ep-surface) !important;
+        border-bottom: 1px solid var(--ep-border);
     }
 
-    [data-bs-theme="dark"] .stat-card .card-title {
-        color: #f0f2f8;
+    .card-header.bg-white h6 {
+        color: var(--ep-text);
     }
 
-    [data-bs-theme="dark"] .info-card {
-        background: #1a1d27;
+    .card-header.bg-white h6 .text-success {
+        color: #198754 !important;
     }
 
-    [data-bs-theme="dark"] .info-item {
-        border-bottom-color: #2a2d3a;
+    [data-bs-theme="dark"] .card-header.bg-white h6 .text-success {
+        color: #4ade80 !important;
     }
 
-    [data-bs-theme="dark"] .info-label {
-        color: #8b90a8;
+    .card-body p,
+    .card-body .info-value {
+        color: var(--ep-text);
     }
 
-    [data-bs-theme="dark"] .info-value {
-        color: #f0f2f8;
+    .card .card-body .text-muted {
+        color: var(--ep-text-muted) !important;
     }
 
-    [data-bs-theme="dark"] .nav-tabs-custom .nav-link {
-        color: #8b90a8;
+    [data-bs-theme="dark"] .badge.bg-white.bg-opacity-25 {
+        background: rgba(255,255,255,0.15) !important;
     }
 
-    [data-bs-theme="dark"] .nav-tabs-custom .nav-link:hover,
-    [data-bs-theme="dark"] .nav-tabs-custom .nav-link.active {
-        color: #4ade80;
-    }
-
-    [data-bs-theme="dark"] .data-table thead th {
-        background: #1a1d27;
-        border-bottom-color: #2a2d3a;
-        color: #c0c4d0;
-    }
-
-    [data-bs-theme="dark"] .data-table tbody tr:hover {
+    [data-bs-theme="dark"] .btn-light.text-success {
         background: #2a2d3a;
+        border-color: #2a2d3a;
+        color: #4ade80 !important;
     }
 
-    [data-bs-theme="dark"] .data-table tbody td {
-        color: #e0e0e0;
+    [data-bs-theme="dark"] .btn-light.text-success:hover {
+        background: #3a3d4a;
+        color: #4ade80 !important;
     }
 
-    [data-bs-theme="dark"] .profile-logo {
+    [data-bs-theme="dark"] .btn-outline-light {
+        color: #c0c4d0;
+        border-color: #c0c4d0;
+    }
+
+    [data-bs-theme="dark"] .btn-outline-light:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .modal-content {
         background: #1a1d27;
+        border-color: #2a2d3a;
     }
 
-    [data-bs-theme="dark"] .card-body {
+    [data-bs-theme="dark"] .modal-header {
+        border-bottom-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .modal-header .btn-close {
+        filter: invert(0.8);
+    }
+
+    [data-bs-theme="dark"] .modal-footer {
+        border-top-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .modal-title {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .modal-body {
         color: #e0e0e0;
     }
 
-    [data-bs-theme="dark"] .stat-card .text-muted {
-        color: #8b90a8 !important;
-    }
-
-    [data-bs-theme="dark"] .card .text-muted,
-    [data-bs-theme="dark"] .card-body .text-muted {
-        color: #8b90a8 !important;
-    }
-
-    [data-bs-theme="dark"] .card h5,
-    [data-bs-theme="dark"] .card h6,
-    [data-bs-theme="dark"] .card .fw-bold {
+    [data-bs-theme="dark"] .modal-body strong {
         color: #f0f2f8;
+    }
+
+    .empty-state h5 {
+        color: var(--ep-text);
+    }
+
+    .empty-state p {
+        color: var(--ep-text-muted);
+    }
+
+    .empty-state i {
+        color: var(--ep-text-muted);
     }
 </style>
 @endpush
@@ -582,7 +639,7 @@
                                         </div>
                                         <div class="info-item">
                                             <div class="info-label">Montant mensuel</div>
-                                            <div class="info-value fw-bold text-success">{{ number_format($entreprise->montant_mensuel ?? 0, 0, ',', ' ') }} FCAF</div>
+                                            <div class="info-value fw-bold text-success">{{ number_format($entreprise->montant_mensuel ?? 0, 0, ',', ' ') }} FCFA</div>
                                         </div>
                                     </div>
                                 </div>
@@ -624,8 +681,12 @@
                                         <td><span class="fw-semibold">{{ $employe->matricule }}</span></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle me-2">
-                                                    {{ strtoupper(substr($employe->nom, 0, 2)) }}
+                                                <div class="avatar-sm rounded-circle me-2" style="overflow:hidden; background: rgba(13,110,253,0.1);">
+                                                    @if($employe->photo)
+                                                    <img src="{{ asset('storage/' . $employe->photo) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                                    @else
+                                                    <span class="text-primary fw-semibold">{{ strtoupper(substr($employe->prenoms ?? $employe->nom, 0, 2)) }}</span>
+                                                    @endif
                                                 </div>
                                                 {{ $employe->nom }}
                                             </div>
@@ -719,7 +780,7 @@
                                         <td>{{ $contrat->client?->nom ?? 'N/A' }}</td>
                                         <td>{{ $contrat->date_debut?->format('d/m/Y') }}</td>
                                         <td>{{ $contrat->date_fin?->format('d/m/Y') }}</td>
-                                        <td>{{ number_format($contrat->montant_total ?? 0, 0, ',', ' ') }} FCAF</td>
+                                        <td>{{ number_format($contrat->montant_total ?? 0, 0, ',', ' ') }} FCFA</td>
                                         <td>
                                             @if($contrat->statut == 'actif')
                                             <span class="badge bg-success">Actif</span>
@@ -803,7 +864,7 @@
                 @if($entreprise->employes_count > 0 || $entreprise->clients_count > 0 || $entreprise->contratsPrestation_count > 0)
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    Cette entreprise possède des données关联. La suppression est bloquée.
+                    Cette entreprise possède des données associées. La suppression est bloquée.
                 </div>
                 @endif
             </div>

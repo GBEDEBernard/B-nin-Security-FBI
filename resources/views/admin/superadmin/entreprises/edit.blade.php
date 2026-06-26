@@ -217,6 +217,10 @@
         color: #4ade80;
     }
 
+    [data-bs-theme="dark"] .form-wizard .nav-tabs .nav-link.active::after {
+        background: #4ade80;
+    }
+
     [data-bs-theme="dark"] .form-label {
         color: #c0c4d0;
     }
@@ -257,6 +261,14 @@
         color: #8b90a8 !important;
     }
 
+    [data-bs-theme="dark"] .package-card-premium .package-icon {
+        background: rgba(167, 139, 250, 0.15) !important;
+    }
+
+    [data-bs-theme="dark"] .package-card-premium .package-icon i {
+        color: #a78bfa;
+    }
+
     [data-bs-theme="dark"] .wizard-buttons {
         border-top-color: #2a2d3a;
     }
@@ -272,6 +284,10 @@
 
     [data-bs-theme="dark"] .card .text-muted {
         color: #8b90a8 !important;
+    }
+
+    [data-bs-theme="dark"] .bg-light {
+        background-color: #1a1d27 !important;
     }
 </style>
 @endpush
@@ -639,50 +655,50 @@
                                     <label class="form-label">Formule d'abonnement <span class="required-indicator">*</span></label>
                                     <div class="row g-3 mt-2">
                                         <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'essai' ? 'selected' : '' }}" onclick="selectPackage('essai')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule ?? 'basic') == 'essai' ? 'selected' : '' }}" onclick="selectPackage('essai')">
                                                 <div class="package-icon bg-warning bg-opacity-10 text-warning">
                                                     <i class="bi bi-clock"></i>
                                                 </div>
                                                 <h6 class="mb-1">Essai</h6>
                                                 <small class="text-muted">15 jours gratuits</small>
                                                 <input type="radio" name="formule" value="essai"
-                                                    id="formule_essai" {{ old('formule', $entreprise->formule) == 'essai' ? 'checked' : '' }}
+                                                    id="formule_essai" {{ old('formule', $entreprise->formule ?? 'basic') == 'essai' ? 'checked' : '' }}
                                                     class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'basic' ? 'selected' : '' }}" onclick="selectPackage('basic')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule ?? 'basic') == 'basic' ? 'selected' : '' }}" onclick="selectPackage('basic')">
                                                 <div class="package-icon bg-primary bg-opacity-10 text-primary">
                                                     <i class="bi bi-star"></i>
                                                 </div>
                                                 <h6 class="mb-1">Basic</h6>
                                                 <small class="text-muted">Gestion de base</small>
                                                 <input type="radio" name="formule" value="basic"
-                                                    id="formule_basic" {{ old('formule', $entreprise->formule) == 'basic' ? 'checked' : '' }}
+                                                    id="formule_basic" {{ old('formule', $entreprise->formule ?? 'basic') == 'basic' ? 'checked' : '' }}
                                                     class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'standard' ? 'selected' : '' }}" onclick="selectPackage('standard')">
+                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule ?? 'basic') == 'standard' ? 'selected' : '' }}" onclick="selectPackage('standard')">
                                                 <div class="package-icon bg-success bg-opacity-10 text-success">
                                                     <i class="bi bi-award"></i>
                                                 </div>
                                                 <h6 class="mb-1">Standard</h6>
                                                 <small class="text-muted">Toutes fonctionnalités</small>
                                                 <input type="radio" name="formule" value="standard"
-                                                    id="formule_standard" {{ old('formule', $entreprise->formule) == 'standard' ? 'checked' : '' }}
+                                                    id="formule_standard" {{ old('formule', $entreprise->formule ?? 'basic') == 'standard' ? 'checked' : '' }}
                                                     class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule) == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
+                                            <div class="package-card package-card-premium {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule', $entreprise->formule ?? 'basic') == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
                                                 <div class="package-icon" style="background: rgba(111, 66, 193, 0.1); color: #6f42c1;">
                                                     <i class="bi bi-gem"></i>
                                                 </div>
                                                 <h6 class="mb-1">Premium</h6>
                                                 <small class="text-muted">Support dédié</small>
                                                 <input type="radio" name="formule" value="premium"
-                                                    id="formule_premium" {{ old('formule', $entreprise->formule) == 'premium' ? 'checked' : '' }}
+                                                    id="formule_premium" {{ old('formule', $entreprise->formule ?? 'basic') == 'premium' ? 'checked' : '' }}
                                                     class="d-none">
                                             </div>
                                         </div>
@@ -744,14 +760,14 @@
                                 <!-- Date de début contrat -->
                                 <div class="col-md-4">
                                     <label for="date_debut_contrat" class="form-label">Date de début</label>
-                                    <input type="date" class="form-control" id="date_debut_contrat"
+                                    <input type="date" class="form-control contract-field" id="date_debut_contrat"
                                         name="date_debut_contrat" value="{{ old('date_debut_contrat', $entreprise->date_debut_contrat?->format('Y-m-d')) }}">
                                 </div>
 
                                 <!-- Date de fin contrat -->
                                 <div class="col-md-4">
                                     <label for="date_fin_contrat" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin_contrat"
+                                    <input type="date" class="form-control contract-field" id="date_fin_contrat"
                                         name="date_fin_contrat" value="{{ old('date_fin_contrat', $entreprise->date_fin_contrat?->format('Y-m-d')) }}">
                                 </div>
 
@@ -760,7 +776,7 @@
                                     <label for="montant_mensuel" class="form-label">Montant mensuel (FCFA)</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
-                                        <input type="number" class="form-control" id="montant_mensuel"
+                                        <input type="number" class="form-control contract-field" id="montant_mensuel"
                                             name="montant_mensuel" value="{{ old('montant_mensuel', $entreprise->montant_mensuel) }}" min="0" step="100">
                                     </div>
                                 </div>
@@ -768,7 +784,7 @@
                                 <!-- Cycle de facturation -->
                                 <div class="col-md-6">
                                     <label for="cycle_facturation" class="form-label">Cycle de facturation</label>
-                                    <select class="form-select" id="cycle_facturation" name="cycle_facturation">
+                                    <select class="form-select contract-field" id="cycle_facturation" name="cycle_facturation">
                                         <option value="mensuel" {{ old('cycle_facturation', $entreprise->cycle_facturation ?? 'mensuel') == 'mensuel' ? 'selected' : '' }}>Mensuel</option>
                                         <option value="trimestriel" {{ old('cycle_facturation', $entreprise->cycle_facturation) == 'trimestriel' ? 'selected' : '' }}>Trimestriel</option>
                                         <option value="annuel" {{ old('cycle_facturation', $entreprise->cycle_facturation) == 'annuel' ? 'selected' : '' }}>Annuel</option>
@@ -853,6 +869,15 @@
         }
     }
 
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedPackage = document.querySelector('input[name="formule"]:checked');
+        if (selectedPackage) {
+            selectedPackage.closest('.package-card').classList.add('selected');
+        }
+        if (typeof toggleEssaiFields === 'function') toggleEssaiFields();
+    });
+
     // Sélection de package
     function selectPackage(packageName) {
         // Retirer la sélection précédente
@@ -868,13 +893,18 @@
         }
     }
 
-    // Initialiser la sélection du package
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectedPackage = document.querySelector('input[name="formule"]:checked');
-        if (selectedPackage) {
-            selectedPackage.closest('.package-card').classList.add('selected');
-        }
-    });
+    // Basculer les champs contrat en mode essai
+    function toggleEssaiFields() {
+        const isEssai = document.getElementById('est_en_essai').checked;
+        document.querySelectorAll('.contract-field').forEach(field => {
+            field.disabled = isEssai;
+            if (isEssai) {
+                field.closest('.col-md-4, .col-md-6')?.classList.add('opacity-50');
+            } else {
+                field.closest('.col-md-4, .col-md-6')?.classList.remove('opacity-50');
+            }
+        });
+    }
 
     // Synchroniser les couleurs
     document.getElementById('couleur_primaire').addEventListener('input', function() {

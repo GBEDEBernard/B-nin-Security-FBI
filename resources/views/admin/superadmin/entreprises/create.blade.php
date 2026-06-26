@@ -204,6 +204,10 @@
         color: #4ade80;
     }
 
+    [data-bs-theme="dark"] .form-wizard .nav-tabs .nav-link.active::after {
+        background: #4ade80;
+    }
+
     [data-bs-theme="dark"] .form-label {
         color: #c0c4d0;
     }
@@ -238,6 +242,14 @@
 
     [data-bs-theme="dark"] .package-card .card-title {
         color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .package-card-premium .package-icon {
+        background: rgba(167, 139, 250, 0.15) !important;
+    }
+
+    [data-bs-theme="dark"] .package-card-premium .package-icon i {
+        color: #a78bfa;
     }
 
     [data-bs-theme="dark"] .package-card .text-muted {
@@ -617,7 +629,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="package-card {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
+                                            <div class="package-card package-card-premium {{ $errors->has('formule') ? 'border-danger' : '' }} {{ old('formule') == 'premium' ? 'selected' : '' }}" onclick="selectPackage('premium')">
                                                 <div class="package-icon bg-purple bg-opacity-10 text-purple" style="color: #6f42c1;">
                                                     <i class="bi bi-gem"></i>
                                                 </div>
@@ -687,14 +699,14 @@
                                 <!-- Date de début contrat -->
                                 <div class="col-md-4">
                                     <label for="date_debut_contrat" class="form-label">Date de début</label>
-                                    <input type="date" class="form-control" id="date_debut_contrat"
+                                    <input type="date" class="form-control contract-field" id="date_debut_contrat"
                                         name="date_debut_contrat" value="{{ old('date_debut_contrat') }}">
                                 </div>
 
                                 <!-- Date de fin contrat -->
                                 <div class="col-md-4">
                                     <label for="date_fin_contrat" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin_contrat"
+                                    <input type="date" class="form-control contract-field" id="date_fin_contrat"
                                         name="date_fin_contrat" value="{{ old('date_fin_contrat') }}">
                                 </div>
 
@@ -703,7 +715,7 @@
                                     <label for="montant_mensuel" class="form-label">Montant mensuel (FCFA)</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-currency-exchange"></i></span>
-                                        <input type="number" class="form-control" id="montant_mensuel"
+                                        <input type="number" class="form-control contract-field" id="montant_mensuel"
                                             name="montant_mensuel" value="{{ old('montant_mensuel') }}" min="0" step="100">
                                     </div>
                                 </div>
@@ -711,7 +723,7 @@
                                 <!-- Cycle de facturation -->
                                 <div class="col-md-6">
                                     <label for="cycle_facturation" class="form-label">Cycle de facturation</label>
-                                    <select class="form-select" id="cycle_facturation" name="cycle_facturation">
+                                    <select class="form-select contract-field" id="cycle_facturation" name="cycle_facturation">
                                         <option value="mensuel" {{ old('cycle_facturation', 'mensuel') == 'mensuel' ? 'selected' : '' }}>Mensuel</option>
                                         <option value="trimestriel" {{ old('cycle_facturation') == 'trimestriel' ? 'selected' : '' }}>Trimestriel</option>
                                         <option value="annuel" {{ old('cycle_facturation') == 'annuel' ? 'selected' : '' }}>Annuel</option>
@@ -781,6 +793,15 @@
         }
     }
 
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedPackage = document.querySelector('input[name="formule"]:checked');
+        if (selectedPackage) {
+            selectedPackage.closest('.package-card').classList.add('selected');
+        }
+        if (typeof toggleEssaiFields === 'function') toggleEssaiFields();
+    });
+
     // Sélection de package
     function selectPackage(packageName) {
         // Retirer la sélection précédente
@@ -796,13 +817,18 @@
         }
     }
 
-    // Initialiser la sélection du package
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectedPackage = document.querySelector('input[name="formule"]:checked');
-        if (selectedPackage) {
-            selectedPackage.closest('.package-card').classList.add('selected');
-        }
-    });
+    // Basculer les champs contrat en mode essai
+    function toggleEssaiFields() {
+        const isEssai = document.getElementById('est_en_essai').checked;
+        document.querySelectorAll('.contract-field').forEach(field => {
+            field.disabled = isEssai;
+            if (isEssai) {
+                field.closest('.col-md-4, .col-md-6')?.classList.add('opacity-50');
+            } else {
+                field.closest('.col-md-4, .col-md-6')?.classList.remove('opacity-50');
+            }
+        });
+    }
 
     // Synchroniser les couleurs
     document.getElementById('couleur_primaire').addEventListener('input', function() {

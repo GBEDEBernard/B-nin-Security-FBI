@@ -67,6 +67,9 @@ class EntrepriseController extends Controller
             'cycle_facturation' => 'nullable|in:mensuel,trimestriel,annuel',
             'est_active' => 'boolean',
             'est_en_essai' => 'boolean',
+            'couleur_primaire' => 'nullable|string|max:7',
+            'couleur_secondaire' => 'nullable|string|max:7',
+            'notes' => 'nullable|string',
         ]);
 
         // Générer le slug si non fourni
@@ -124,6 +127,8 @@ class EntrepriseController extends Controller
             'cycle_facturation' => 'nullable|in:mensuel,trimestriel,annuel',
             'est_active' => 'boolean',
             'est_en_essai' => 'boolean',
+            'couleur_primaire' => 'nullable|string|max:7',
+            'couleur_secondaire' => 'nullable|string|max:7',
             'notes' => 'nullable|string',
         ]);
 
@@ -153,13 +158,13 @@ class EntrepriseController extends Controller
     {
         $entreprise = Entreprise::findOrFail($id);
 
-        // Vérifier si l'entreprise a des données关联
+        // Vérifier si l'entreprise a des données associées
         if (
             $entreprise->employes()->count() > 0 ||
             $entreprise->clients()->count() > 0 ||
             $entreprise->contratsPrestation()->count() > 0
         ) {
-            return back()->with('error', 'Impossible de supprimer une entreprise avec des données关联.');
+            return back()->with('error', 'Impossible de supprimer une entreprise avec des données associées.');
         }
 
         // Supprimer le logo

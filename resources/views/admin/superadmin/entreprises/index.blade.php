@@ -147,6 +147,36 @@
         background: #4dd4f5;
         color: #fff;
     }
+
+    [data-bs-theme="dark"] .btn-outline-warning {
+        color: #fbbf24;
+        border-color: #fbbf24;
+    }
+
+    [data-bs-theme="dark"] .btn-outline-warning:hover {
+        background: #fbbf24;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .badge-essai {
+        background: rgba(251, 191, 36, 0.2);
+        color: #fbbf24;
+    }
+
+    [data-bs-theme="dark"] .badge-basic {
+        background: rgba(96, 165, 250, 0.2);
+        color: #60a5fa;
+    }
+
+    [data-bs-theme="dark"] .badge-standard {
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+    }
+
+    [data-bs-theme="dark"] .badge-premium {
+        background: rgba(167, 139, 250, 0.2);
+        color: #a78bfa;
+    }
 </style>
 @endpush
 
