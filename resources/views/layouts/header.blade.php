@@ -1,5 +1,5 @@
  <!--begin::Header-->
- <nav class="app-header navbar navbar-expand shadow-sm" data-bs-theme="dark" style="min-height: 60px; background-color: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color);">
+ <nav class="app-header navbar navbar-expand shadow-sm" style="min-height: 60px; background-color: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color);">
    <!--begin::Container-->
    <div class="container-fluid">
      <!--begin::Start Navbar Links-->
@@ -9,13 +9,57 @@
            <i class="bi bi-list"></i>
          </a>
        </li>
-       <li class="nav-item d-none d-md-block">
-         <a href="{{ route('admin') }}" class="nav-link">
-           <i class="bi bi-house-door me-1"></i> Accueil
-         </a>
-       </li>
-     </ul>
-     <!--end::Start Navbar Links-->
+        <li class="nav-item d-none d-md-block">
+          <a href="{{ route('admin') }}" class="nav-link">
+            <i class="bi bi-house-door me-1"></i> Accueil
+          </a>
+        </li>
+        @php
+        $currentRoute = request()->route()?->getName();
+        $breadcrumb = '';
+        if ($currentRoute && str_starts_with($currentRoute, 'admin.')) {
+            $parts = explode('.', $currentRoute);
+            array_shift($parts);
+            $labels = [
+                'superadmin' => 'Super Admin',
+                'entreprise' => 'Entreprise',
+                'roles' => 'Rôles',
+                'index' => 'Liste',
+                'create' => 'Création',
+                'edit' => 'Modification',
+                'show' => 'Détails',
+                'clients' => 'Clients',
+                'employes' => 'Employés',
+                'contrats' => 'Contrats',
+                'facturation' => 'Facturation',
+                'rapports' => 'Rapports',
+                'parametres' => 'Paramètres',
+                'utilisateurs' => 'Utilisateurs',
+                'notifications' => 'Notifications',
+                'abonnements' => 'Abonnements',
+                'propositions' => 'Propositions',
+                'apk' => 'Application Mobile',
+                'journal' => 'Journal',
+                'modeles' => 'Modèles',
+                'affectations' => 'Affectations',
+                'incidents' => 'Incidents',
+                'missions' => 'Missions',
+                'pointages' => 'Pointages',
+                'conges' => 'Congés',
+            ];
+            $mapped = array_map(fn($p) => $labels[$p] ?? ucfirst(str_replace(['_', '-'], ' ', $p)), $parts);
+            $breadcrumb = implode(' › ', $mapped);
+        }
+        @endphp
+        @if($breadcrumb)
+        <li class="nav-item d-none d-md-block">
+          <span class="nav-link text-muted" style="cursor: default;">
+            <i class="bi bi-chevron-right" style="font-size: 0.7rem;"></i> {{ $breadcrumb }}
+          </span>
+        </li>
+        @endif
+      </ul>
+      <!--end::Start Navbar Links-->
 
      <!--begin::End Navbar Links-->
      <ul class="navbar-nav ms-auto align-items-center">
@@ -150,47 +194,62 @@
        </li>
        <!--end::Fullscreen Toggle-->
 
-       <!--begin::User Menu Dropdown-->
-       @auth
-       <li class="nav-item dropdown user-menu ms-2">
-         <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-           <div class="user-image-wrapper">
-             @if(Auth::user()->photo)
-             <img
-               src="{{ asset('storage/' . Auth::user()->photo) }}"
-               class="user-image rounded-circle shadow"
-               alt="User Image" />
-             @else
-             <div class="user-avatar rounded-circle shadow">
-               {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-             </div>
-             @endif
-           </div>
-           <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</span>
-         </a>
+        <!--begin::User Menu Dropdown-->
+        @auth
+        @php
+        $currentUser = Auth::user();
+        $userName = $currentUser->name ?? $currentUser->nomComplet ?? $currentUser->nomAffichage ?? 'Utilisateur';
+        $userInitial = strtoupper(substr($userName, 0, 1));
+        $userPhoto = $currentUser->photo ?? null;
+        $roleName = $currentUser->roles->first()?->name ?? 'Membre';
+        $roleLabel = match($roleName) {
+            'super_admin' => 'Super Administrateur',
+            'general_director' => 'Directeur Général',
+            'deputy_director' => 'Directeur Adjoint',
+            'operations_director' => 'Directeur des Opérations',
+            'supervisor' => 'Superviseur',
+            'controller' => 'Contrôleur',
+            'agent' => 'Agent',
+            'client_individual' => 'Client Particulier',
+            'client_company' => 'Client Entreprise',
+            default => ucfirst(str_replace(['_', '-'], ' ', $roleName)),
+        };
+        @endphp
+        <li class="nav-item dropdown user-menu ms-2">
+          <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+            <div class="user-image-wrapper">
+              @if($userPhoto)
+              <img
+                src="{{ asset('storage/' . $userPhoto) }}"
+                class="user-image rounded-circle shadow"
+                alt="User Image" />
+              @else
+              <div class="user-avatar rounded-circle shadow">
+                {{ $userInitial }}
+              </div>
+              @endif
+            </div>
+            <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ $userName }}">{{ $userName }}</span>
+          </a>
          <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
            <!--begin::User Image-->
-           <li class="user-header text-bg-dark d-flex flex-column align-items-center py-3">
-             @if(Auth::user()->photo)
-             <img
-               src="{{ asset('storage/' . Auth::user()->photo) }}"
-               class="rounded-circle shadow mb-2"
-               alt="User Image"
-               style="width: 60px; height: 60px; object-fit: cover;" />
-             @else
-             <div class="user-avatar-lg rounded-circle shadow mb-2">
-               {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
-             </div>
-             @endif
-             <p class="mb-0 text-center">
-               {{ Auth::user()->name }}
-             </p>
-             @if(Auth::user()->roles && count(Auth::user()->roles) > 0)
-             <small class="text-success">{{ Auth::user()->roles[0]->name }}</small>
-             @else
-             <small>Membre</small>
-             @endif
-             <small class="text-secondary" style="font-size: 0.75rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
+            <li class="user-header d-flex flex-column align-items-center py-3" style="background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);">
+              @if($userPhoto)
+              <img
+                src="{{ asset('storage/' . $userPhoto) }}"
+                class="rounded-circle shadow mb-2"
+                alt="User Image"
+                style="width: 60px; height: 60px; object-fit: cover; border: 3px solid rgba(255,255,255,0.3);" />
+              @else
+              <div class="user-avatar-lg rounded-circle shadow mb-2" style="border: 3px solid rgba(255,255,255,0.3);">
+                {{ strtoupper(substr($userName, 0, 2)) }}
+              </div>
+              @endif
+              <p class="mb-0 text-center text-white fw-semibold">
+                {{ $userName }}
+              </p>
+              <small class="text-white text-opacity-75">{{ $roleLabel }}</small>
+              <small class="text-white text-opacity-50" style="font-size: 0.7rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
            </li>
            <!--end::User Image-->
            <!--begin::Menu Body-->

@@ -183,27 +183,58 @@
       color: #fff;
     }
 
+    /* Sidebar - mode clair */
+    .app-sidebar {
+      background-color: #f8f9fa !important;
+      border-right: 1px solid #dee2e6;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .app-sidebar .nav-link {
+      color: #495057;
+    }
+
+    .app-sidebar .nav-link:hover {
+      background-color: #e9ecef;
+    }
+
+    .app-sidebar .nav-link.active {
+      background-color: #198754 !important;
+      color: #fff !important;
+    }
+
+    .app-sidebar .nav-header {
+      color: #6c757d !important;
+    }
+
     /* Sidebar en mode sombre */
     [data-bs-theme="dark"] .app-sidebar {
       background-color: #1a1a1a !important;
       border-right: 1px solid #2d2d2d;
     }
 
-    [data-bs-theme="dark"] .sidebar-menu>.nav-header {
+    [data-bs-theme="dark"] .app-sidebar .nav-header {
       color: #a0a0a0 !important;
     }
 
-    [data-bs-theme="dark"] .nav-link {
+    [data-bs-theme="dark"] .app-sidebar .nav-link {
       color: #e0e0e0 !important;
     }
 
-    [data-bs-theme="dark"] .nav-link:hover {
+    [data-bs-theme="dark"] .app-sidebar .nav-link:hover {
       background-color: #2d2d2d !important;
     }
 
-    [data-bs-theme="dark"] .nav-link.active {
+    [data-bs-theme="dark"] .app-sidebar .nav-link.active {
       background-color: #198754 !important;
       color: #fff !important;
+    }
+
+    /* Header - mode clair */
+    .app-header {
+      background-color: #ffffff !important;
+      border-bottom: 1px solid #dee2e6;
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     /* Header en mode sombre */
@@ -212,11 +243,24 @@
       border-bottom: 1px solid #2d2d2d;
     }
 
+    /* Footer - mode clair */
+    .app-footer {
+      background-color: #ffffff !important;
+      border-top: 1px solid #dee2e6;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
     /* Footer en mode sombre */
     [data-bs-theme="dark"] .app-footer {
       background-color: #1a1a1a !important;
       border-top: 1px solid #2d2d2d;
       color: #e0e0e0 !important;
+    }
+
+    /* Main content - mode clair */
+    .app-main {
+      background-color: #f4f6f9 !important;
+      transition: background-color 0.3s;
     }
 
     /* Main content en mode sombre */
@@ -386,13 +430,23 @@
         // Émettre un événement pour notifier les composants (comme les graphiques)
         window.dispatchEvent(new Event('theme-changed'));
       };
+      const syncActiveTheme = (theme) => {
+        document.querySelectorAll("[data-bs-theme-value]").forEach(el => {
+          const isActive = el.getAttribute("data-bs-theme-value") === theme;
+          el.classList.toggle("active", isActive);
+          el.setAttribute("aria-pressed", isActive);
+          el.querySelector(".bi-check-lg")?.classList.toggle("d-none", !isActive);
+        });
+      };
       setTheme(getPreferredTheme());
+      syncActiveTheme(getPreferredTheme());
       window.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll("[data-bs-theme-value]").forEach(toggle => {
           toggle.addEventListener("click", () => {
             const theme = toggle.getAttribute("data-bs-theme-value");
             localStorage.setItem("theme", theme);
             setTheme(theme);
+            syncActiveTheme(theme);
           });
         });
       });
