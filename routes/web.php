@@ -25,6 +25,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::match(['GET', 'POST'], '/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\ProfileController::class, 'unreadCount'])->name('notifications.unread-count');
 });
 
 // Page d'accueil - redirige selon le rôle de l'utilisateur connecté
@@ -274,6 +275,20 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::post('/remove', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'removeFromUser'])->name('remove');
     });
 
+    // Profil personnel
+    Route::prefix('profil')->name('profil.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('index');
+        Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+    });
+
+    // Mes notifications personnelles
+    Route::prefix('mes-notifications')->name('mes-notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'notifications'])->name('index');
+        Route::post('/{id}/read', [\App\Http\Controllers\ProfileController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\ProfileController::class, 'markAllAsRead'])->name('markAllRead');
+    });
+
     // Route pour retourner au dashboard superadmin
     Route::get('/return', [SuperAdminController::class, 'returnToSuperAdmin'])->name('return');
 });
@@ -365,6 +380,20 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')-
         Route::get('/client/{id}/edit', [\App\Http\Controllers\Entreprise\RoleController::class, 'editClient'])->name('edit-client');
         Route::put('/client/{id}', [\App\Http\Controllers\Entreprise\RoleController::class, 'updateClient'])->name('update-client');
     });
+
+    // Profil personnel
+    Route::prefix('profil')->name('profil.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('index');
+        Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+    });
+
+    // Mes notifications
+    Route::prefix('mes-notifications')->name('mes-notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'notifications'])->name('index');
+        Route::post('/{id}/read', [\App\Http\Controllers\ProfileController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\ProfileController::class, 'markAllAsRead'])->name('markAllRead');
+    });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -405,6 +434,20 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/agent')->name
         Route::get('/soldes', [\App\Http\Controllers\Agent\CongeController::class, 'soldes'])->name('soldes');
         Route::get('/calendrier', [\App\Http\Controllers\Agent\CongeController::class, 'calendrier'])->name('calendrier');
     });
+
+    // Profil personnel
+    Route::prefix('profil')->name('profil.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('index');
+        Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+    });
+
+    // Mes notifications
+    Route::prefix('mes-notifications')->name('mes-notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'notifications'])->name('index');
+        Route::post('/{id}/read', [\App\Http\Controllers\ProfileController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\ProfileController::class, 'markAllAsRead'])->name('markAllRead');
+    });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -442,5 +485,19 @@ Route::middleware(['auth', 'tenant', 'client'])->prefix('admin/client')->name('a
         Route::get('/{id}', [\App\Http\Controllers\Client\IncidentController::class, 'show'])->name('show');
         Route::post('/{id}/completer', [\App\Http\Controllers\Client\IncidentController::class, 'completer'])->name('completer');
         Route::post('/{id}/clore', [\App\Http\Controllers\Client\IncidentController::class, 'clore'])->name('clore');
+    });
+
+    // Profil personnel
+    Route::prefix('profil')->name('profil.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('index');
+        Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password');
+    });
+
+    // Mes notifications
+    Route::prefix('mes-notifications')->name('mes-notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'notifications'])->name('index');
+        Route::post('/{id}/read', [\App\Http\Controllers\ProfileController::class, 'markAsRead'])->name('read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\ProfileController::class, 'markAllAsRead'])->name('markAllRead');
     });
 });

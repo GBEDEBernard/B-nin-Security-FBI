@@ -71,118 +71,37 @@
        </li>
        <!--end::Navbar Search-->
 
-       <!--begin::Messages Dropdown Menu-->
-       <li class="nav-item dropdown messages-dropdown">
-         <a class="nav-link" data-bs-toggle="dropdown" href="#">
-           <i class="bi bi-chat-text"></i>
-           <span class="navbar-badge badge text-bg-danger">3</span>
-         </a>
-         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user1-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   Brad Diesel
-                   <span class="float-end fs-7 text-danger"><i class="bi bi-star-fill"></i></span>
-                 </h3>
-                 <p class="fs-7">Call me whenever you can...</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user8-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   John Pierce
-                   <span class="float-end fs-7 text-secondary">
-                     <i class="bi bi-star-fill"></i>
-                   </span>
-                 </h3>
-                 <p class="fs-7">I got your message bro</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user3-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   Nora Silvester
-                   <span class="float-end fs-7 text-warning">
-                     <i class="bi bi-star-fill"></i>
-                   </span>
-                 </h3>
-                 <p class="fs-7">The subject goes here</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">Voir tous les messages</a>
-         </div>
-       </li>
-       <!--end::Messages Dropdown Menu-->
-
+       @auth
+       @php
+       $currentUser = Auth::user();
+       $guardPrefix = 'superadmin';
+       if ($currentUser instanceof \App\Models\Employe) {
+           $guardPrefix = $currentUser->estAgent() ? 'agent' : 'entreprise';
+       } elseif ($currentUser instanceof \App\Models\Client) {
+           $guardPrefix = 'client';
+       }
+       $notifRoute = route("admin.{$guardPrefix}.mes-notifications.index");
+       @endphp
        <!--begin::Notifications Dropdown Menu-->
        <li class="nav-item dropdown notifications-dropdown">
-         <a class="nav-link" data-bs-toggle="dropdown" href="#">
+         <a class="nav-link" data-bs-toggle="dropdown" href="#" id="notifDropdownToggle">
            <i class="bi bi-bell-fill"></i>
-           <span class="navbar-badge badge text-bg-warning">5</span>
+           <span class="navbar-badge badge text-bg-warning" id="notifBadge" style="display:none;">0</span>
          </a>
-         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <span class="dropdown-item dropdown-header">5 Notifications</span>
+         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end" id="notifDropdown" aria-labelledby="notifDropdownToggle">
+           <span class="dropdown-item dropdown-header" id="notifHeader">Notifications</span>
+           <div id="notifList">
+             <div class="dropdown-item text-center text-muted py-3">
+               <div class="spinner-border spinner-border-sm me-2" role="status"></div> Chargement...
+             </div>
+           </div>
            <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-envelope me-2"></i> 4 nouveaux messages
-             <span class="float-end text-secondary fs-7">3 mins</span>
+           <a href="{{ $notifRoute }}" class="dropdown-item dropdown-footer">
+             <i class="bi bi-bell me-1"></i> Voir toutes les notifications
            </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-people-fill me-2"></i> 8 demandes de congés
-             <span class="float-end text-secondary fs-7">12 heures</span>
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-exclamation-triangle me-2"></i> 3 nouveaux incidents
-             <span class="float-end text-secondary fs-7">2 jours</span>
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
          </div>
        </li>
+       @endauth
        <!--end::Notifications Dropdown Menu-->
 
        <!--begin::Fullscreen Toggle-->
@@ -197,7 +116,6 @@
         <!--begin::User Menu Dropdown-->
         @auth
         @php
-        $currentUser = Auth::user();
         $userName = $currentUser->name ?? $currentUser->nomComplet ?? $currentUser->nomAffichage ?? 'Utilisateur';
         $userInitial = strtoupper(substr($userName, 0, 1));
         $userPhoto = $currentUser->photo ?? null;
@@ -214,6 +132,9 @@
             'client_company' => 'Client Entreprise',
             default => ucfirst(str_replace(['_', '-'], ' ', $roleName)),
         };
+        $profilRoute = route("admin.{$guardPrefix}.profil.index");
+        $rolesRoute = $guardPrefix === 'superadmin' ? route('admin.superadmin.roles.index') : ($guardPrefix === 'entreprise' ? route('admin.entreprise.roles.index') : null);
+        $settingsRoute = $guardPrefix === 'superadmin' ? route('admin.superadmin.parametres.index') : ($guardPrefix === 'entreprise' ? route('admin.entreprise.profile') : null);
         @endphp
         <li class="nav-item dropdown user-menu ms-2">
           <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
@@ -257,13 +178,13 @@
              <!--begin::Row-->
              <div class="row">
                <div class="col-4 text-center">
-                 <a href="#">Profil</a>
+                 <a href="{{ $profilRoute }}">Profil</a>
                </div>
                <div class="col-4 text-center">
-                 <a href="#">Rôles</a>
+                 <a href="{{ $rolesRoute ?? '#' }}">Rôles</a>
                </div>
                <div class="col-4 text-center">
-                 <a href="#">Paramètres</a>
+                 <a href="{{ $settingsRoute ?? '#' }}">Paramètres</a>
                </div>
              </div>
              <!--end::Row-->
@@ -271,7 +192,7 @@
            <!--end::Menu Body-->
            <!--begin::Menu Footer-->
            <li class="user-footer p-2">
-             <a href="#" class="btn btn-outline-secondary btn-sm">
+             <a href="{{ $profilRoute }}" class="btn btn-outline-secondary btn-sm">
                <i class="bi bi-person-circle me-1"></i> Profil
              </a>
              <form method="POST" action="{{ route('logout') }}" class="d-inline">
@@ -646,5 +567,61 @@
      if (!sessionWillExpire) {
        sendHeartbeat();
      }
+   });
+
+   // ── Notifications dynamiques ──────────────────────────────────────
+   function loadNotifications() {
+     fetch('/notifications/unread-count')
+       .then(r => r.json())
+       .then(data => {
+         const badge = document.getElementById('notifBadge');
+         if (data.count > 0) {
+           badge.textContent = data.count;
+           badge.style.display = '';
+         } else {
+           badge.style.display = 'none';
+         }
+
+         const list = document.getElementById('notifList');
+         const header = document.getElementById('notifHeader');
+         header.textContent = data.count + ' notification' + (data.count > 1 ? 's' : '');
+
+         if (!data.notifications || data.notifications.length === 0) {
+           list.innerHTML = '<div class="dropdown-item text-center text-muted py-3"><i class="bi bi-bell-slash me-2"></i>Aucune notification</div>';
+           return;
+         }
+
+         list.innerHTML = data.notifications.map(n => {
+           const colors = { primary: 'var(--bs-primary)', success: '#16a34a', warning: '#d97706', danger: '#dc2626', info: '#0891b2' };
+           const bgColors = { primary: 'rgba(37,99,235,.1)', success: 'rgba(22,163,74,.1)', warning: 'rgba(217,119,6,.1)', danger: 'rgba(220,38,38,.1)', info: 'rgba(8,145,178,.1)' };
+           const c = colors[n.color] || colors.primary;
+           const bg = bgColors[n.color] || bgColors.primary;
+           return '<a href="#" class="dropdown-item">' +
+             '<div class="d-flex align-items-center gap-2">' +
+               '<div style="width:32px;height:32px;border-radius:50%;background:' + bg + ';color:' + c + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                 '<i class="bi bi-' + n.icon + '" style="font-size:.8rem;"></i>' +
+               '</div>' +
+               '<div class="flex-grow-1 min-w-0">' +
+                 '<p class="mb-0 text-truncate" style="font-size:.85rem;">' + n.message + '</p>' +
+                 '<small class="text-secondary">' + n.time + '</small>' +
+               '</div>' +
+             '</div>' +
+           '</a><div class="dropdown-divider"></div>';
+         }).join('');
+
+         // Enlever le dernier divider
+         const lastDivider = list.querySelector('.dropdown-divider:last-child');
+         if (lastDivider) lastDivider.remove();
+       })
+       .catch(() => {
+         document.getElementById('notifList').innerHTML = '<div class="dropdown-item text-center text-muted py-3">Erreur de chargement</div>';
+       });
+   }
+
+   document.addEventListener('DOMContentLoaded', function() {
+     @auth
+     loadNotifications();
+     setInterval(loadNotifications, 30000); // Rafraîchir toutes les 30s
+     @endauth
    });
  </script>
