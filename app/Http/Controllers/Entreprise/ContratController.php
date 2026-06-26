@@ -17,16 +17,20 @@ class ContratController extends Controller
     {
         $this->middleware(['auth', 'entreprise']);
 
-        $this->middleware('permission:view_clients')->only([
+        $this->middleware('permission:view_contracts')->only([
             'index', 'show',
         ]);
 
-        $this->middleware('permission:create_invoices')->only([
+        $this->middleware('permission:create_contracts')->only([
             'create', 'store',
         ]);
 
-        $this->middleware('permission:manage_billing')->only([
-            'edit', 'update', 'destroy', 'resilier', 'renouveler', 'suspendre', 'reprendre',
+        $this->middleware('permission:edit_contracts')->only([
+            'edit', 'update', 'resilier', 'renouveler', 'suspendre', 'reprendre',
+        ]);
+
+        $this->middleware('permission:delete_contracts')->only([
+            'destroy',
         ]);
     }
 

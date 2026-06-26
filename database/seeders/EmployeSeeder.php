@@ -50,7 +50,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $dg->assignRole('general_director');
+        $dg->assignRoleByPoste();
 
         // Directeur Adjoint
         $da = Employe::firstOrCreate(
@@ -81,7 +81,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $da->assignRole('deputy_director');
+        $da->assignRoleByPoste();
 
         // Superviseur Général
         $sup = Employe::firstOrCreate(
@@ -112,7 +112,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $sup->assignRole('supervisor');
+        $sup->assignRoleByPoste();
 
         // Contrôleur Principal
         $ctrl = Employe::firstOrCreate(
@@ -143,7 +143,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $ctrl->assignRole('controller');
+        $ctrl->assignRoleByPoste();
 
         // Agent Terrain 1
         $agent1 = Employe::firstOrCreate(
@@ -174,7 +174,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $agent1->assignRole('agent');
+        $agent1->assignRoleByPoste();
 
         // Agent Terrain 2
         $agent2 = Employe::firstOrCreate(
@@ -206,7 +206,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $agent2->assignRole('agent');
+        $agent2->assignRoleByPoste();
 
         // ============================================================
         // ENTREPRISE 2: GUARD PRO CI (ID 2)
@@ -241,7 +241,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $dg2->assignRole('general_director');
+        $dg2->assignRoleByPoste();
 
         // Superviseur Général
         $sup2 = Employe::firstOrCreate(
@@ -272,7 +272,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $sup2->assignRole('supervisor');
+        $sup2->assignRoleByPoste();
 
         // Agent
         $agent3 = Employe::firstOrCreate(
@@ -303,7 +303,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $agent3->assignRole('agent');
+        $agent3->assignRoleByPoste();
 
         // ============================================================
         // ENTREPRISE 3: NIGER PROTECTION (ID 3)
@@ -338,7 +338,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $dg3->assignRole('general_director');
+        $dg3->assignRoleByPoste();
 
         // Agent
         $agent4 = Employe::firstOrCreate(
@@ -369,7 +369,7 @@ class EmployeSeeder extends Seeder
                 'statut' => 'en_poste',
             ]
         );
-        $agent4->assignRole('agent');
+        $agent4->assignRoleByPoste();
 
         // ============================================================
         // INFORMATIONS DE CONNEXION

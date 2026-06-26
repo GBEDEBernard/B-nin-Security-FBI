@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $this->middleware(['auth', 'entreprise']);
 
         $this->middleware('permission:view_dashboard')->only([
-            'index', 'statistiques',
+            'index', 'statistiques', 'notifications',
         ]);
 
         $this->middleware('permission:update_personal_profile')->only([

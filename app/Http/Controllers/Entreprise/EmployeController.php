@@ -107,7 +107,8 @@ class EmployeController extends Controller
         $validated['statut'] = 'en_poste';
         $validated['disponible'] = true;
 
-        Employe::create($validated);
+        $employe = Employe::create($validated);
+        $employe->assignRoleByPoste();
 
         return redirect()->route('admin.entreprise.employes.index')
             ->with('success', 'Employé créé avec succès.');
@@ -167,7 +168,12 @@ class EmployeController extends Controller
             'statut' => 'required|in:en_poste,conge,suspendu,licencie',
         ]);
 
+        $ancienPoste = $employe->poste;
         $employe->update($validated);
+
+        if ($ancienPoste !== $employe->poste) {
+            $employe->assignRoleByPoste();
+        }
 
         return redirect()->route('admin.entreprise.employes.index')
             ->with('success', 'Employé mis à jour.');

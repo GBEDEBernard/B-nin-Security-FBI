@@ -18,6 +18,14 @@ class NotificationController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_dashboard')->only([
+            'index', 'show', 'statistiques',
+        ]);
+
+        $this->middleware('permission:manage_tenant_settings')->only([
+            'create', 'store', 'destroy', 'preview', 'test',
+        ]);
     }
 
     public function index(Request $request)
