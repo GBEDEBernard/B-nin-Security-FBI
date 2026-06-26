@@ -93,6 +93,7 @@ class EmployeController extends Controller
             'date_naissance' => 'nullable|date',
             'lieu_naissance' => 'nullable|string|max:255',
             'adresse' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categorie' => 'required|in:direction,supervision,controle,agent',
             'poste' => 'required|string',
             'type_contrat' => 'required|in:cdi,cdd,stage,prestation',
@@ -106,6 +107,10 @@ class EmployeController extends Controller
         $validated['est_actif'] = true;
         $validated['statut'] = 'en_poste';
         $validated['disponible'] = true;
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
 
         $employe = Employe::create($validated);
         $employe->assignRoleByPoste();
@@ -156,6 +161,7 @@ class EmployeController extends Controller
             'date_naissance' => 'nullable|date',
             'lieu_naissance' => 'nullable|string|max:255',
             'adresse' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'categorie' => 'required|in:direction,supervision,controle,agent',
             'poste' => 'required|string',
             'type_contrat' => 'required|in:cdi,cdd,stage,prestation',
@@ -167,6 +173,13 @@ class EmployeController extends Controller
             'disponible' => 'boolean',
             'statut' => 'required|in:en_poste,conge,suspendu,licencie',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($employe->photo) {
+                Storage::disk('public')->delete($employe->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
 
         $ancienPoste = $employe->poste;
         $employe->update($validated);

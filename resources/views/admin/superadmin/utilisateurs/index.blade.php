@@ -368,8 +368,12 @@
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
-                                        <div class="user-avatar bg-primary text-white me-3">
+                                        <div class="user-avatar bg-primary text-white me-3" style="overflow:hidden;">
+                                            @if($user->photo)
+                                            <img src="{{ asset('storage/' . $user->photo) }}" alt="Photo" style="width:100%;height:100%;object-fit:cover;">
+                                            @else
                                             {{ strtoupper(substr($user->name, 0, 2)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="fw-semibold">{{ $user->name }}</div>

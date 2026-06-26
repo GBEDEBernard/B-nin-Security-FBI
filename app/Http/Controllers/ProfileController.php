@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -25,6 +26,7 @@ class ProfileController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => ['sometimes', 'email', 'max:255', Rule::unique($user->getTable())->ignore($user->id)],
             'telephone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
 
         if ($user instanceof \App\Models\Employe) {
@@ -43,15 +45,21 @@ class ProfileController extends Controller
 
         $validated = $request->validate($rules);
 
-        if ($user instanceof \App\Models\Employe) {
-            $user->update($validated);
-        } elseif ($user instanceof \App\Models\Client) {
+        if ($request->hasFile('photo')) {
+            if ($user->photo) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
+
+        if ($user instanceof \App\Models\Employe || $user instanceof \App\Models\Client) {
             $user->update($validated);
         } else {
             $data = [];
             if (isset($validated['name'])) $data['name'] = $validated['name'];
             if (isset($validated['email'])) $data['email'] = $validated['email'];
             if (isset($validated['telephone'])) $data['telephone'] = $validated['telephone'];
+            if (isset($validated['photo'])) $data['photo'] = $validated['photo'];
             $user->update($data);
         }
 

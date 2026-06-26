@@ -201,7 +201,7 @@
         </div>
         @endif
 
-        <form action="{{ route('admin.superadmin.utilisateurs.update', $utilisateur->id) }}" method="POST" class="form-wizard">
+        <form action="{{ route('admin.superadmin.utilisateurs.update', $utilisateur->id) }}" method="POST" class="form-wizard" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -255,6 +255,15 @@
                                         <input type="tel" class="form-control"
                                             id="telephone" name="telephone" value="{{ old('telephone', $utilisateur->telephone) }}"
                                             placeholder="+229 XX XX XX XX">
+                                    </div>
+                                </div>
+
+                                <!-- Photo -->
+                                <div class="col-md-6">
+                                    <label for="photo" class="form-label">Photo de profil</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-camera"></i></span>
+                                        <input type="file" class="form-control" id="photo" name="photo" accept="image/jpg,image/jpeg,image/png,image/webp">
                                     </div>
                                 </div>
 
@@ -323,8 +332,12 @@
                     <!-- Aperçu -->
                     <div class="card form-card mb-4">
                         <div class="card-body text-center">
-                            <div class="avatar-preview mx-auto mb-3">
+                            <div class="avatar-preview mx-auto mb-3" id="avatar-preview">
+                                @if($utilisateur->photo)
+                                <img src="{{ asset('storage/' . $utilisateur->photo) }}" alt="Photo" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                @else
                                 <span id="avatar-initials">{{ strtoupper(substr($utilisateur->name, 0, 2)) }}</span>
+                                @endif
                             </div>
                             <h6 class="text-muted mb-1">Profil</h6>
                             <p class="mb-0 fw-semibold" id="preview-name">{{ $utilisateur->name }}</p>
@@ -377,6 +390,20 @@
 
 @push('scripts')
 <script>
+    // Aperçu de la photo uploadée
+    document.getElementById('photo')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const preview = document.getElementById('avatar-preview');
+            preview.style.background = 'transparent';
+            preview.style.border = 'none';
+            preview.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+        };
+        reader.readAsDataURL(file);
+    });
+
     // Mettre à jour l'aperçu en temps réel
     document.getElementById('name').addEventListener('input', function() {
         const name = this.value.trim();

@@ -41,6 +41,7 @@ class Client extends Model
         'email',
         'password', // Ajouté pour authentification
         'telephone',
+        'photo',
         'telephone_secondaire',
         'contact_principal_nom',
         'contact_principal_fonction',

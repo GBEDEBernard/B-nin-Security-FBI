@@ -12,6 +12,7 @@ use App\Models\Facture;
 use App\Models\Incident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
 {
@@ -96,10 +97,15 @@ class ClientController extends Controller
             'adresse' => 'nullable|string',
             'ville' => 'nullable|string|max:100',
             'pays' => 'nullable|string|max:100',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'est_actif' => 'boolean',
         ]);
 
         $validated['entreprise_id'] = Auth::user()->entreprise_id;
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
 
         $client = Client::create($validated);
         $client->assignRoleByType();
@@ -154,8 +160,16 @@ class ClientController extends Controller
             'adresse' => 'nullable|string',
             'ville' => 'nullable|string|max:100',
             'pays' => 'nullable|string|max:100',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'est_actif' => 'boolean',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($client->photo) {
+                Storage::disk('public')->delete($client->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
 
         $client->update($validated);
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UtilisateurController extends Controller
@@ -95,18 +96,25 @@ class UtilisateurController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'telephone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'required|string|min:8|confirmed',
             'is_active' => 'boolean',
         ]);
 
-        $user = User::create([
+        $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
             'telephone' => $validated['telephone'] ?? null,
             'password' => Hash::make($validated['password']),
             'is_superadmin' => true,
             'is_active' => $validated['is_active'] ?? true,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
+
+        $user = User::create($data);
 
         // Assigner le rôle super_admin (comme défini dans RolesAndPermissionsSeeder)
         $user->assignRole('super_admin');
@@ -168,6 +176,7 @@ class UtilisateurController extends Controller
                 Rule::unique('users')->ignore($id),
             ],
             'telephone' => 'nullable|string|max:20',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|string|min:8|confirmed',
             'is_active' => 'boolean',
         ]);
@@ -178,6 +187,13 @@ class UtilisateurController extends Controller
             'telephone' => $validated['telephone'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
         ];
+
+        if ($request->hasFile('photo')) {
+            if ($utilisateur->photo) {
+                Storage::disk('public')->delete($utilisateur->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('photos/profiles', 'public');
+        }
 
         // Mettre à jour le mot de passe seulement si fourni
         if (!empty($validated['password'])) {

@@ -96,6 +96,16 @@
     }
     .p-alert-success { background: rgba(22,163,74,.08); color: #15803d; border-color: #16a34a; }
     :root[data-bs-theme="dark"] .p-alert-success { color: #4ade80; border-color: #4ade80; }
+
+    .photo-upload-btn {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--p-surface);
+    }
+
+    :root[data-bs-theme="dark"] .photo-upload-btn {
+        border-color: #1a1d27;
+    }
 </style>
 @endpush
 
@@ -126,11 +136,17 @@
                     $name = $user->name ?? $user->nomComplet ?? $user->nomAffichage ?? 'U';
                     $initial = strtoupper(substr($name, 0, 2));
                     @endphp
-                    @if($photo)
-                    <img src="{{ asset('storage/' . $photo) }}" alt="Photo" class="p-avatar-lg mb-3">
-                    @else
-                    <div class="p-avatar-lg mx-auto mb-3">{{ $initial }}</div>
-                    @endif
+                    <div class="position-relative d-inline-block mb-3">
+                        @if($photo)
+                        <img src="{{ asset('storage/' . $photo) }}" alt="Photo" class="p-avatar-lg" id="profile-photo-preview">
+                        @else
+                        <div class="p-avatar-lg mx-auto" id="profile-photo-preview">{{ $initial }}</div>
+                        @endif
+                        <label for="photo-upload" class="position-absolute bottom-0 end-0 rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow photo-upload-btn">
+                            <i class="bi bi-camera-fill" style="font-size:0.8rem;"></i>
+                        </label>
+                        <input type="file" id="photo-upload" name="photo" accept="image/jpg,image/jpeg,image/png,image/webp" class="d-none" form="profile-form">
+                    </div>
                     <h5 class="mb-1" style="color:var(--p-text);">{{ $name }}</h5>
                     <p class="p-text-muted mb-0">{{ $user->email }}</p>
                     @if($user->roles->count())
@@ -149,7 +165,7 @@
                     <span class="p-card-header-title">Informations personnelles</span>
                 </div>
                 <div class="p-card-body">
-                    <form method="POST" action="{{ route($guard . '.profil.update') }}">
+                    <form method="POST" action="{{ route($guard . '.profil.update') }}" enctype="multipart/form-data" id="profile-form">
                         @csrf @method('PUT')
                         <div class="row g-3">
                             @if($user instanceof \App\Models\Employe || $user instanceof \App\Models\Client)
@@ -245,8 +261,31 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('photo-upload')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const preview = document.getElementById('profile-photo-preview');
+            if (preview.tagName === 'IMG') {
+                preview.src = ev.target.result;
+            } else {
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.alt = 'Photo';
+                img.className = preview.className;
+                preview.parentNode.replaceChild(img, preview);
+                img.id = 'profile-photo-preview';
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+</script>
+@endpush
 @endsection

@@ -226,7 +226,7 @@
         </div>
         @endif
 
-        <form action="{{ route('admin.superadmin.utilisateurs.store') }}" method="POST" class="form-wizard">
+        <form action="{{ route('admin.superadmin.utilisateurs.store') }}" method="POST" class="form-wizard" enctype="multipart/form-data">
             @csrf
 
             <div class="row">
@@ -279,6 +279,15 @@
                                         <input type="tel" class="form-control"
                                             id="telephone" name="telephone" value="{{ old('telephone') }}"
                                             placeholder="+229 XX XX XX XX">
+                                    </div>
+                                </div>
+
+                                <!-- Photo -->
+                                <div class="col-md-6">
+                                    <label for="photo" class="form-label">Photo de profil</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-camera"></i></span>
+                                        <input type="file" class="form-control" id="photo" name="photo" accept="image/jpg,image/jpeg,image/png,image/webp">
                                     </div>
                                 </div>
 
@@ -413,6 +422,20 @@
 
 @push('scripts')
 <script>
+    // Aperçu de la photo uploadée
+    document.getElementById('photo')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const preview = document.getElementById('avatar-preview');
+            preview.style.background = 'transparent';
+            preview.style.border = 'none';
+            preview.innerHTML = '<img src="' + ev.target.result + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+        };
+        reader.readAsDataURL(file);
+    });
+
     // Mettre à jour l'aperçu en temps réel
     document.getElementById('name').addEventListener('input', function() {
         const name = this.value.trim();

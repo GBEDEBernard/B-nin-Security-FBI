@@ -313,7 +313,11 @@
                     <div class="profile-header">
                         <div class="d-flex align-items-center">
                             <div class="profile-avatar">
+                                @if($utilisateur->photo)
+                                <img src="{{ asset('storage/' . $utilisateur->photo) }}" alt="Photo" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                @else
                                 {{ strtoupper(substr($utilisateur->name, 0, 2)) }}
+                                @endif
                             </div>
                             <div class="ms-4">
                                 <h3 class="profile-name">{{ $utilisateur->name }}</h3>
