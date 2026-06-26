@@ -68,7 +68,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="text-muted small">Entreprises liées</label>
-                            <div class="fw-bold">{{ $abonnement->entreprises_count ?? 0 }}</div>
+                            <div class="fw-bold">{{ $abonnement->entreprises->count() }}</div>
                         </div>
                         <div class="mb-3">
                             <label class="text-muted small">Montant mensuel</label>
@@ -107,7 +107,7 @@
                         <div class="card bg-primary text-white">
                             <div class="card-body text-center">
                                 <i class="bi bi-building fs-1 mb-2 d-block opacity-75"></i>
-                                <h3>{{ $abonnement->entreprises_count ?? 0 }}</h3>
+                                <h3>{{ $abonnement->entreprises->count() }}</h3>
                                 <small>Entreprises</small>
                             </div>
                         </div>

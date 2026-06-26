@@ -95,16 +95,23 @@
                             </div>
 
                             <!-- Facturation -->
+                            @php
+                            $prixAgentDefaut = $abonnement->nombre_agents_max > 0 ? round($abonnement->montant_mensuel / $abonnement->nombre_agents_max) : 2000;
+                            @endphp
                             <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label for="montant_mensuel" class="form-label">Montant Mensuel (CFA) <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="montant_mensuel" name="montant_mensuel" value="{{ $abonnement->montant_mensuel }}" min="0" required>
+                                <div class="col-md-3">
+                                    <label for="prix_par_agent" class="form-label">Prix par agent (CFA)</label>
+                                    <input type="number" class="form-control" id="prix_par_agent" value="{{ $prixAgentDefaut }}" min="0">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label for="montant_mensuel" class="form-label">Montant Mensuel (CFA) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="montant_mensuel" name="montant_mensuel" value="{{ $abonnement->montant_mensuel }}" min="0" readonly required>
+                                </div>
+                                <div class="col-md-3">
                                     <label for="tarif_agents_supplementaires" class="form-label">Tarif agents sup. (CFA)</label>
                                     <input type="number" class="form-control" id="tarif_agents_supplementaires" name="tarif_agents_supplementaires" value="{{ $abonnement->tarif_agents_supplementaires }}" min="0">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label for="mode_paiement" class="form-label">Mode de paiement</label>
                                     <select class="form-select" id="mode_paiement" name="mode_paiement">
                                         <option value="">Sélectionner</option>
@@ -119,7 +126,9 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="est_active" name="est_active" {{ $abonnement->est_active ? 'checked' : '' }}>
+                                    <div class="form-check">
+                                        <input type="hidden" name="est_active" value="0">
+                                        <input class="form-check-input" type="checkbox" id="est_active" name="est_active" value="1" {{ $abonnement->est_active ? 'checked' : '' }}>
                                         <label class="form-check-label" for="est_active">
                                             Abonnement actif
                                         </label>
@@ -127,7 +136,8 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="est_en_essai" name="est_en_essai" {{ $abonnement->est_en_essai ? 'checked' : '' }}>
+                                        <input type="hidden" name="est_en_essai" value="0">
+                                        <input class="form-check-input" type="checkbox" id="est_en_essai" name="est_en_essai" value="1" {{ $abonnement->est_en_essai ? 'checked' : '' }}>
                                         <label class="form-check-label" for="est_en_essai">
                                             Période d'essai
                                         </label>
@@ -135,7 +145,8 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="est_renouvele_auto" name="est_renouvele_auto" {{ $abonnement->est_renouvele_auto ? 'checked' : '' }}>
+                                        <input type="hidden" name="est_renouvele_auto" value="0">
+                                        <input class="form-check-input" type="checkbox" id="est_renouvele_auto" name="est_renouvele_auto" value="1" {{ $abonnement->est_renouvele_auto ? 'checked' : '' }}>
                                         <label class="form-check-label" for="est_renouvele_auto">
                                             Renouvellement auto
                                         </label>
@@ -287,3 +298,16 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function calculerMontant() {
+    const nbAgents = parseInt(document.getElementById('nombre_agents_max').value) || 0;
+    const prixAgent = parseInt(document.getElementById('prix_par_agent').value) || 0;
+    document.getElementById('montant_mensuel').value = nbAgents * prixAgent;
+}
+document.getElementById('nombre_agents_max').addEventListener('input', calculerMontant);
+document.getElementById('prix_par_agent').addEventListener('input', calculerMontant);
+calculerMontant();
+</script>
+@endpush

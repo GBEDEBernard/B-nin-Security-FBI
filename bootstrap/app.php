@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'role.redirect' => \App\Http\Middleware\RoleBasedRedirect::class,
             'session.timeout' => \App\Http\Middleware\SessionTimeout::class,
+            'verifier.abonnement' => \App\Http\Middleware\VerifierAbonnement::class,
             // Middleware de rôle
             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'entreprise' => \App\Http\Middleware\EntrepriseMiddleware::class,

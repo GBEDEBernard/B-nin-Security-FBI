@@ -10,6 +10,7 @@ class Facture extends Model
 {
     protected $table = 'factures';
     protected $fillable = [
+        'abonnement_id',
         'entreprise_id',
         'contrat_prestation_id',
         'client_id',
@@ -32,6 +33,11 @@ class Facture extends Model
         'notes',
         'cree_par',
     ];
+
+    public function abonnement(): BelongsTo
+    {
+        return $this->belongsTo(Abonnement::class);
+    }
 
     public function entreprise(): BelongsTo
     {

@@ -36,16 +36,7 @@ class Entreprise extends Model
         'couleur_primaire',
         'couleur_secondaire',
         'abonnement_id',
-        'formule',
-        'nombre_agents_max',
-        'nombre_sites_max',
-        'date_debut_contrat',
-        'date_fin_contrat',
-        'montant_mensuel',
-        'cycle_facturation',
         'est_active',
-        'est_en_essai',
-        'date_fin_essai',
         'parametres',
         'notes',
     ];
@@ -53,11 +44,6 @@ class Entreprise extends Model
     protected $casts = [
         'parametres'        => 'array',
         'est_active'        => 'boolean',
-        'est_en_essai'      => 'boolean',
-        'date_debut_contrat' => 'date',
-        'date_fin_contrat'  => 'date',
-        'date_fin_essai'    => 'date',
-        'montant_mensuel'   => 'decimal:2',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────────
@@ -105,11 +91,11 @@ class Entreprise extends Model
     }
     public function scopeEnEssai($query)
     {
-        return $query->where('est_en_essai', true);
+        return $query->whereHas('abonnement', fn($q) => $q->where('est_en_essai', true));
     }
     public function scopeByFormule($query, string $formule)
     {
-        return $query->where('formule', $formule);
+        return $query->whereHas('abonnement', fn($q) => $q->where('formule', $formule));
     }
 
     // ── Accesseurs ───────────────────────────────────────────────────────────
@@ -130,11 +116,7 @@ class Entreprise extends Model
 
     public function abonnementEstValide(): bool
     {
-        if ($this->est_en_essai && $this->date_fin_essai) {
-            return $this->date_fin_essai->isFuture();
-        }
-        if (!$this->date_fin_contrat) return true;
-        return $this->date_fin_contrat->isFuture();
+        return $this->abonnement?->est_valide ?? false;
     }
 
     public function nombreAgentsActifs(): int
@@ -144,7 +126,55 @@ class Entreprise extends Model
 
     public function peutAjouterAgent(): bool
     {
-        return $this->nombreAgentsActifs() < ($this->nombre_agents_max ?? 0);
+        if (!$this->abonnement) return false;
+        return $this->abonnement->peutAjouterAgent($this->nombreAgentsActifs());
+    }
+
+    // ── Accesseurs de délégation vers l'abonnement ────────────────────────────
+
+    public function getFormuleAttribute($value): ?string
+    {
+        return $value ?? $this->abonnement?->formule;
+    }
+
+    public function getNombreAgentsMaxAttribute($value): int
+    {
+        return $value ?? $this->abonnement?->nombre_agents_max ?? 0;
+    }
+
+    public function getNombreSitesMaxAttribute($value): int
+    {
+        return $value ?? $this->abonnement?->nombre_sites_max ?? 0;
+    }
+
+    public function getMontantMensuelAttribute($value): float
+    {
+        return $value ?? $this->abonnement?->montant_mensuel ?? 0;
+    }
+
+    public function getCycleFacturationAttribute($value): ?string
+    {
+        return $value ?? $this->abonnement?->cycle_facturation;
+    }
+
+    public function getEstEnEssaiAttribute($value): bool
+    {
+        return $value ?? $this->abonnement?->est_en_essai ?? false;
+    }
+
+    public function getDateFinEssaiAttribute($value): ?\Carbon\Carbon
+    {
+        return $value ?? $this->abonnement?->date_fin_essai;
+    }
+
+    public function getDateDebutContratAttribute($value): ?\Carbon\Carbon
+    {
+        return $value ?? $this->abonnement?->date_debut;
+    }
+
+    public function getDateFinContratAttribute($value): ?\Carbon\Carbon
+    {
+        return $value ?? $this->abonnement?->date_fin;
     }
 
     public function getParametre(string $cle, mixed $defaut = null): mixed

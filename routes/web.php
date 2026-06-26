@@ -60,8 +60,12 @@ Route::get('/devis', function () {
 })->name('devis');
 
 // Route publique pour soumettre une proposition (accessible sans authentification)
-Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])
-    ->name('devis.soumettre');
+Route::post('/devis', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])->name('devis.soumettre');
+
+// Route pour abonnement requis (redirection du middleware)
+Route::get('/abonnement-requis', function () {
+    return view('errors.abonnement-requis');
+})->name('abonnement.requis');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ROUTES DES ADMINISTRATIONS PAR RÔLE
@@ -297,7 +301,7 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
 // ADMIN ENTREPRISE (Direction, Superviseur, Contrôleur)
 // ═══════════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
+Route::middleware(['auth', 'tenant', 'entreprise', 'verifier.abonnement'])->prefix('admin/entreprise')->name('admin.entreprise.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\Entreprise\DashboardController::class, 'index'])->name('index');
     Route::get('/statistiques', [\App\Http\Controllers\Entreprise\DashboardController::class, 'statistiques'])->name('statistiques');

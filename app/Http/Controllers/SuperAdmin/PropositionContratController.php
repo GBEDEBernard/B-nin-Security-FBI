@@ -262,7 +262,7 @@ class PropositionContratController extends Controller
         $proposition = PropositionContrat::findOrFail($id);
 
         if ($proposition->statut !== 'signe') {
-            return back()->with('error', 'La proposition doit être-signed avant de créer l\'entreprise.');
+            return back()->with('error', 'La proposition doit être signée avant de créer l\'entreprise.');
         }
 
         $validated = $request->validate([
@@ -273,6 +273,19 @@ class PropositionContratController extends Controller
             'cycle_facturation' => 'required|in:mensuel,trimestriel,annuel',
             'date_debut_contrat' => 'required|date',
             'date_fin_contrat' => 'required|date|after:date_debut_contrat',
+        ]);
+
+        // Créer l'abonnement
+        $abonnement = \App\Models\Abonnement::create([
+            'formule' => $validated['formule'],
+            'nombre_agents_max' => $validated['nombre_agents_max'],
+            'nombre_sites_max' => $validated['nombre_sites_max'],
+            'montant_mensuel' => $validated['montant_mensuel'],
+            'cycle_facturation' => $validated['cycle_facturation'],
+            'date_debut' => $validated['date_debut_contrat'],
+            'date_fin' => $validated['date_fin_contrat'],
+            'est_active' => true,
+            'statut' => 'actif',
         ]);
 
         // Créer l'entreprise
@@ -291,13 +304,7 @@ class PropositionContratController extends Controller
             'nom_representant_legal' => $proposition->representant_nom,
             'email_representant_legal' => $proposition->representant_email,
             'telephone_representant_legal' => $proposition->representant_telephone,
-            'formule' => $validated['formule'],
-            'nombre_agents_max' => $validated['nombre_agents_max'],
-            'nombre_sites_max' => $validated['nombre_sites_max'],
-            'montant_mensuel' => $validated['montant_mensuel'],
-            'cycle_facturation' => $validated['cycle_facturation'],
-            'date_debut_contrat' => $validated['date_debut_contrat'],
-            'date_fin_contrat' => $validated['date_fin_contrat'],
+            'abonnement_id' => $abonnement->id,
             'est_active' => true,
             'slug' => Str::slug($proposition->nom_entreprise),
         ]);

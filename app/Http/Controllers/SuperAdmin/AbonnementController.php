@@ -4,7 +4,9 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Abonnement;
+use App\Models\ActivityLog;
 use App\Models\Entreprise;
+use App\Notifications\AbonnementEtatChange;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -41,14 +43,59 @@ class AbonnementController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $totalActifs = $abonnements->where('est_active', true)->count();
+        $revenuMensuel = $abonnements->where('est_active', true)->sum('montant_mensuel');
+
+        // Churn rate : résiliés ce mois / total actifs début mois
+        $resiliesCeMois = Abonnement::where('statut', 'resilie')
+            ->whereMonth('updated_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->count();
+
+        $totalActifsDebutMois = $totalActifs + $resiliesCeMois;
+        $churnRate = $totalActifsDebutMois > 0
+            ? round(($resiliesCeMois / $totalActifsDebutMois) * 100, 1)
+            : 0;
+
+        // Distribution par formule
+        $distributionFormules = $abonnements->groupBy('formule')->map(function ($group) {
+            return [
+                'total' => $group->count(),
+                'actifs' => $group->where('est_active', true)->count(),
+            ];
+        });
+
+        // Agents consommés vs inclus
+        $alertesAgents = [];
+        foreach ($abonnements->where('est_active', true) as $abonnement) {
+            foreach ($abonnement->entreprises as $entreprise) {
+                $actifs = $entreprise->nombreAgentsActifs();
+                $max = $abonnement->nombre_agents_max;
+                if ($max > 0 && $actifs >= $max * 0.8) {
+                    $alertesAgents[] = [
+                        'entreprise' => $entreprise->nom_entreprise,
+                        'actifs' => $actifs,
+                        'max' => $max,
+                        'pct' => round(($actifs / $max) * 100),
+                    ];
+                }
+            }
+        }
+
         $stats = [
             'total' => $abonnements->count(),
             'actifs' => $abonnements->where('est_active', true)->count(),
             'en_essai' => $abonnements->where('est_en_essai', true)->count(),
             'inactifs' => $abonnements->where('est_active', false)->count(),
             'expirés' => $abonnements->where('statut', 'expire')->count(),
-            'revenu_mensuel' => $abonnements->where('est_active', true)->sum('montant_mensuel'),
+            'revenu_mensuel' => $revenuMensuel,
+            'mrr' => $revenuMensuel,
+            'churn_rate' => $churnRate,
+            'resilies_ce_mois' => $resiliesCeMois,
             'entreprises_total' => $abonnements->sum('entreprises_count'),
+            'distribution_formules' => $distributionFormules,
+            'alertes_agents' => $alertesAgents,
+            'total_alertes' => count($alertesAgents),
         ];
 
         return view('admin.superadmin.abonnements.index', compact('abonnements', 'stats'));
@@ -231,10 +278,14 @@ class AbonnementController extends Controller
      */
     public function destroy($id)
     {
-        $abonnement = Abonnement::findOrFail($id);
+        $abonnement = Abonnement::withCount('entreprises')->findOrFail($id);
 
-        // Détacher toutes les entreprises liées
-        Entreprise::where('abonnement_id', $abonnement->id)->update(['abonnement_id' => null]);
+        // Empêcher la suppression si des entreprises sont liées
+        if ($abonnement->entreprises_count > 0) {
+            return back()->with('error', 'Impossible de supprimer cet abonnement : ' . $abonnement->entreprises_count . ' entreprise(s) y sont liées. Retirez-les d\'abord.');
+        }
+
+        $this->logAction($abonnement, 'Abonnement supprimé');
 
         $abonnement->delete();
 
@@ -249,6 +300,11 @@ class AbonnementController extends Controller
     {
         $abonnement = Abonnement::findOrFail($id);
 
+        // Vérifier que l'abonnement est actif
+        if (!$abonnement->est_active || $abonnement->statut !== 'actif') {
+            return back()->with('error', 'Impossible d\'assigner un abonnement qui n\'est pas actif.');
+        }
+
         $validated = $request->validate([
             'entreprise_id' => 'required|exists:entreprises,id',
         ]);
@@ -261,6 +317,8 @@ class AbonnementController extends Controller
         }
 
         $entreprise->update(['abonnement_id' => $abonnement->id]);
+
+        $this->logAction($abonnement, "Abonnement assigné à l'entreprise {$entreprise->nom_entreprise}");
 
         return back()->with('success', 'Abonnement assigné à ' . $entreprise->nom_entreprise . ' avec succès.');
     }
@@ -278,6 +336,8 @@ class AbonnementController extends Controller
         }
 
         $entreprise->update(['abonnement_id' => null]);
+
+        $this->logAction($abonnement, "Abonnement retiré de l'entreprise {$entreprise->nom_entreprise}");
 
         return back()->with('success', 'Abonnement retiré de ' . $entreprise->nom_entreprise . ' avec succès.');
     }
@@ -304,6 +364,12 @@ class AbonnementController extends Controller
             'statut' => 'actif',
         ]);
 
+        $this->logAction($abonnement, 'Abonnement renouvelé');
+
+        $abonnement->entreprises->each(function ($entreprise) use ($abonnement) {
+            $entreprise->notify(new AbonnementEtatChange($abonnement, 'actif'));
+        });
+
         return redirect()->route('admin.superadmin.abonnements.index')
             ->with('success', 'Abonnement renouvelé avec succès.');
     }
@@ -316,6 +382,12 @@ class AbonnementController extends Controller
         $abonnement = Abonnement::findOrFail($id);
         $abonnement->suspendre();
 
+        $this->logAction($abonnement, 'Abonnement suspendu');
+
+        $abonnement->entreprises->each(function ($entreprise) use ($abonnement) {
+            $entreprise->notify(new AbonnementEtatChange($abonnement, 'suspendu'));
+        });
+
         return redirect()->route('admin.superadmin.abonnements.index')
             ->with('success', 'Abonnement suspendu.');
     }
@@ -327,6 +399,12 @@ class AbonnementController extends Controller
     {
         $abonnement = Abonnement::findOrFail($id);
         $abonnement->activer();
+
+        $this->logAction($abonnement, 'Abonnement activé');
+
+        $abonnement->entreprises->each(function ($entreprise) use ($abonnement) {
+            $entreprise->notify(new AbonnementEtatChange($abonnement, 'actif'));
+        });
 
         return redirect()->route('admin.superadmin.abonnements.index')
             ->with('success', 'Abonnement activé.');
@@ -345,6 +423,8 @@ class AbonnementController extends Controller
 
         $abonnement->mettreEnEssai($validated['date_fin_essai']);
 
+        $this->logAction($abonnement, 'Abonnement mis en période d\'essai');
+
         return redirect()->route('admin.superadmin.abonnements.index')
             ->with('success', 'Abonnement mis en période d\'essai.');
     }
@@ -357,7 +437,35 @@ class AbonnementController extends Controller
         $abonnement = Abonnement::findOrFail($id);
         $abonnement->resilier();
 
+        $this->logAction($abonnement, 'Abonnement résilié');
+
+        $abonnement->entreprises->each(function ($entreprise) use ($abonnement) {
+            $entreprise->notify(new AbonnementEtatChange($abonnement, 'resilie'));
+        });
+
         return redirect()->route('admin.superadmin.abonnements.index')
             ->with('success', 'Abonnement résilié.');
+    }
+
+    /**
+     * Enregistrer une action dans le journal d'activité
+     */
+    private function logAction(Abonnement $abonnement, string $description): void
+    {
+        ActivityLog::create([
+            'description' => $description,
+            'subject_type' => Abonnement::class,
+            'subject_id' => $abonnement->id,
+            'causer_id' => auth()->id(),
+            'causer_type' => get_class(auth()->user()),
+            'properties' => [
+                'formule' => $abonnement->formule,
+                'statut' => $abonnement->statut,
+                'est_active' => $abonnement->est_active,
+                'est_en_essai' => $abonnement->est_en_essai,
+                'montant_mensuel' => $abonnement->montant_mensuel,
+                'date_fin' => $abonnement->date_fin?->format('Y-m-d'),
+            ],
+        ]);
     }
 }

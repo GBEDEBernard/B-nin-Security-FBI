@@ -40,7 +40,7 @@ class SuperAdminController extends Controller
             'total_entreprises'   => Entreprise::count(),
             'entreprises_actives' => Entreprise::where('est_active', true)->count(),
             'total_utilisateurs'  => User::where('is_superadmin', false)->count(),
-            'entreprises_essai'   => Entreprise::where('est_en_essai', true)->count(),
+            'entreprises_essai'   => Entreprise::whereHas('abonnement', fn($q) => $q->where('est_en_essai', true))->count(),
         ];
 
         return view('admin.superadmin', compact('entreprises', 'stats'));
@@ -63,18 +63,18 @@ class SuperAdminController extends Controller
 
         if ($request->filled('statut')) {
             match ($request->statut) {
-                'actif'   => $query->where('est_active', true)->where('est_en_essai', false),
+                'actif'   => $query->where('est_active', true),
                 'inactif' => $query->where('est_active', false),
-                'essai'   => $query->where('est_en_essai', true),
+                'essai'   => $query->whereHas('abonnement', fn($q) => $q->where('est_en_essai', true)),
                 default   => null,
             };
         }
 
         if ($request->filled('formule')) {
-            $query->where('formule', $request->formule);
+            $query->whereHas('abonnement', fn($q) => $q->where('formule', $request->formule));
         }
 
-        $allowedSorts = ['nom_entreprise', 'created_at', 'updated_at', 'formule', 'est_active'];
+        $allowedSorts = ['nom_entreprise', 'created_at', 'updated_at', 'est_active'];
         $sortBy    = in_array($request->get('sort'), $allowedSorts) ? $request->get('sort') : 'nom_entreprise';
         $sortOrder = $request->get('order') === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortOrder);

@@ -423,11 +423,11 @@
             $gainTotalAnnée = array_sum($gainsMensuels);
             $gainCeMois = $gainsMensuels[date('n') - 1] ?? 0;
 
-            // Répartition par formule
-            $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
-            $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
-            $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
-            $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+            // Répartition par formule (via les abonnements)
+            $formuleEssai = \App\Models\Abonnement::byFormule('essai')->count();
+            $formuleBasic = \App\Models\Abonnement::byFormule('basic')->count();
+            $formuleStandard = \App\Models\Abonnement::byFormule('standard')->count();
+            $formulePremium = \App\Models\Abonnement::byFormule('premium')->count();
 
             // Données pour les graphiques - 12 derniers mois
             $contratsParMois = [];
@@ -699,7 +699,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.superadmin.abonnements.show', $entreprise->id) }}" class="btn btn-sm btn-success" title="Abonnement">
+                                                    <a href="{{ route('admin.superadmin.abonnements.show', $entreprise->abonnement?->id ?? $entreprise->id) }}" class="btn btn-sm btn-success" title="Abonnement">
                                                         <i class="bi bi-credit-card-2-front"></i>
                                                     </a>
                                                     <a href="{{ route('admin.superadmin.entreprises.show', $entreprise->id) }}" class="btn btn-sm btn-primary" title="Voir">
@@ -824,11 +824,11 @@ for ($i = 1; $i <= 12; $i++) {
             $entreprisesParMois[]=\App\Models\Entreprise::whereMonth('created_at', $i)->whereYear('created_at', date('Y'))->count();
             }
 
-            // Répartition par formule
-            $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
-            $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
-            $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
-            $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+            // Répartition par formule (via les abonnements)
+            $formuleEssai = \App\Models\Abonnement::byFormule('essai')->count();
+            $formuleBasic = \App\Models\Abonnement::byFormule('basic')->count();
+            $formuleStandard = \App\Models\Abonnement::byFormule('standard')->count();
+            $formulePremium = \App\Models\Abonnement::byFormule('premium')->count();
             $distributionParFormule = [$formuleEssai, $formuleBasic, $formuleStandard, $formulePremium];
 
             // Statut des factures

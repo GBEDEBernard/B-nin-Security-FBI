@@ -60,12 +60,12 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-secondary text-white">
+            <div class="card bg-info text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title">Revenu Mensuel</h6>
-                            <h5 class="mb-0">{{ number_format($stats['revenu_mensuel'] ?? 0, 0, ',', ' ') }} CFA</h5>
+                            <h6 class="card-title">MRR (Revenu Mensuel)</h6>
+                            <h5 class="mb-0">{{ number_format($stats['mrr'] ?? 0, 0, ',', ' ') }} CFA</h5>
                         </div>
                         <i class="bi bi-cash fs-1 opacity-50"></i>
                     </div>
@@ -73,6 +73,144 @@
             </div>
         </div>
     </div>
+
+    <!-- Cartes analytics 2e rangée -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Churn Rate (mois)</h6>
+                            <h3 class="mb-0 text-{{ $stats['churn_rate'] > 5 ? 'danger' : ($stats['churn_rate'] > 2 ? 'warning' : 'success') }}">
+                                {{ $stats['churn_rate'] }}%
+                            </h3>
+                            <small class="text-muted">{{ $stats['resilies_ce_mois'] }} résilié(s) ce mois</small>
+                        </div>
+                        <i class="bi bi-graph-down-arrow fs-1 text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Alertes Agents</h6>
+                            <h3 class="mb-0 text-warning">{{ $stats['total_alertes'] }}</h3>
+                            <small class="text-muted">≥ 80% de la limite atteinte</small>
+                        </div>
+                        <i class="bi bi-people fs-1 text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-secondary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Expirés</h6>
+                            <h3 class="mb-0 text-secondary">{{ $stats['expirés'] }}</h3>
+                        </div>
+                        <i class="bi bi-clock-history fs-1 text-secondary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Entreprises liées</h6>
+                            <h3 class="mb-0 text-info">{{ $stats['entreprises_total'] }}</h3>
+                        </div>
+                        <i class="bi bi-building fs-1 text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution par formule -->
+    @if($stats['distribution_formules']->count() > 0)
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribution par Formule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Formule</th>
+                                    <th>Total</th>
+                                    <th>Actifs</th>
+                                    <th>Taux d'activation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($stats['distribution_formules'] as $formule => $data)
+                                <tr>
+                                    <td><strong>{{ \App\Models\Abonnement::FORMULES[$formule] ?? $formule }}</strong></td>
+                                    <td>{{ $data['total'] }}</td>
+                                    <td>{{ $data['actifs'] }}</td>
+                                    <td>
+                                        @if($data['total'] > 0)
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" style="width: {{ ($data['actifs'] / $data['total']) * 100 }}%">
+                                                {{ round(($data['actifs'] / $data['total']) * 100) }}%
+                                            </div>
+                                        </div>
+                                        @else
+                                        -
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertes agents -->
+        @if($stats['total_alertes'] > 0)
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Alertes Capacité Agents</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach($stats['alertes_agents'] as $alerte)
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong>{{ $alerte['entreprise'] }}</strong>
+                                <span class="badge bg-{{ $alerte['pct'] >= 100 ? 'danger' : 'warning' }}">
+                                    {{ $alerte['actifs'] }}/{{ $alerte['max'] }}
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-{{ $alerte['pct'] >= 100 ? 'danger' : 'warning' }}"
+                                     style="width: {{ min($alerte['pct'], 100) }}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ $alerte['pct'] }}% de la limite utilisée</small>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
 
     <!-- Tableau des abonnements -->
     <div class="card">
@@ -108,7 +246,7 @@
                                 <span class="badge bg-info">{{ $abonnement->entreprises_count ?? 0 }}</span>
                             </td>
                             <td>
-                                {{ $abonnement->nombre_agents_max ?? 'Illimité' }}
+                                {{ $abonnement->nombre_agents_max ?: 'Illimité' }}
                             </td>
                             <td>
                                 {{ number_format($abonnement->montant_mensuel ?? 0, 0, ',', ' ') }} CFA

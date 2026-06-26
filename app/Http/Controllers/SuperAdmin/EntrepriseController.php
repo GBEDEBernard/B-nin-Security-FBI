@@ -58,15 +58,8 @@ class EntrepriseController extends Controller
             'email_representant_legal' => 'nullable|email',
             'telephone_representant_legal' => 'nullable|string|max:20',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'formule' => 'required|in:essai,basic,standard,premium',
-            'nombre_agents_max' => 'required|integer|min:1',
-            'nombre_sites_max' => 'required|integer|min:1',
-            'date_debut_contrat' => 'nullable|date',
-            'date_fin_contrat' => 'nullable|date',
-            'montant_mensuel' => 'nullable|numeric|min:0',
-            'cycle_facturation' => 'nullable|in:mensuel,trimestriel,annuel',
             'est_active' => 'boolean',
-            'est_en_essai' => 'boolean',
+            'abonnement_id' => 'nullable|exists:abonnements,id',
             'couleur_primaire' => 'nullable|string|max:7',
             'couleur_secondaire' => 'nullable|string|max:7',
             'notes' => 'nullable|string',
@@ -84,7 +77,15 @@ class EntrepriseController extends Controller
         }
 
         $validated['est_active'] = $validated['est_active'] ?? true;
-        $validated['est_en_essai'] = $validated['est_en_essai'] ?? false;
+
+        // Vérifier que l'abonnement assigné est actif
+        if (!empty($validated['abonnement_id'])) {
+            $abonnement = \App\Models\Abonnement::find($validated['abonnement_id']);
+            if (!$abonnement || !$abonnement->est_active || $abonnement->statut !== 'actif') {
+                return back()->with('error', 'L\'abonnement sélectionné n\'est pas actif.')
+                    ->withInput();
+            }
+        }
 
         $entreprise = Entreprise::create($validated);
 
@@ -118,15 +119,8 @@ class EntrepriseController extends Controller
             'email_representant_legal' => 'nullable|email',
             'telephone_representant_legal' => 'nullable|string|max:20',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'formule' => 'required|in:essai,basic,standard,premium',
-            'nombre_agents_max' => 'required|integer|min:1',
-            'nombre_sites_max' => 'required|integer|min:1',
-            'date_debut_contrat' => 'nullable|date',
-            'date_fin_contrat' => 'nullable|date',
-            'montant_mensuel' => 'nullable|numeric|min:0',
-            'cycle_facturation' => 'nullable|in:mensuel,trimestriel,annuel',
             'est_active' => 'boolean',
-            'est_en_essai' => 'boolean',
+            'abonnement_id' => 'nullable|exists:abonnements,id',
             'couleur_primaire' => 'nullable|string|max:7',
             'couleur_secondaire' => 'nullable|string|max:7',
             'notes' => 'nullable|string',
@@ -211,10 +205,23 @@ class EntrepriseController extends Controller
             'date_fin_essai' => 'required|date|after:today',
         ]);
 
-        $entreprise->update([
-            'est_en_essai' => true,
-            'date_fin_essai' => $validated['date_fin_essai'],
-        ]);
+        // Créer ou mettre à jour l'abonnement
+        if ($entreprise->abonnement) {
+            $entreprise->abonnement->mettreEnEssai($validated['date_fin_essai']);
+        } else {
+            $abonnement = \App\Models\Abonnement::create([
+                'formule' => 'essai',
+                'nombre_agents_max' => 10,
+                'nombre_sites_max' => 3,
+                'date_debut' => now(),
+                'date_fin_essai' => $validated['date_fin_essai'],
+                'montant_mensuel' => 0,
+                'est_active' => true,
+                'est_en_essai' => true,
+                'statut' => 'actif',
+            ]);
+            $entreprise->update(['abonnement_id' => $abonnement->id]);
+        }
 
         return back()->with('success', 'Entreprise mise en période d\'essai.');
     }
@@ -233,15 +240,23 @@ class EntrepriseController extends Controller
             'cycle_facturation' => 'required|in:mensuel,trimestriel,annuel',
         ]);
 
-        $entreprise->update([
+        $data = [
             'formule' => $validated['formule'],
-            'date_debut_contrat' => now(),
-            'date_fin_contrat' => $validated['date_fin_contrat'],
+            'date_debut' => now(),
+            'date_fin' => $validated['date_fin_contrat'],
             'montant_mensuel' => $validated['montant_mensuel'],
             'cycle_facturation' => $validated['cycle_facturation'],
-            'est_en_essai' => false,
             'est_active' => true,
-        ]);
+            'est_en_essai' => false,
+            'statut' => 'actif',
+        ];
+
+        if ($entreprise->abonnement) {
+            $entreprise->abonnement->update($data);
+        } else {
+            $abonnement = \App\Models\Abonnement::create($data);
+            $entreprise->update(['abonnement_id' => $abonnement->id]);
+        }
 
         return back()->with('success', 'Abonnement souscrit.');
     }
