@@ -23,7 +23,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::match(['GET', 'POST'], '/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
 });
 
