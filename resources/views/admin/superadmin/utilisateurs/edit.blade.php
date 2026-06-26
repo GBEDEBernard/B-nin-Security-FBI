@@ -103,6 +103,64 @@
         background: #fff8e1;
         border-color: #ffc107;
     }
+
+    [data-bs-theme="dark"] .form-label {
+        color: #c0c4d0;
+    }
+
+    [data-bs-theme="dark"] .input-group-text {
+        background: #1a1d27;
+        border-color: #2a2d3a;
+        color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .avatar-preview {
+        border-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .info-box {
+        background: #1a1d27;
+        border-left-color: #198754;
+    }
+
+    [data-bs-theme="dark"] .info-box h6 {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .form-card h5 {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .form-card .text-muted {
+        color: #8b90a8 !important;
+    }
+
+    [data-bs-theme="dark"] .text-muted.small {
+        color: #8b90a8 !important;
+    }
+
+    [data-bs-theme="dark"] .form-check-label {
+        color: #c0c4d0;
+    }
+
+    [data-bs-theme="dark"] hr {
+        border-color: #2a2d3a;
+        opacity: 0.4;
+    }
+
+    [data-bs-theme="dark"] .current-password-section {
+        background: rgba(255, 193, 7, 0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+
+    [data-bs-theme="dark"] .current-password-section .input-group-text {
+        background: rgba(255, 193, 7, 0.15);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+
+    [data-bs-theme="dark"] .current-password-section p.text-muted {
+        color: #ffd54f !important;
+    }
 </style>
 @endpush
 

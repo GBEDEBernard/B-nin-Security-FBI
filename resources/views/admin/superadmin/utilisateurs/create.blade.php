@@ -136,6 +136,56 @@
         justify-content: center;
         color: #198754;
     }
+
+    [data-bs-theme="dark"] .form-label {
+        color: #c0c4d0;
+    }
+
+    [data-bs-theme="dark"] .input-group-text {
+        background: #1a1d27;
+        border-color: #2a2d3a;
+        color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .avatar-preview {
+        background: #1a1d27;
+        color: #8b90a8;
+        border-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .info-box {
+        background: #1a1d27;
+        border-left-color: #198754;
+    }
+
+    [data-bs-theme="dark"] .info-box h6 {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .password-requirements {
+        color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .form-card h5 {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .form-card .text-muted {
+        color: #8b90a8 !important;
+    }
+
+    [data-bs-theme="dark"] .text-muted.small {
+        color: #8b90a8 !important;
+    }
+
+    [data-bs-theme="dark"] .form-check-label {
+        color: #c0c4d0;
+    }
+
+    [data-bs-theme="dark"] hr {
+        border-color: #2a2d3a;
+        opacity: 0.4;
+    }
 </style>
 @endpush
 
