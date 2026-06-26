@@ -23,8 +23,7 @@
         --r-input-bg:    #ffffff;
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
+    :root[data-bs-theme="dark"] {
             --r-bg:          #0f1117;
             --r-surface:     #1a1d27;
             --r-border:      #2a2d3a;
@@ -38,7 +37,6 @@
             --r-danger-bg:   rgba(248,113,113,.1);
             --r-shadow:      0 1px 4px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
             --r-input-bg:    #0f1117;
-        }
     }
 
     .r-page { background: var(--r-bg); min-height: 100vh; }
@@ -162,9 +160,7 @@
     }
     .r-alert-success { background: rgba(22,163,74,.08); color: #15803d; border-color: #16a34a; }
     .r-alert-danger   { background: var(--r-danger-bg); color: var(--r-danger); border-color: var(--r-danger); }
-    @media (prefers-color-scheme: dark) {
-        .r-alert-success { color: #4ade80; }
-    }
+    [data-bs-theme="dark"] .r-alert-success { color: #4ade80; border-color: #4ade80; }
 
     /* ── Texte vide ── */
     .r-empty { color: var(--r-text-muted); font-size: .875rem; padding: .25rem 0; }

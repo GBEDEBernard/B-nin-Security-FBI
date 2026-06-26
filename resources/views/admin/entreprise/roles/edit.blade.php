@@ -18,8 +18,7 @@
         --r-radius:      14px;
         --r-radius-sm:   8px;
     }
-    @media (prefers-color-scheme: dark) {
-        :root {
+    :root[data-bs-theme="dark"] {
             --r-bg:          #0f1117;
             --r-surface:     #1a1d27;
             --r-border:      #2a2d3a;
@@ -29,7 +28,6 @@
             --r-primary-bg:  rgba(96,165,250,.1);
             --r-primary-dim: rgba(96,165,250,.15);
             --r-shadow:      0 1px 4px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
-        }
     }
 
     .r-page { background: var(--r-bg); min-height: 100vh; }

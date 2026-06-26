@@ -22,8 +22,7 @@
         --r-radius:     14px;
         --r-radius-sm:  8px;
     }
-    @media (prefers-color-scheme: dark) {
-        :root {
+    :root[data-bs-theme="dark"] {
             --r-bg:         #0f1117;
             --r-surface:    #1a1d27;
             --r-border:     #2a2d3a;
@@ -37,7 +36,6 @@
             --r-info:       #22d3ee;
             --r-info-bg:    rgba(34,211,238,.1);
             --r-shadow:     0 1px 4px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
-        }
     }
 
     .r-page { background: var(--r-bg); min-height: 100vh; }
@@ -130,9 +128,7 @@
         border-left: 3px solid; margin-bottom: 1rem;
     }
     .r-alert-success { background: rgba(22,163,74,.08); color: #15803d; border-color: #16a34a; }
-    @media (prefers-color-scheme: dark) {
-        .r-alert-success { color: #4ade80; }
-    }
+    [data-bs-theme="dark"] .r-alert-success { color: #4ade80; border-color: #4ade80; }
 
     /* ── État vide ── */
     .r-empty-state {
