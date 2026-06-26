@@ -104,10 +104,6 @@
                                     <input type="number" class="form-control" id="montant_mensuel" name="montant_mensuel" value="50000" min="0" readonly required>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="tarif_agents_supplementaires" class="form-label">Tarif agents sup. (CFA)</label>
-                                    <input type="number" class="form-control" id="tarif_agents_supplementaires" name="tarif_agents_supplementaires" value="5000" min="0">
-                                </div>
-                                <div class="col-md-3">
                                     <label for="mode_paiement" class="form-label">Mode de paiement</label>
                                     <select class="form-select" id="mode_paiement" name="mode_paiement">
                                         <option value="">Sélectionner</option>

@@ -136,7 +136,6 @@ class AbonnementController extends Controller
             'montant_mensuel' => 'required|numeric|min:0',
             'montant_total' => 'nullable|numeric|min:0',
             'cycle_facturation' => 'nullable|string|' . Rule::in(array_keys(Abonnement::CYCLES)),
-            'tarif_agents_supplementaires' => 'nullable|numeric|min:0',
 
             // Statut
             'est_active' => 'boolean',
@@ -173,7 +172,6 @@ class AbonnementController extends Controller
             'montant_mensuel' => $validated['montant_mensuel'],
             'montant_total' => $validated['montant_total'] ?? null,
             'cycle_facturation' => $validated['cycle_facturation'] ?? 'mensuel',
-            'tarif_agents_supplementaires' => $validated['tarif_agents_supplementaires'] ?? null,
             'est_active' => $validated['est_active'] ?? true,
             'est_en_essai' => $validated['est_en_essai'] ?? false,
             'est_renouvele_auto' => $validated['est_renouvele_auto'] ?? false,
@@ -246,7 +244,6 @@ class AbonnementController extends Controller
             'montant_mensuel' => 'required|numeric|min:0',
             'montant_total' => 'nullable|numeric|min:0',
             'cycle_facturation' => 'nullable|string|' . Rule::in(array_keys(Abonnement::CYCLES)),
-            'tarif_agents_supplementaires' => 'nullable|numeric|min:0',
 
             // Statut
             'est_active' => 'boolean',
