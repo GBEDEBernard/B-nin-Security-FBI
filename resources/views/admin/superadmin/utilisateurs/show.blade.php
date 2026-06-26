@@ -8,6 +8,7 @@
         border: none;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        background-color: var(--bs-body-bg);
     }
 
     .profile-header {
@@ -61,6 +62,7 @@
         border: none;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        background-color: var(--bs-body-bg);
     }
 
     .info-item {
@@ -177,6 +179,88 @@
         background: #198754;
         border: 3px solid white;
         box-shadow: 0 0 0 2px #198754;
+    }
+
+    [data-bs-theme="dark"] .profile-card {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-bs-theme="dark"] .profile-avatar {
+        background: #1a1d27;
+        color: #20c997;
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    [data-bs-theme="dark"] .info-item {
+        border-bottom-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .info-icon {
+        background: #1a1d27;
+        color: #20c997;
+    }
+
+    [data-bs-theme="dark"] .info-label {
+        color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .info-value {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .stat-card {
+        background: #1a1d27;
+        border: 1px solid #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .stat-value {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .stat-label {
+        color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .card-header.bg-white {
+        background-color: #1a1d27 !important;
+        border-bottom: 1px solid #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .card-header.bg-white h5 {
+        color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .timeline-item::before {
+        background: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .timeline-dot {
+        border-color: #121212;
+        box-shadow: 0 0 0 2px #198754;
+    }
+
+    [data-bs-theme="dark"] .alert-info {
+        background: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.2);
+        color: #4dd4f5;
+    }
+
+    [data-bs-theme="dark"] .alert-warning {
+        background: rgba(255, 193, 7, 0.1);
+        border-color: rgba(255, 193, 7, 0.2);
+        color: #ffd54f;
+    }
+
+    [data-bs-theme="dark"] .alert-success {
+        background: rgba(25, 135, 84, 0.1);
+        border-color: rgba(25, 135, 84, 0.2);
+        color: #4ade80;
+    }
+
+    [data-bs-theme="dark"] .alert-danger {
+        background: rgba(220, 53, 69, 0.1);
+        border-color: rgba(220, 53, 69, 0.2);
+        color: #f87171;
     }
 </style>
 @endpush

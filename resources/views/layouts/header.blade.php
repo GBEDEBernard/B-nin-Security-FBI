@@ -152,58 +152,81 @@
             </div>
             <span class="d-none d-lg-inline text-truncate" style="max-width: 150px;" title="{{ $userName }}">{{ $userName }}</span>
           </a>
-         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <!--begin::User Image-->
-            <li class="user-header d-flex flex-column align-items-center py-3" style="background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);">
+         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end profile-dropdown">
+            <div class="profile-dropdown-header">
               @if($userPhoto)
               <img
                 src="{{ asset('storage/' . $userPhoto) }}"
-                class="rounded-circle shadow mb-2"
-                alt="User Image"
-                style="width: 60px; height: 60px; object-fit: cover; border: 3px solid rgba(255,255,255,0.3);" />
+                class="profile-dropdown-avatar"
+                alt="User Image" />
               @else
-              <div class="user-avatar-lg rounded-circle shadow mb-2" style="border: 3px solid rgba(255,255,255,0.3);">
+              <div class="profile-dropdown-avatar profile-dropdown-avatar-initial">
                 {{ strtoupper(substr($userName, 0, 2)) }}
               </div>
               @endif
-              <p class="mb-0 text-center text-white fw-semibold">
-                {{ $userName }}
-              </p>
-              <small class="text-white text-opacity-75">{{ $roleLabel }}</small>
-              <small class="text-white text-opacity-50" style="font-size: 0.7rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
-           </li>
-           <!--end::User Image-->
-           <!--begin::Menu Body-->
-           <li class="user-body">
-             <!--begin::Row-->
-             <div class="row">
-               <div class="col-4 text-center">
-                 <a href="{{ $profilRoute }}">Profil</a>
-               </div>
-               <div class="col-4 text-center">
-                 <a href="{{ $rolesRoute ?? '#' }}">Rôles</a>
-               </div>
-               <div class="col-4 text-center">
-                 <a href="{{ $settingsRoute ?? '#' }}">Paramètres</a>
-               </div>
-             </div>
-             <!--end::Row-->
-           </li>
-           <!--end::Menu Body-->
-           <!--begin::Menu Footer-->
-           <li class="user-footer p-2">
-             <a href="{{ $profilRoute }}" class="btn btn-outline-secondary btn-sm">
-               <i class="bi bi-person-circle me-1"></i> Profil
-             </a>
-             <form method="POST" action="{{ route('logout') }}" class="d-inline">
-               @csrf
-               <button type="submit" class="btn btn-outline-danger btn-sm float-end">
-                 <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
-               </button>
-             </form>
-           </li>
-           <!--end::Menu Footer-->
-         </ul>
+              <div class="profile-dropdown-info">
+                <p class="profile-dropdown-name">{{ $userName }}</p>
+                <p class="profile-dropdown-email">{{ Auth::user()->email }}</p>
+                <span class="profile-dropdown-badge">{{ $roleLabel }}</span>
+              </div>
+            </div>
+            <div class="profile-dropdown-body">
+              <div class="profile-dropdown-item">
+                <div class="profile-dropdown-item-icon">
+                  <i class="bi bi-person"></i>
+                </div>
+                <div class="profile-dropdown-item-content">
+                  <span class="profile-dropdown-item-label">Compte</span>
+                  <span class="profile-dropdown-item-value">{{ $roleLabel }}</span>
+                </div>
+              </div>
+              <div class="profile-dropdown-item">
+                <div class="profile-dropdown-item-icon">
+                  <i class="bi bi-calendar"></i>
+                </div>
+                <div class="profile-dropdown-item-content">
+                  <span class="profile-dropdown-item-label">Membre depuis</span>
+                  <span class="profile-dropdown-item-value">{{ Auth::user()->created_at->format('d/m/Y') }}</span>
+                </div>
+              </div>
+              @if(Auth::user()->last_login_at)
+              <div class="profile-dropdown-item">
+                <div class="profile-dropdown-item-icon">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="profile-dropdown-item-content">
+                  <span class="profile-dropdown-item-label">Dernière connexion</span>
+                  <span class="profile-dropdown-item-value">{{ Auth::user()->last_login_at->diffForHumans() }}</span>
+                </div>
+              </div>
+              @endif
+              @if(Auth::user()->telephone)
+              <div class="profile-dropdown-item">
+                <div class="profile-dropdown-item-icon">
+                  <i class="bi bi-telephone"></i>
+                </div>
+                <div class="profile-dropdown-item-content">
+                  <span class="profile-dropdown-item-label">Téléphone</span>
+                  <span class="profile-dropdown-item-value">{{ Auth::user()->telephone }}</span>
+                </div>
+              </div>
+              @endif
+            </div>
+            <div class="profile-dropdown-footer">
+              <a href="{{ $profilRoute }}" class="profile-dropdown-btn profile-dropdown-btn-primary">
+                <i class="bi bi-person-circle"></i> Mon Profil
+              </a>
+              <a href="{{ $rolesRoute ?? '#' }}" class="profile-dropdown-btn profile-dropdown-btn-outline">
+                <i class="bi bi-shield"></i> Rôles
+              </a>
+              <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="profile-dropdown-btn profile-dropdown-btn-danger">
+                  <i class="bi bi-box-arrow-right"></i> Déconnexion
+                </button>
+              </form>
+            </div>
+          </div>
        </li>
        @else
        <li class="nav-item">
@@ -323,19 +346,262 @@
      font-size: 14px;
    }
 
-   .user-avatar-lg {
-     width: 60px;
-     height: 60px;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
-     color: white;
-     font-weight: bold;
-     font-size: 20px;
-   }
+    .user-avatar-lg {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+    }
 
-   .navbar-badge {
+    .profile-dropdown {
+      width: 320px !important;
+      padding: 0 !important;
+      border: none !important;
+      border-radius: 14px !important;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    .profile-dropdown-header {
+      background: linear-gradient(135deg, #198754, #20c997);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-dropdown-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .profile-dropdown-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-dropdown-avatar-initial {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: #198754;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .profile-dropdown-info {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .profile-dropdown-name {
+      margin: 0;
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-dropdown-email {
+      margin: 0;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-dropdown-badge {
+      display: inline-block;
+      margin-top: 0.3rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 0.15rem 0.6rem;
+      border-radius: 10px;
+      font-size: 0.68rem;
+      font-weight: 500;
+    }
+
+    .profile-dropdown-body {
+      padding: 0.5rem 0;
+      background: var(--bs-body-bg);
+    }
+
+    .profile-dropdown-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1.25rem;
+      gap: 0.75rem;
+      transition: background 0.15s;
+    }
+
+    .profile-dropdown-item:hover {
+      background: var(--bs-tertiary-bg);
+    }
+
+    .profile-dropdown-item-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #198754;
+      flex-shrink: 0;
+    }
+
+    .profile-dropdown-item-content {
+      min-width: 0;
+    }
+
+    .profile-dropdown-item-label {
+      display: block;
+      font-size: 0.68rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .profile-dropdown-item-value {
+      display: block;
+      font-size: 0.85rem;
+      color: #212529;
+      font-weight: 500;
+    }
+
+    .profile-dropdown-footer {
+      padding: 0.75rem 1.25rem;
+      background: var(--bs-body-bg);
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .profile-dropdown-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .profile-dropdown-btn-primary {
+      background: #198754;
+      color: white;
+    }
+
+    .profile-dropdown-btn-primary:hover {
+      background: #146c43;
+      color: white;
+    }
+
+    .profile-dropdown-btn-outline {
+      background: transparent;
+      color: #495057;
+      border: 1px solid #dee2e6;
+    }
+
+    .profile-dropdown-btn-outline:hover {
+      background: #f8f9fa;
+      color: #212529;
+    }
+
+    .profile-dropdown-btn-danger {
+      background: transparent;
+      color: #dc2626;
+      margin-left: auto;
+    }
+
+    .profile-dropdown-btn-danger:hover {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-avatar-initial {
+      background: #1a1d27;
+      color: #20c997;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-body {
+      background: #1a1d27;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-item-icon {
+      background: rgba(25,135,84,0.15);
+      color: #4ade80;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-item-label {
+      color: #8b90a8;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-item-value {
+      color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-footer {
+      background: #1a1d27;
+      border-top-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-btn-outline {
+      color: #c0c4d0;
+      border-color: #2a2d3a;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-btn-outline:hover {
+      background: #2a2d3a;
+      color: #f0f2f8;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-btn-danger {
+      color: #f87171;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-btn-danger:hover {
+      background: rgba(220,38,38,0.15);
+      color: #fca5a5;
+    }
+
+    [data-bs-theme="dark"] .profile-dropdown-item:hover {
+      background: #2a2d3a;
+    }
+
+    .navbar-badge {
      position: absolute;
      top: 2px;
      right: 2px;
