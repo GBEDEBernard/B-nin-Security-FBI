@@ -262,6 +262,10 @@
         border-color: rgba(220, 53, 69, 0.2);
         color: #f87171;
     }
+
+    [data-bs-theme="dark"] #show-avatar-container label {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
 </style>
 @endpush
 
@@ -312,12 +316,15 @@
                 <div class="card profile-card mb-4">
                     <div class="profile-header">
                         <div class="d-flex align-items-center">
-                            <div class="profile-avatar">
+                            <div class="profile-avatar position-relative" id="show-avatar-container">
                                 @if($utilisateur->photo)
-                                <img src="{{ asset('storage/' . $utilisateur->photo) }}" alt="Photo" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                <img src="{{ asset('storage/' . $utilisateur->photo) }}" alt="Photo" id="show-photo-img" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
                                 @else
-                                {{ strtoupper(substr($utilisateur->name, 0, 2)) }}
+                                <span id="show-photo-initials">{{ strtoupper(substr($utilisateur->name, 0, 2)) }}</span>
                                 @endif
+                                <label for="show-photo-upload" class="position-absolute bottom-0 end-0 rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow" style="width:34px;height:34px;cursor:pointer;border:3px solid rgba(255,255,255,0.5);z-index:2;">
+                                    <i class="bi bi-camera-fill" style="font-size:0.8rem;"></i>
+                                </label>
                             </div>
                             <div class="ms-4">
                                 <h3 class="profile-name">{{ $utilisateur->name }}</h3>
@@ -566,4 +573,44 @@
     </div>
 </div>
 <!--end::App Content-->
+
+<form id="show-photo-form" action="{{ route('admin.superadmin.utilisateurs.update', $utilisateur->id) }}" method="POST" enctype="multipart/form-data" class="d-none">
+    @csrf
+    @method('PUT')
+    <input type="hidden" name="name" value="{{ $utilisateur->name }}">
+    <input type="hidden" name="email" value="{{ $utilisateur->email }}">
+    <input type="hidden" name="telephone" value="{{ $utilisateur->telephone ?? '' }}">
+    <input type="hidden" name="is_active" value="{{ $utilisateur->is_active ? '1' : '0' }}">
+    <input type="file" id="show-photo-upload" name="photo" accept="image/jpg,image/jpeg,image/png,image/webp">
+</form>
+
+@push('scripts')
+<script>
+    document.getElementById('show-photo-upload')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const container = document.getElementById('show-avatar-container');
+            const existingImg = document.getElementById('show-photo-img');
+            const existingInitials = document.getElementById('show-photo-initials');
+            if (existingImg) {
+                existingImg.src = ev.target.result;
+            } else {
+                if (existingInitials) existingInitials.remove();
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.alt = 'Photo';
+                img.id = 'show-photo-img';
+                img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                container.insertBefore(img, container.querySelector('label'));
+            }
+        };
+        reader.readAsDataURL(file);
+
+        document.getElementById('show-photo-form').submit();
+    });
+</script>
+@endpush
 @endsection
