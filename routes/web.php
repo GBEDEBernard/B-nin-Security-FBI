@@ -261,6 +261,19 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::post('/{id}/duplicate', [\App\Http\Controllers\SuperAdmin\ModeleController::class, 'duplicate'])->name('duplicate');
     });
 
+    // Gestion des rôles
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'destroy'])->name('destroy');
+        Route::post('/assign', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'assignToUser'])->name('assign');
+        Route::post('/remove', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'removeFromUser'])->name('remove');
+    });
+
     // Route pour retourner au dashboard superadmin
     Route::get('/return', [SuperAdminController::class, 'returnToSuperAdmin'])->name('return');
 });
@@ -341,6 +354,16 @@ Route::middleware(['auth', 'tenant', 'entreprise'])->prefix('admin/entreprise')-
         Route::get('/financier', [\App\Http\Controllers\Entreprise\RapportController::class, 'financier'])->name('financier');
         Route::get('/incidents', [\App\Http\Controllers\Entreprise\RapportController::class, 'incidents'])->name('incidents');
         Route::get('/affectations', [\App\Http\Controllers\Entreprise\RapportController::class, 'affectations'])->name('affectations');
+    });
+
+    // Gestion des rôles employés et clients
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Entreprise\RoleController::class, 'index'])->name('index');
+        Route::get('/clients', [\App\Http\Controllers\Entreprise\RoleController::class, 'indexClients'])->name('clients');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Entreprise\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Entreprise\RoleController::class, 'update'])->name('update');
+        Route::get('/client/{id}/edit', [\App\Http\Controllers\Entreprise\RoleController::class, 'editClient'])->name('edit-client');
+        Route::put('/client/{id}', [\App\Http\Controllers\Entreprise\RoleController::class, 'updateClient'])->name('update-client');
     });
 });
 

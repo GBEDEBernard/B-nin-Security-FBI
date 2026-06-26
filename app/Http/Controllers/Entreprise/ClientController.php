@@ -101,7 +101,8 @@ class ClientController extends Controller
 
         $validated['entreprise_id'] = Auth::user()->entreprise_id;
 
-        Client::create($validated);
+        $client = Client::create($validated);
+        $client->assignRoleByType();
 
         return redirect()->route('admin.entreprise.clients.index')
             ->with('success', 'Client créé avec succès.');

@@ -12,12 +12,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Traits\HasDeviceTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class Client extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasDeviceTokens;
+    use HasFactory, SoftDeletes, Notifiable, HasApiTokens, HasDeviceTokens, HasRoles;
 
     protected $table = 'clients';
+    protected $guard_name = 'web';
 
     protected $fillable = [
         // Entreprise (référence)
@@ -178,6 +180,20 @@ class Client extends Model
         return $this->contrats()
             ->whereIn('statut', ['en_cours'])
             ->exists();
+    }
+
+    // ── Gestion des rôles ─────────────────────────────────────────────────
+
+    public const TYPE_ROLES = [
+        'particulier' => ['client_individual'],
+        'entreprise' => ['client_company'],
+        'institution' => ['client_company'],
+    ];
+
+    public function assignRoleByType(): void
+    {
+        $roles = self::TYPE_ROLES[$this->type_client] ?? ['client_individual'];
+        $this->assignRole($roles);
     }
 
     // ── Authentification ───────────────────────────────────────────────────

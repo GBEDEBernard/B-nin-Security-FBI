@@ -159,6 +159,31 @@
           </ul>
         </li>
 
+        {{-- Rôles & Permissions --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-shield-lock"></i>
+            <p>
+              Rôles & Permissions
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.roles.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des rôles</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.roles.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouveau rôle</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <li class="nav-header text-uppercase fw-bold text-primary">Finance & Rapports</li>
 
         {{-- Facturation Globale --}}
@@ -720,6 +745,31 @@
               <a href="#" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Services</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {{-- Rôles & Permissions --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-shield-check"></i>
+            <p>
+              Rôles & Permissions
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.entreprise.roles.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Employés</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.entreprise.roles.clients') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Clients</p>
               </a>
             </li>
           </ul>
