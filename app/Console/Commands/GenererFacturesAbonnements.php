@@ -39,22 +39,27 @@ class GenererFacturesAbonnements extends Command
                     continue;
                 }
 
-                $numero = 'ABO-' . $now->format('Ym') . '-' . str_pad($abonnement->id, 4, '0', STR_PAD_LEFT);
+                $count = Facture::whereYear('date_emission', $now->year)->count();
+                $numero = 'FACT-' . $now->format('Y') . '-' . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+
+                $montant = $abonnement->montant_mensuel;
 
                 Facture::create([
                     'abonnement_id' => $abonnement->id,
                     'entreprise_id' => $entreprise->id,
                     'numero_facture' => $numero,
-                    'montant_ht' => $abonnement->montant_mensuel,
+                    'mois' => $now->month,
+                    'annee' => $now->year,
+                    'montant_ht' => $montant,
                     'tva' => 0,
-                    'montant_ttc' => $abonnement->montant_mensuel,
+                    'montant_ttc' => $montant,
                     'montant_paye' => 0,
-                    'montant_restant' => $abonnement->montant_mensuel,
+                    'montant_restant' => $montant,
                     'date_emission' => $now,
                     'date_echeance' => $now->copy()->addDays(30),
-                    'statut' => 'en_attente',
-                    'notes' => "Facture automatique - {$abonnement->formule_label} - " . ucfirst($abonnement->cycle_facturation ?? 'mensuel'),
-                    'cree_par' => 'system',
+                    'statut' => 'emise',
+                    'notes' => "Facture auto - {$abonnement->formule_label}",
+                    'cree_par' => 'Système',
                 ]);
 
                 $generateur++;

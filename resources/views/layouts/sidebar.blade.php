@@ -527,6 +527,14 @@
           </a>
         </li>
 
+        {{-- Factures --}}
+        <li class="nav-item">
+          <a href="{{ route('admin.entreprise.factures.index') }}" class="nav-link {{ request()->is('admin/entreprise/factures*') ? 'active' : '' }}">
+            <i class="nav-icon bi bi-receipt"></i>
+            <p>Factures</p>
+          </a>
+        </li>
+
         {{-- Contrats --}}
         <li class="nav-item">
           <a href="#" class="nav-link">

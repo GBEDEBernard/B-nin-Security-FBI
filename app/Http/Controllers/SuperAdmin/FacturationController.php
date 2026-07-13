@@ -5,14 +5,12 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Facture;
 use App\Models\Entreprise;
-use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use PDF;
 
 class FacturationController extends Controller
 {
-    /**
-     * Constructeur
-     */
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
@@ -21,23 +19,19 @@ class FacturationController extends Controller
             'index', 'show', 'paiements', 'creances',
         ]);
 
-        $this->middleware('permission:create_invoices')->only([
-            'export',
-        ]);
-
         $this->middleware('permission:view_analytics')->only([
             'statistiques',
         ]);
+
+        $this->middleware('permission:create_invoices')->only([
+            'genererFactures', 'export',
+        ]);
     }
 
-    /**
-     * Liste des factures globales
-     */
     public function index(Request $request)
     {
-        $query = Facture::with(['entreprise', 'client', 'contrat']);
+        $query = Facture::with(['entreprise', 'abonnement']);
 
-        // Filtres
         if ($request->filled('entreprise_id')) {
             $query->where('entreprise_id', $request->entreprise_id);
         }
@@ -58,31 +52,55 @@ class FacturationController extends Controller
 
         $entreprises = Entreprise::orderBy('nom_entreprise')->get();
 
+        $statsQuery = Facture::query();
+        if ($request->filled('entreprise_id')) {
+            $statsQuery->where('entreprise_id', $request->entreprise_id);
+        }
+        if ($request->filled('statut')) {
+            $statsQuery->where('statut', $request->statut);
+        }
+        if ($request->filled('date_debut')) {
+            $statsQuery->whereDate('date_emission', '>=', $request->date_debut);
+        }
+        if ($request->filled('date_fin')) {
+            $statsQuery->whereDate('date_emission', '<=', $request->date_fin);
+        }
+
         $stats = [
-            'total_factures' => Facture::count(),
-            'montant_total' => Facture::sum('montant_ttc'),
-            'montant_paye' => Facture::sum('montant_paye'),
-            'montant_restant' => Facture::sum('montant_restant'),
-            'factures_impayees' => Facture::where('statut', '!=', 'payee')->count(),
+            'total_factures' => $statsQuery->count(),
+            'montant_total' => $statsQuery->sum('montant_ttc'),
+            'montant_paye' => $statsQuery->sum('montant_paye'),
+            'montant_restant' => $statsQuery->sum('montant_restant'),
         ];
 
         return view('admin.superadmin.facturation.index', compact('factures', 'entreprises', 'stats'));
     }
 
-    /**
-     * Voir une facture
-     */
     public function show($id)
     {
-        $facture = Facture::with(['entreprise', 'client', 'contrat', 'paiements'])
+        $facture = Facture::with(['entreprise.abonnement', 'abonnement', 'paiements'])
             ->findOrFail($id);
 
         return view('admin.superadmin.facturation.show', compact('facture'));
     }
 
-    /**
-     * Liste des paiements
-     */
+    public function downloadPdf($id)
+    {
+        $facture = Facture::with(['entreprise', 'abonnement'])->findOrFail($id);
+
+        $pdf = PDF::loadView('admin.superadmin.facturation.pdf.facture', compact('facture'));
+
+        return $pdf->download("facture_{$facture->numero_facture}.pdf");
+    }
+
+    public function genererFactures()
+    {
+        $exitCode = Artisan::call('abonnements:facturer');
+        $output = Artisan::output();
+
+        return back()->with('success', trim($output));
+    }
+
     public function paiements(Request $request)
     {
         $query = \App\Models\PaiementFacture::with(['facture', 'facture.entreprise']);
@@ -111,12 +129,9 @@ class FacturationController extends Controller
         return view('admin.superadmin.facturation.paiements', compact('paiements', 'stats'));
     }
 
-    /**
-     * Liste des créances
-     */
     public function creances(Request $request)
     {
-        $query = Facture::with(['entreprise', 'client'])
+        $query = Facture::with(['entreprise'])
             ->where('montant_restant', '>', 0)
             ->orderByDesc('date_echeance');
 
@@ -135,24 +150,16 @@ class FacturationController extends Controller
         return view('admin.superadmin.facturation.creances', compact('creances', 'stats'));
     }
 
-    /**
-     * Exporter les factures
-     */
     public function export(Request $request)
     {
-        // Logique d'export à implémenter
         return back()->with('info', 'Fonctionnalité d\'export en cours de développement.');
     }
 
-    /**
-     * Statistiques de facturation
-     */
     public function statistiques()
     {
         $moisActuel = now()->month;
         $anneeActuelle = now()->year;
 
-        // Factures du mois
         $facturesMois = Facture::whereMonth('date_emission', $moisActuel)
             ->whereYear('date_emission', $anneeActuelle)
             ->get();
@@ -165,7 +172,6 @@ class FacturationController extends Controller
             'total_clients' => Facture::distinct('client_id')->count('client_id'),
         ];
 
-        // Évolution mensuelle (12 derniers mois)
         $evolution = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);

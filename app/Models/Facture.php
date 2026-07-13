@@ -34,6 +34,25 @@ class Facture extends Model
         'cree_par',
     ];
 
+    protected $casts = [
+        'date_emission' => 'date',
+        'date_echeance' => 'date',
+        'date_paiement' => 'date',
+        'montant_ht' => 'decimal:2',
+        'montant_ttc' => 'decimal:2',
+        'montant_paye' => 'decimal:2',
+        'montant_restant' => 'decimal:2',
+    ];
+
+    public const STATUTS = [
+        'emise' => 'Émise',
+        'envoyee' => 'Envoyée',
+        'payee' => 'Payée',
+        'partiellement_payee' => 'Partiellement payée',
+        'impayee' => 'Impayée',
+        'annulee' => 'Annulée',
+    ];
+
     public function abonnement(): BelongsTo
     {
         return $this->belongsTo(Abonnement::class);
@@ -57,5 +76,10 @@ class Facture extends Model
     public function paiements(): HasMany
     {
         return $this->hasMany(PaiementFacture::class, 'facture_id');
+    }
+
+    public function getStatutLabelAttribute(): string
+    {
+        return self::STATUTS[$this->statut] ?? $this->statut;
     }
 }

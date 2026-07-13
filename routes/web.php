@@ -205,7 +205,10 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::get('/paiements', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'paiements'])->name('paiements');
         Route::get('/creances', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'creances'])->name('creances');
         Route::get('/statistiques', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'statistiques'])->name('statistiques');
+        Route::post('/generer', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'genererFactures'])->name('generer');
+        Route::get('/export', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'export'])->name('export');
         Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'show'])->name('show');
+        Route::get('/{id}/download', [\App\Http\Controllers\SuperAdmin\FacturationController::class, 'downloadPdf'])->name('download');
     });
 
     // Rapports globaux
@@ -358,6 +361,13 @@ Route::middleware(['auth', 'tenant', 'entreprise', 'verifier.abonnement'])->pref
         Route::get('/{id}', [\App\Http\Controllers\Entreprise\PropositionController::class, 'show'])->name('show');
         Route::post('/{id}/accepter', [\App\Http\Controllers\Entreprise\PropositionController::class, 'accepter'])->name('accepter');
         Route::post('/{id}/refuser', [\App\Http\Controllers\Entreprise\PropositionController::class, 'refuser'])->name('refuser');
+    });
+
+    // Factures (visibles par l'entreprise)
+    Route::prefix('factures')->name('factures.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Entreprise\FactureController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Entreprise\FactureController::class, 'show'])->name('show');
+        Route::get('/{id}/download', [\App\Http\Controllers\Entreprise\FactureController::class, 'downloadPdf'])->name('download');
     });
 
     // Affectations
