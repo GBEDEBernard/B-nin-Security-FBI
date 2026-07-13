@@ -151,9 +151,15 @@
                 <div class="card facture-card mt-4">
                     <div class="card-body text-center">
                         <a href="{{ route('admin.entreprise.factures.download', $facture->id) }}"
-                           class="btn btn-success w-100">
+                           class="btn btn-success w-100 mb-2">
                             <i class="bi bi-download me-1"></i> Télécharger PDF
                         </a>
+                        @if($facture->montant_restant > 0)
+                        <a href="{{ route('admin.entreprise.factures.payer', $facture->id) }}"
+                           class="btn btn-primary w-100">
+                            <i class="bi bi-credit-card me-1"></i> Payer la facture
+                        </a>
+                        @endif
                     </div>
                 </div>
             </div>

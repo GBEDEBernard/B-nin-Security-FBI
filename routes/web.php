@@ -369,6 +369,8 @@ Route::middleware(['auth:web,employe,client', 'tenant', 'entreprise', 'verifier.
         Route::get('/', [\App\Http\Controllers\Entreprise\FactureController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Entreprise\FactureController::class, 'show'])->name('show');
         Route::get('/{id}/download', [\App\Http\Controllers\Entreprise\FactureController::class, 'downloadPdf'])->name('download');
+        Route::get('/{id}/payer', [\App\Http\Controllers\Entreprise\FactureController::class, 'payer'])->name('payer');
+        Route::post('/{id}/traiter-paiement', [\App\Http\Controllers\Entreprise\FactureController::class, 'traiterPaiement'])->name('traiterPaiement');
     });
 
     // Affectations
