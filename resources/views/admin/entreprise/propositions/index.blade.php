@@ -17,7 +17,7 @@
         --pp-border: #2a2d3a;
         --pp-text: #f0f2f8;
         --pp-text-muted: #8b90a8;
-        --pp-bg-soft: #1a1d27;
+        --pp-bg-soft: #12141c;
         --pp-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.3);
     }
 
@@ -27,19 +27,37 @@
         background: var(--pp-surface);
         box-shadow: var(--pp-shadow);
         transition: transform 0.3s ease;
+        color: var(--pp-text);
     }
     .proposition-card:hover {
         transform: translateY(-3px);
     }
+
+    .proposition-card .card-header,
+    .proposition-card .card-footer {
+        background: var(--pp-surface);
+        color: var(--pp-text);
+        border-color: var(--pp-border);
+    }
+    .proposition-card h3,
+    .proposition-card h5 {
+        color: var(--pp-text);
+    }
+
     .badge-statut {
         padding: 0.4rem 0.8rem;
         border-radius: 20px;
         font-weight: 500;
         font-size: 0.75rem;
     }
+
     .table-responsive {
         border-radius: 12px;
         overflow: hidden;
+    }
+    .data-table {
+        background: var(--pp-surface);
+        margin-bottom: 0;
     }
     .data-table thead th {
         background: var(--pp-bg-soft);
@@ -48,26 +66,44 @@
         color: var(--pp-text-muted);
         font-size: 0.8rem;
         text-transform: uppercase;
+        white-space: nowrap;
     }
     .data-table tbody td {
+        background: var(--pp-surface);
         color: var(--pp-text);
+        border-color: var(--pp-border);
         vertical-align: middle;
     }
-    .data-table tbody tr:hover {
-        background: rgba(25, 135, 84, 0.05);
+    .data-table tbody tr:hover td {
+        background: rgba(25, 135, 84, 0.06);
     }
-    [data-bs-theme="dark"] .data-table tbody tr:hover {
-        background: rgba(25, 135, 84, 0.1);
+    [data-bs-theme="dark"] .data-table tbody tr:hover td {
+        background: rgba(25, 135, 84, 0.12);
     }
-    [data-bs-theme="dark"] .card-header,
-    [data-bs-theme="dark"] .card-footer {
-        border-color: var(--pp-border);
-    }
-    [data-bs-theme="dark"] .text-muted {
+
+    .proposition-card .text-muted,
+    .proposition-card small.text-muted {
         color: var(--pp-text-muted) !important;
     }
-    [data-bs-theme="dark"] h5, h3 {
+
+    [data-bs-theme="dark"] .pagination .page-link {
+        background: var(--pp-bg-soft);
+        border-color: var(--pp-border);
         color: var(--pp-text);
+    }
+    [data-bs-theme="dark"] .pagination .page-item.active .page-link {
+        background: #198754;
+        border-color: #198754;
+        color: #fff;
+    }
+    [data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
+        background: transparent;
+        color: var(--pp-text-muted);
+    }
+
+    .empty-state i,
+    .empty-state h5 {
+        color: var(--pp-text-muted) !important;
     }
 </style>
 @endpush
@@ -169,7 +205,7 @@
         </div>
 
         <div class="card proposition-card">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Liste des propositions</h5>
             </div>
             <div class="card-body p-0">
@@ -198,7 +234,7 @@
                                 <td>{{ $prop->budget_approx ? number_format($prop->budget_approx, 0, ',', ' ') . ' CFA' : '-' }}</td>
                                 <td>{{ $prop->date_soumission?->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $prop->statut_badge_class }}">
+                                    <span class="badge badge-statut bg-{{ $prop->statut_badge_class }}">
                                         {{ $prop->statut_label }}
                                     </span>
                                 </td>
@@ -213,14 +249,14 @@
                     </table>
                 </div>
                 @else
-                <div class="text-center py-5">
-                    <i class="bi bi-inbox fs-1 text-muted"></i>
-                    <h5 class="mt-3 text-muted">Aucune proposition reçue</h5>
+                <div class="text-center py-5 empty-state">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <h5 class="mt-3">Aucune proposition reçue</h5>
                 </div>
                 @endif
             </div>
             @if($propositions->hasPages())
-            <div class="card-footer bg-white">
+            <div class="card-footer">
                 {{ $propositions->links() }}
             </div>
             @endif

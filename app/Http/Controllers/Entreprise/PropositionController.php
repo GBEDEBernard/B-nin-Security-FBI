@@ -15,9 +15,17 @@ class PropositionController extends Controller
         $this->middleware(['auth', 'entreprise']);
     }
 
+    private function getEntrepriseId(): ?int
+    {
+        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+            return session('entreprise_id');
+        }
+        return Auth::user()->entreprise_id;
+    }
+
     public function index()
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
 
         $propositions = PropositionContrat::where('entreprise_id', $entrepriseId)
             ->orderByDesc('created_at')
@@ -44,7 +52,7 @@ class PropositionController extends Controller
 
     public function show($id)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
         $proposition = PropositionContrat::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
@@ -53,7 +61,7 @@ class PropositionController extends Controller
 
     public function accepter(Request $request, $id)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
         $proposition = PropositionContrat::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
@@ -66,7 +74,10 @@ class PropositionController extends Controller
             'date_signature' => now(),
         ]);
 
-        $proposition->entreprise->notify(new PropositionNotification($proposition, 'acceptee'));
+        $notifiable = $proposition->entreprise;
+        if ($notifiable) {
+            $notifiable->notify(new PropositionNotification($proposition, 'acceptee'));
+        }
 
         return redirect()->route('admin.entreprise.propositions.show', $proposition->id)
             ->with('success', 'Proposition acceptée avec succès.');
@@ -74,7 +85,7 @@ class PropositionController extends Controller
 
     public function refuser(Request $request, $id)
     {
-        $entrepriseId = Auth::user()->entreprise_id;
+        $entrepriseId = $this->getEntrepriseId();
         $proposition = PropositionContrat::where('entreprise_id', $entrepriseId)
             ->findOrFail($id);
 
@@ -88,7 +99,10 @@ class PropositionController extends Controller
             'date_rejet' => now(),
         ]);
 
-        $proposition->entreprise->notify(new PropositionNotification($proposition, 'refusee'));
+        $notifiable = $proposition->entreprise;
+        if ($notifiable) {
+            $notifiable->notify(new PropositionNotification($proposition, 'refusee'));
+        }
 
         return redirect()->route('admin.entreprise.propositions.index')
             ->with('success', 'Proposition refusée.');

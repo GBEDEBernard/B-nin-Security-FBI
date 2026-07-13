@@ -18,7 +18,7 @@
         --pp-border: #2a2d3a;
         --pp-text: #f0f2f8;
         --pp-text-muted: #8b90a8;
-        --pp-bg-soft: #1a1d27;
+        --pp-bg-soft: #12141c;
         --pp-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.3);
         --pp-shadow-lg: 0 0.5rem 1rem rgba(0,0,0,0.4);
     }
@@ -29,6 +29,7 @@
         background: var(--pp-surface);
         box-shadow: var(--pp-shadow);
         transition: transform 0.2s ease;
+        color: var(--pp-text);
     }
     .proposition-card:hover {
         transform: translateY(-2px);
@@ -36,10 +37,22 @@
     .proposition-card .card-header {
         background: transparent;
         border-bottom: 1px solid var(--pp-border);
+        color: var(--pp-text);
     }
     .proposition-card .card-header h5,
     .proposition-card .card-header h6 {
         color: var(--pp-text);
+        margin: 0;
+    }
+
+    /* cards colorées (acceptée / refusée) : header garde sa couleur pleine, seul le texte doit rester blanc */
+    .proposition-card .card-header.bg-success,
+    .proposition-card .card-header.bg-danger {
+        border-bottom: none;
+    }
+    .proposition-card .card-header.bg-success h5,
+    .proposition-card .card-header.bg-danger h5 {
+        color: #fff;
     }
 
     .detail-label {
@@ -55,29 +68,33 @@
         color: var(--pp-text);
     }
 
+    .proposition-card .text-muted {
+        color: var(--pp-text-muted) !important;
+    }
+
+    /* Modal */
     [data-bs-theme="dark"] .modal-content {
-        background: #1a1d27;
-        border-color: #2a2d3a;
+        background: var(--pp-surface);
+        border-color: var(--pp-border);
+        color: var(--pp-text);
     }
-    [data-bs-theme="dark"] .modal-header {
-        border-bottom-color: #2a2d3a;
-    }
+    [data-bs-theme="dark"] .modal-header,
     [data-bs-theme="dark"] .modal-footer {
-        border-top-color: #2a2d3a;
+        border-color: var(--pp-border);
     }
     [data-bs-theme="dark"] .modal .btn-close {
         filter: invert(1);
     }
     [data-bs-theme="dark"] .modal .form-label {
-        color: #f0f2f8;
+        color: var(--pp-text);
     }
     [data-bs-theme="dark"] .modal .form-control {
-        background: #121212;
-        border-color: #2a2d3a;
-        color: #f0f2f8;
+        background: var(--pp-bg-soft);
+        border-color: var(--pp-border);
+        color: var(--pp-text);
     }
-    [data-bs-theme="dark"] .text-muted {
-        color: var(--pp-text-muted) !important;
+    [data-bs-theme="dark"] .modal .form-control::placeholder {
+        color: var(--pp-text-muted);
     }
 </style>
 @endpush
@@ -123,8 +140,8 @@
         <div class="row g-4">
             <div class="col-md-8">
                 <div class="card proposition-card mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Détails de la prestation</h5>
+                    <div class="card-header">
+                        <h5><i class="bi bi-info-circle me-2"></i>Détails de la prestation</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-4">
@@ -180,8 +197,8 @@
 
                 @if($proposition->contrat_pdf_path)
                 <div class="card proposition-card mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="bi bi-file-pdf me-2"></i>Contrat</h5>
+                    <div class="card-header">
+                        <h5><i class="bi bi-file-pdf me-2"></i>Contrat</h5>
                     </div>
                     <div class="card-body">
                         <a href="{{ asset('storage/' . $proposition->contrat_pdf_path) }}" target="_blank" class="btn btn-outline-danger">
@@ -196,7 +213,7 @@
                 @if(in_array($proposition->statut, ['soumis', 'en_cours', 'contrat_envoye', 'en_attente_signature']))
                 <div class="card proposition-card mb-4" style="border: 1px solid var(--pp-border);">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-check-circle me-2 text-success"></i>Actions</h5>
+                        <h5><i class="bi bi-check-circle me-2 text-success"></i>Actions</h5>
                     </div>
                     <div class="card-body">
                         <form action="{{ route('admin.entreprise.propositions.accepter', $proposition->id) }}" method="POST" class="mb-3">
@@ -216,7 +233,7 @@
                 @if($proposition->statut === 'signe')
                 <div class="card proposition-card mb-4 border-success">
                     <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Acceptée</h5>
+                        <h5><i class="bi bi-check-circle me-2"></i>Acceptée</h5>
                     </div>
                     <div class="card-body text-center">
                         <i class="bi bi-check-circle-fill text-success fs-1"></i>
@@ -228,7 +245,7 @@
                 @if($proposition->statut === 'rejete')
                 <div class="card proposition-card mb-4 border-danger">
                     <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Refusée</h5>
+                        <h5><i class="bi bi-x-circle me-2"></i>Refusée</h5>
                     </div>
                     <div class="card-body text-center">
                         <i class="bi bi-x-circle-fill text-danger fs-1"></i>
