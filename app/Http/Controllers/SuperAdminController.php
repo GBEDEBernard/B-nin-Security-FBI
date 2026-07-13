@@ -13,7 +13,7 @@ class SuperAdminController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!Auth::check() || !Auth::user()->estSuperAdmin()) {
+            if (!Auth::guard('web')->check() || !Auth::guard('web')->user()->estSuperAdmin()) {
                 return redirect('/login')->with('error', 'Accès refusé. Vous devez être Super Admin.');
             }
             return $next($request);

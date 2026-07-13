@@ -347,6 +347,14 @@ class Employe extends Authenticatable
     }
 
     /**
+     * Alias attendu par la sidebar
+     */
+    public function getAdminRoute(): string
+    {
+        return $this->getDashboardRoute();
+    }
+
+    /**
      * Assigner le rôle par défaut selon le poste
      */
     public function assignRoleByPoste(): void

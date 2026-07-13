@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Facture;
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PDF;
 
 class FactureController extends Controller
@@ -17,10 +18,10 @@ class FactureController extends Controller
 
     private function getEntrepriseId(): ?int
     {
-        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+        if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && Auth::guard('web')->user()->estEnContexteEntreprise()) {
             return session('entreprise_id');
         }
-        return auth()->user()->entreprise_id;
+        return Auth::guard('employe')->user()->entreprise_id;
     }
 
     public function index(Request $request)

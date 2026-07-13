@@ -749,23 +749,12 @@
   <script>
     const SESSION_TIMEOUT = 3 * 60;
     const WARNING_TIME = 60;
-    const HEARTBEAT_INTERVAL = 30000;
-
     let countdownInterval;
-    let heartbeatInterval;
     let sessionWillExpire = false;
     let warningTimeoutId = null;
 
     function startSessionTracking() {
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
-      heartbeatInterval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
-    }
-
-    function stopSessionTracking() {
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-        heartbeatInterval = null;
-      }
+      resetInactivityTimer();
     }
 
     function sendHeartbeat() {
@@ -825,7 +814,6 @@
 
     function onUserActivity() {
       if (sessionWillExpire) return;
-      sendHeartbeat();
       resetInactivityTimer();
     }
 

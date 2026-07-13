@@ -40,12 +40,12 @@ class DashboardController extends Controller
         // Pour un employé, utiliser son entreprise_id
         $entrepriseId = null;
 
-        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+        if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && Auth::guard('web')->user()->estEnContexteEntreprise()) {
             // SuperAdmin en contexte entreprise
             $entrepriseId = session('entreprise_id');
         } else {
             // Utilisateur normal (employé)
-            $entrepriseId = Auth::user()->entreprise_id;
+            $entrepriseId = Auth::guard('employe')->user()->entreprise_id ?? Auth::user()->entreprise_id;
         }
 
         if (!$entrepriseId) {

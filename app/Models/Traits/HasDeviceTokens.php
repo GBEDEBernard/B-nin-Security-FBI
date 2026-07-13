@@ -20,7 +20,7 @@ trait HasDeviceTokens
             ->toArray();
     }
 
-    public function registerDeviceToken(string $playerId, string $platform = null, string $deviceModel = null): DeviceToken
+    public function registerDeviceToken(string $playerId, ?string $platform = null, ?string $deviceModel = null): DeviceToken
     {
         return $this->deviceTokens()->updateOrCreate(
             ['player_id' => $playerId],

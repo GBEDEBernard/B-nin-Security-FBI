@@ -226,6 +226,14 @@ class Client extends Model
     }
 
     /**
+     * Alias attendu par la sidebar
+     */
+    public function getAdminRoute(): string
+    {
+        return $this->getDashboardRoute();
+    }
+
+    /**
      * Enregistrer la connexion
      */
     public function enregistrerConnexion(string $ip): void

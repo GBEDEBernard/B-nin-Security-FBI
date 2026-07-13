@@ -330,14 +330,14 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h4 class="mb-1">
-                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
-                                Vue Entreprise: {{ auth()->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }} 👋
+                                @if(Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && Auth::guard('web')->user()->estEnContexteEntreprise())
+                                Vue Entreprise: {{ Auth::guard('web')->user()->getEntrepriseContexte()?->nom_entreprise ?? 'Entreprise' }}
                                 @else
-                                Bienvenue, {{ Auth::user()->name }}! 👋
+                                Bienvenue, {{ Auth::user()->nom_complet ?? Auth::guard('employe')->user()->nom_complet ?? Auth::guard('client')->user()->nom ?? Auth::guard('web')->user()->name }}!
                                 @endif
                             </h4>
                             <p class="mb-0 opacity-75">
-                                @if(auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
+                                @if(Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && Auth::guard('web')->user()->estEnContexteEntreprise())
                                 Vous êtes en train de gérer cette entreprise en tant que Super Admin
                                 @else
                                 Voici un aperçu de votre entreprise de sécurité

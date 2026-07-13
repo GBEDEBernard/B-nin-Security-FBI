@@ -34,7 +34,7 @@
         {{-- MENU SUPER ADMIN --}}
         {{-- Caché quand le super admin est en contexte entreprise --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estSuperAdmin() && !auth()->user()->estEnContexteEntreprise())
+        @if(Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && !Auth::guard('web')->user()->estEnContexteEntreprise())
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
@@ -413,11 +413,11 @@
         {{-- Affiché aussi quand le super admin est en contexte entreprise --}}
         {{-- =========================================================== --}}
         @php
-        $estEnContexteEntreprise = auth()->check() && (
-        (auth()->user()->estUtilisateurEntreprise() && !auth()->user()->estSuperAdmin()) ||
-        (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise())
-        );
-        $estSuperAdminEnContexte = auth()->check() && auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise();
+        $isEmploye = Auth::guard('employe')->check();
+        $isSuperAdmin = Auth::guard('web')->check() && Auth::guard('web')->user()?->estSuperAdmin();
+        $superAdminEnContexte = $isSuperAdmin ? Auth::guard('web')->user()->estEnContexteEntreprise() : false;
+        $estEnContexteEntreprise = $isEmploye || $superAdminEnContexte;
+        $estSuperAdminEnContexte = $superAdminEnContexte;
         @endphp
         @if($estEnContexteEntreprise)
 
@@ -806,7 +806,7 @@
         {{-- =========================================================== --}}
         {{-- MENU AGENT --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estAgent())
+        @if(Auth::guard('employe')->check() && Auth::guard('employe')->user()->estAgent())
 
         <li class="nav-header text-uppercase fw-bold text-primary">Mon Activité</li>
 
@@ -849,7 +849,7 @@
         {{-- =========================================================== --}}
         {{-- MENU CLIENT --}}
         {{-- =========================================================== --}}
-        @if(auth()->check() && auth()->user()->estClient())
+        @if(Auth::guard('client')->check())
 
         <li class="nav-header text-uppercase fw-bold text-primary">Mon Espace</li>
 

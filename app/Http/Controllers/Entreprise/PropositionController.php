@@ -17,10 +17,10 @@ class PropositionController extends Controller
 
     private function getEntrepriseId(): ?int
     {
-        if (auth()->user()->estSuperAdmin() && auth()->user()->estEnContexteEntreprise()) {
+        if (Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && Auth::guard('web')->user()->estEnContexteEntreprise()) {
             return session('entreprise_id');
         }
-        return Auth::user()->entreprise_id;
+        return Auth::guard('employe')->user()->entreprise_id;
     }
 
     public function index()
