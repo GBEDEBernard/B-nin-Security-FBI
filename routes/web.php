@@ -227,13 +227,14 @@ Route::middleware(['auth:web,employe,client', 'tenant', 'superadmin'])->prefix('
         Route::get('/', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'store'])->name('store');
-        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'show'])->name('show');
-        Route::post('/{id}/activate', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'activate'])->name('activate');
-        Route::post('/{id}/deactivate', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'deactivate'])->name('deactivate');
-        Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'destroy'])->name('destroy');
         Route::get('/configurations', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'configurations'])->name('configurations');
         Route::put('/configurations', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'updateConfigurations'])->name('update-configurations');
-        Route::get('/{id}/download', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'download'])->name('download');
+        Route::post('/qrcode', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'qrcode'])->name('qrcode');
+        Route::get('/{apkVersion}/download', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'download'])->name('download');
+        Route::get('/{apkVersion}', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'show'])->name('show');
+        Route::post('/{apkVersion}/activate', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'activate'])->name('activate');
+        Route::post('/{apkVersion}/deactivate', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'deactivate'])->name('deactivate');
+        Route::delete('/{apkVersion}', [\App\Http\Controllers\SuperAdmin\ApkController::class, 'destroy'])->name('destroy');
     });
 
     // Notifications Push

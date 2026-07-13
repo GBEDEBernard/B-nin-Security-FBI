@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApkVersion;
+use App\Models\ConfigurationMobile;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ApkController extends Controller
 {
-    /**
-     * Constructeur
-     */
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
@@ -20,178 +23,168 @@ class ApkController extends Controller
         ]);
     }
 
-    /**
-     * Liste des versions APK
-     */
     public function index()
     {
-        // Données mockées - à remplacer par une table de gestion des versions APK
-        $versions = collect([
-            (object)[
-                'id' => 1,
-                'version' => '1.0.0',
-                'numero_version' => 100,
-                'date_publication' => now()->subDays(10),
-                'type' => 'stable',
-                'telechargements' => 145,
-                'est_active' => true,
-                'notes' => 'Version initiale stable',
-                'url_fichier' => null,
-            ],
-            (object)[
-                'id' => 2,
-                'version' => '0.9.0',
-                'numero_version' => 90,
-                'date_publication' => now()->subDays(30),
-                'type' => 'beta',
-                'telechargements' => 32,
-                'est_active' => false,
-                'notes' => 'Version beta test',
-                'url_fichier' => null,
-            ],
-        ]);
+        $versions = ApkVersion::with('publieur')
+            ->orderBy('version_code', 'desc')
+            ->paginate(10);
+
+        $versionActive = ApkVersion::where('est_active', true)->first();
 
         $stats = [
-            'total_telechargements' => $versions->sum('telechargements'),
-            'version_active' => $versions->where('est_active', true)->first()->version ?? 'N/A',
-            'total_versions' => $versions->count(),
+            'total_telechargements' => ApkVersion::sum('telechargements'),
+            'version_active' => $versionActive?->version ?? 'Aucune',
+            'total_versions' => ApkVersion::count(),
+            'derniere_stable' => ApkVersion::where('type', 'stable')->orderBy('version_code', 'desc')->first(),
         ];
 
-        return view('admin.superadmin.apk.index', compact('versions', 'stats'));
+        return view('admin.superadmin.apk.index', compact('versions', 'stats', 'versionActive'));
     }
 
-    /**
-     * Voir les détails d'une version
-     */
-    public function show($id)
+    public function show(ApkVersion $apkVersion)
     {
-        // Mock data
-        $version = (object)[
-            'id' => $id,
-            'version' => '1.0.0',
-            'numero_version' => 100,
-            'date_publication' => now()->subDays(10),
-            'type' => 'stable',
-            'telechargements' => 145,
-            'est_active' => true,
-            'notes' => 'Version initiale stable',
-            'changements' => [
-                'Corrections de bugs',
-                'Amélioration de performance',
-                'Nouvelle interface',
-            ],
-            'url_fichier' => null,
-        ];
-
-        return view('admin.superadmin.apk.show', compact('version'));
+        $apkVersion->load('publieur');
+        return view('admin.superadmin.apk.show', compact('apkVersion'));
     }
 
-    /**
-     * Formulaire d'upload
-     */
     public function create()
     {
-        return view('admin.superadmin.apk.create');
+        $dernierCode = ApkVersion::max('version_code') ?? 0;
+        $prochainCode = $dernierCode + 1;
+        return view('admin.superadmin.apk.create', compact('prochainCode'));
     }
 
-    /**
-     * Uploader une nouvelle version
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'version' => 'required|string',
-            'numero_version' => 'required|integer',
-            'type' => 'required|in:stable,beta,alpha',
-            'notes' => 'nullable|string',
+            'version' => 'required|string|max:20|unique:apk_versions,version',
+            'version_code' => 'required|integer|unique:apk_versions,version_code',
+            'type' => 'required|in:alpha,beta,stable',
             'fichier' => 'required|file|mimes:apk|max:102400',
+            'notes' => 'nullable|string|max:5000',
+            'changelog' => 'nullable|array',
+            'changelog.*' => 'string|max:500',
+            'publier' => 'boolean',
+            'est_obligatoire' => 'boolean',
         ]);
 
-        // Logique d'upload à implémenter
-        // Storage::put('apk/', $validated['fichier']);
+        $fichier = $request->file('fichier');
+        $nomFichier = 'v' . Str::slug($validated['version']) . '_' . $validated['version_code'] . '.apk';
+        $chemin = $fichier->storeAs('', $nomFichier, 'apk');
+
+        $version = ApkVersion::create([
+            'version' => $validated['version'],
+            'version_code' => $validated['version_code'],
+            'type' => $validated['type'],
+            'fichier_path' => $chemin,
+            'taille' => $fichier->getSize(),
+            'checksum' => hash_file('sha256', $fichier->getRealPath()),
+            'notes' => $validated['notes'] ?? null,
+            'changelog' => $validated['changelog'] ?? null,
+            'est_obligatoire' => $request->boolean('est_obligatoire'),
+            'est_active' => $request->boolean('publier'),
+            'date_publication' => $request->boolean('publier') ? now() : null,
+            'publie_par' => auth()->id(),
+        ]);
+
+        if ($request->boolean('publier')) {
+            $version->activate();
+        }
 
         return redirect()->route('admin.superadmin.apk.index')
-            ->with('success', 'APK uploadée avec succès.');
+            ->with('success', "Version {$version->version} publiée avec succès.");
     }
 
-    /**
-     * Activer une version
-     */
-    public function activate($id)
+    public function activate(ApkVersion $apkVersion)
     {
-        // Logique pour désactiver les autres versions et activer celle-ci
+        $apkVersion->activate();
         return redirect()->route('admin.superadmin.apk.index')
-            ->with('success', 'Version activée.');
+            ->with('success', "Version {$apkVersion->version} activée.");
     }
 
-    /**
-     * Désactiver une version
-     */
-    public function deactivate($id)
+    public function deactivate(ApkVersion $apkVersion)
     {
+        $apkVersion->deactivate();
         return redirect()->route('admin.superadmin.apk.index')
-            ->with('success', 'Version désactivée.');
+            ->with('success', "Version {$apkVersion->version} désactivée.");
     }
 
-    /**
-     * Supprimer une version
-     */
-    public function destroy($id)
+    public function destroy(ApkVersion $apkVersion)
     {
+        if ($apkVersion->fichier_path) {
+            Storage::disk('apk')->delete($apkVersion->fichier_path);
+        }
+        $apkVersion->delete();
         return redirect()->route('admin.superadmin.apk.index')
-            ->with('success', 'Version supprimée.');
+            ->with('success', "Version {$apkVersion->version} supprimée.");
     }
 
-    /**
-     * Générer QR Code
-     */
+    public function download(ApkVersion $apkVersion)
+    {
+        if (!$apkVersion->fichier_path || !Storage::disk('apk')->exists($apkVersion->fichier_path)) {
+            return back()->with('error', 'Fichier APK introuvable.');
+        }
+
+        $apkVersion->incrementTelechargements();
+
+        return Storage::disk('apk')->download(
+            $apkVersion->fichier_path,
+            "app-{$apkVersion->version}.apk"
+        );
+    }
+
     public function qrcode(Request $request)
     {
-        $request->validate([
-            'url' => 'required|url',
-        ]);
+        $request->validate(['url' => 'required|url']);
 
-        // Logique de génération de QR code
-        return response()->json(['qrcode' => 'À générer']);
+        $options = new QROptions;
+        $options->outputType = QRCode::OUTPUT_IMAGE_PNG;
+        $options->scale = 10;
+        $options->imageBase64 = true;
+
+        $qrcode = (new QRCode($options))->render($request->url);
+
+        return response()->json(['qrcode' => $qrcode]);
     }
 
-    /**
-     * Configurations de l'application
-     */
     public function configurations()
     {
-        $configurations = [
-            'url_api' => config('app.url') . '/api',
-            'version_minimum' => '1.0.0',
-            'notification_active' => true,
-            'maintenance_mode' => false,
+        $cles = [
+            'url_api' => ['default' => config('app.url') . '/api', 'description' => 'URL de base de l\'API'],
+            'version_minimum' => ['default' => '1.0.0', 'description' => 'Version minimale requise'],
+            'notification_active' => ['default' => true, 'description' => 'Activer les notifications push'],
+            'maintenance_mode' => ['default' => false, 'description' => 'Mode maintenance'],
+            'geolocalisation_active' => ['default' => true, 'description' => 'Activer la géolocalisation'],
+            'message_maintenance' => ['default' => '', 'description' => 'Message affiché en mode maintenance'],
         ];
 
-        return view('admin.superadmin.apk.configurations', compact('configurations'));
+        $configurations = [];
+        foreach ($cles as $cle => $infos) {
+            $configurations[$cle] = ConfigurationMobile::getValeur($cle, $infos['default']);
+        }
+
+        return view('admin.superadmin.apk.configurations', compact('configurations', 'cles'));
     }
 
-    /**
-     * Mettre à jour les configurations
-     */
     public function updateConfigurations(Request $request)
     {
         $validated = $request->validate([
-            'version_minimum' => 'required|string',
+            'url_api' => 'required|url',
+            'version_minimum' => 'required|string|max:20',
             'notification_active' => 'boolean',
             'maintenance_mode' => 'boolean',
+            'geolocalisation_active' => 'boolean',
+            'message_maintenance' => 'nullable|string|max:500',
         ]);
 
-        // Sauvegarder les configurations
-        return redirect()->route('admin.superadmin.apk.configurations')
-            ->with('success', 'Configurations mises à jour.');
-    }
+        foreach ($validated as $cle => $valeur) {
+            if (in_array($cle, ['notification_active', 'maintenance_mode', 'geolocalisation_active'])) {
+                $valeur = (bool) $valeur;
+            }
+            ConfigurationMobile::setValeur($cle, $valeur);
+        }
 
-    /**
-     * Télécharger l'APK
-     */
-    public function download($id)
-    {
-        // Logique de téléchargement
-        return back()->with('info', 'Téléchargement en cours...');
+        return redirect()->route('admin.superadmin.apk.configurations')
+            ->with('success', 'Configurations mises à jour avec succès.');
     }
 }
