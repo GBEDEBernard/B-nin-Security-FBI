@@ -185,14 +185,14 @@ class FacturationController extends Controller
         $evolution = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+            $facturesMois = Facture::whereMonth('date_emission', $date->month)
+                ->whereYear('date_emission', $date->year);
             $evolution[] = [
                 'mois' => $date->format('m/Y'),
-                'nombre' => Facture::whereMonth('date_emission', $date->month)
-                    ->whereYear('date_emission', $date->year)
-                    ->count(),
-                'montant' => Facture::whereMonth('date_emission', $date->month)
-                    ->whereYear('date_emission', $date->year)
-                    ->sum('montant_ttc'),
+                'nombre' => (clone $facturesMois)->count(),
+                'montant' => (clone $facturesMois)->sum('montant_ttc'),
+                'paye' => (clone $facturesMois)->sum('montant_paye'),
+                'impaye' => (clone $facturesMois)->sum('montant_restant'),
             ];
         }
 

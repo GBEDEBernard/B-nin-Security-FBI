@@ -33,6 +33,16 @@ class RapportController extends Controller
      */
     public function index()
     {
+        $entreprises = Entreprise::with('abonnement')
+            ->withCount(['employes', 'clients', 'contratsPrestation', 'factures'])
+            ->orderBy('nom_entreprise')
+            ->get()
+            ->map(function ($e) {
+                $e->ca_total = Facture::where('entreprise_id', $e->id)->sum('montant_ttc');
+                $e->ca_paye = Facture::where('entreprise_id', $e->id)->sum('montant_paye');
+                return $e;
+            });
+
         $stats = [
             'total_entreprises' => Entreprise::count(),
             'entreprises_actives' => Entreprise::where('est_active', true)->count(),
@@ -44,7 +54,9 @@ class RapportController extends Controller
             'chiffre_affaires_paye' => Facture::sum('montant_paye'),
         ];
 
-        return view('admin.superadmin.rapports.index', compact('stats'));
+        $recentEntreprises = $entreprises->sortByDesc('employes_count')->take(8);
+
+        return view('admin.superadmin.rapports.index', compact('stats', 'entreprises', 'recentEntreprises'));
     }
 
     /**

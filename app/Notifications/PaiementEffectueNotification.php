@@ -4,14 +4,10 @@ namespace App\Notifications;
 
 use App\Models\Facture;
 use App\Models\PaiementFacture;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 
-class PaiementEffectueNotification extends Notification implements ShouldQueue
+class PaiementEffectueNotification extends Notification
 {
-    use Queueable;
 
     public function __construct(
         public Facture $facture,
