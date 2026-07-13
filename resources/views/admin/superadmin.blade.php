@@ -423,11 +423,11 @@
             $gainTotalAnnée = array_sum($gainsMensuels);
             $gainCeMois = $gainsMensuels[date('n') - 1] ?? 0;
 
-            // Répartition par formule
-            $formuleEssai = \App\Models\Entreprise::where('formule', 'essai')->count();
-            $formuleBasic = \App\Models\Entreprise::where('formule', 'basic')->count();
-            $formuleStandard = \App\Models\Entreprise::where('formule', 'standard')->count();
-            $formulePremium = \App\Models\Entreprise::where('formule', 'premium')->count();
+            // Répartition par formule (via la relation abonnement)
+            $formuleEssai = \App\Models\Entreprise::where('est_en_essai', true)->count();
+            $formuleBasic = \App\Models\Entreprise::whereHas('abonnement', fn($q) => $q->where('formule', 'basic'))->count();
+            $formuleStandard = \App\Models\Entreprise::whereHas('abonnement', fn($q) => $q->where('formule', 'standard'))->count();
+            $formulePremium = \App\Models\Entreprise::whereHas('abonnement', fn($q) => $q->where('formule', 'premium'))->count();
 
             // Données pour les graphiques - 12 derniers mois
             $contratsParMois = [];

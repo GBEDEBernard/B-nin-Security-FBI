@@ -3,38 +3,40 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\User;
+use App\Models\Employe;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 class JournalController extends Controller
 {
-    /**
-     * Constructeur
-     */
     public function __construct()
     {
         $this->middleware(['auth', 'superadmin']);
+
+        $this->middleware('permission:view_audit_logs')->only([
+            'index', 'show', 'parUtilisateur', 'parModule', 'export', 'statistiques',
+        ]);
+
+        $this->middleware('permission:edit_settings')->only([
+            'purge',
+        ]);
     }
 
-    /**
-     * Liste des activités
-     */
     public function index(Request $request)
     {
-        $query = DB::table('activity_log')->orderBy('created_at', 'desc');
+        $query = ActivityLog::recent();
 
-        // Filtres
         if ($request->filled('user_id')) {
             $query->where('causer_id', $request->user_id);
         }
 
         if ($request->filled('action')) {
-            $query->where('description', 'like', '%' . $request->action . '%');
+            $query->where('log_name', $request->action);
         }
 
         if ($request->filled('module')) {
-            $query->where('subject_type', 'like', '%' . $request->module . '%');
+            $query->where('subject_type', $request->module);
         }
 
         if ($request->filled('date_debut')) {
@@ -45,151 +47,158 @@ class JournalController extends Controller
             $query->whereDate('created_at', '<=', $request->date_fin);
         }
 
-        $activites = $query->paginate(30);
+        $activites = $query->paginate(30)->withQueryString();
 
-        // Statistiques
         $stats = [
-            'connexions_today' => DB::table('activity_log')
-                ->whereDate('created_at', today())
-                ->where('description', 'like', '%connexion%')
-                ->count(),
-            'creations_today' => DB::table('activity_log')
-                ->whereDate('created_at', today())
-                ->where('description', 'like', '%created%')
-                ->count(),
-            'modifications_today' => DB::table('activity_log')
-                ->whereDate('created_at', today())
-                ->where('description', 'like', '%updated%')
-                ->count(),
-            'errors_today' => DB::table('activity_log')
-                ->whereDate('created_at', today())
-                ->where('description', 'like', '%error%')
-                ->count(),
+            'connexions_today' => ActivityLog::whereDate('created_at', today())
+                ->where('log_name', 'connexion')->count(),
+            'creations_today' => ActivityLog::whereDate('created_at', today())
+                ->where('log_name', 'creation')->count(),
+            'modifications_today' => ActivityLog::whereDate('created_at', today())
+                ->where('log_name', 'modification')->count(),
+            'errors_today' => ActivityLog::whereDate('created_at', today())
+                ->where('log_name', 'erreur')->count(),
         ];
 
-        return view('admin.superadmin.journal.index', compact('activites', 'stats'));
+        $utilisateurs = User::select('id', 'name', 'email')
+            ->orderBy('name')->get();
+        $modules = ActivityLog::whereNotNull('subject_type')
+            ->selectRaw('DISTINCT subject_type')
+            ->pluck('subject_type')
+            ->map(fn ($type) => [
+                'value' => $type,
+                'label' => class_basename($type),
+            ]);
+
+        return view('admin.superadmin.journal.index', compact('activites', 'stats', 'utilisateurs', 'modules'));
     }
 
-    /**
-     * Voir les détails d'une activité
-     */
     public function show($id)
     {
-        $activite = DB::table('activity_log')->find($id);
-
+        $activite = ActivityLog::findOrFail($id);
         return view('admin.superadmin.journal.show', compact('activite'));
     }
 
-    /**
-     * Activités par utilisateur
-     */
     public function parUtilisateur(Request $request)
     {
         $userId = $request->get('user_id');
+        $utilisateur = User::find($userId);
 
-        $activites = DB::table('activity_log')
-            ->where('causer_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+        $activites = ActivityLog::where('causer_id', $userId)
+            ->recent()->paginate(30);
 
-        return view('admin.superadmin.journal.par-utilisateur', compact('activites', 'userId'));
+        return view('admin.superadmin.journal.par-utilisateur', compact('activites', 'utilisateur', 'userId'));
     }
 
-    /**
-     * Activités par module
-     */
     public function parModule(Request $request)
     {
-        $module = $request->get('module');
+        $moduleType = $request->get('module');
+        $moduleLabel = $moduleType ? class_basename($moduleType) : null;
 
-        $activites = DB::table('activity_log')
-            ->where('subject_type', 'like', '%' . $module . '%')
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+        $activites = ActivityLog::where('subject_type', $moduleType)
+            ->recent()->paginate(30);
 
-        return view('admin.superadmin.journal.par-module', compact('activites', 'module'));
+        return view('admin.superadmin.journal.par-module', compact('activites', 'moduleType', 'moduleLabel'));
     }
 
-    /**
-     * Exporter le journal
-     */
     public function export(Request $request)
     {
-        $query = DB::table('activity_log')->orderBy('created_at', 'desc');
+        $query = ActivityLog::recent();
 
         if ($request->filled('date_debut')) {
             $query->whereDate('created_at', '>=', $request->date_debut);
         }
-
         if ($request->filled('date_fin')) {
             $query->whereDate('created_at', '<=', $request->date_fin);
         }
 
-        $activites = $query->get();
+        $rows = $query->get();
 
-        // Logique d'export CSV/Excel
-        return back()->with('info', 'Export en cours de développement.');
+        $filename = 'journal-activite-' . now()->format('Y-m-d-Hi') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($rows) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, ['Date/Heure', 'Utilisateur', 'Action', 'Module', 'Description', 'IP', 'Détails']);
+
+            foreach ($rows as $row) {
+                fputcsv($handle, [
+                    $row->created_at?->format('d/m/Y H:i:s'),
+                    $row->causer_name,
+                    $row->action_label,
+                    $row->module_label,
+                    $row->description,
+                    $row->ip_address ?? '—',
+                    $row->properties ? json_encode($row->properties) : '',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
-    /**
-     * Statistiques du journal
-     */
     public function statistiques()
     {
-        // Activités des 7 derniers jours
         $semaine = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
+            $total = ActivityLog::whereDate('created_at', $date)->count();
+            $connexions = ActivityLog::whereDate('created_at', $date)
+                ->where('log_name', 'connexion')->count();
             $semaine[] = [
                 'date' => $date->format('d/m'),
-                'connexions' => DB::table('activity_log')
-                    ->whereDate('created_at', $date)
-                    ->where('description', 'like', '%connexion%')
-                    ->count(),
-                'actions' => DB::table('activity_log')
-                    ->whereDate('created_at', $date)
-                    ->count(),
+                'total' => $total,
+                'connexions' => $connexions,
+                'creations' => ActivityLog::whereDate('created_at', $date)
+                    ->where('log_name', 'creation')->count(),
+                'modifications' => ActivityLog::whereDate('created_at', $date)
+                    ->where('log_name', 'modification')->count(),
             ];
         }
 
-        // Top utilisateurs
-        $topUsers = DB::table('activity_log')
-            ->select('causer_id', DB::raw('count(*) as total'))
+        $topUsers = ActivityLog::selectRaw('causer_id, count(*) as total')
             ->whereNotNull('causer_id')
             ->groupBy('causer_id')
             ->orderByDesc('total')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                $user = User::find($item->causer_id);
+                $item->user_name = $user?->name ?? $user?->email ?? "ID: {$item->causer_id}";
+                return $item;
+            });
 
         $stats = [
-            'total_7_jours' => DB::table('activity_log')
-                ->where('created_at', '>=', now()->subDays(7))
-                ->count(),
-            'connexions_7_jours' => DB::table('activity_log')
-                ->where('created_at', '>=', now()->subDays(7))
-                ->where('description', 'like', '%connexion%')
-                ->count(),
+            'total_7_jours' => ActivityLog::where('created_at', '>=', now()->subDays(7))->count(),
+            'connexions_7_jours' => ActivityLog::where('created_at', '>=', now()->subDays(7))
+                ->where('log_name', 'connexion')->count(),
+            'creations_7_jours' => ActivityLog::where('created_at', '>=', now()->subDays(7))
+                ->where('log_name', 'creation')->count(),
+            'modifications_7_jours' => ActivityLog::where('created_at', '>=', now()->subDays(7))
+                ->where('log_name', 'modification')->count(),
         ];
 
         return view('admin.superadmin.journal.statistiques', compact('semaine', 'topUsers', 'stats'));
     }
 
-    /**
-     * Purger le journal
-     */
     public function purge(Request $request)
     {
         $validated = $request->validate([
             'jours' => 'required|integer|min:1|max:365',
         ]);
 
-        $dateLimite = now()->subDays($validated['jours']);
-
-        DB::table('activity_log')
-            ->where('created_at', '<', $dateLimite)
+        $count = ActivityLog::where('created_at', '<', now()->subDays($validated['jours']))
             ->delete();
 
         return redirect()->route('admin.superadmin.journal.index')
-            ->with('success', 'Journal purgé avec succès.');
+            ->with('success', "Journal purgé : {$count} entrée(s) supprimée(s).");
     }
 }

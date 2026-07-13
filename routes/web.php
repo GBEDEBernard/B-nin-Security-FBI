@@ -239,12 +239,12 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
     // Journal d'activité
     Route::prefix('journal')->name('journal.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'index'])->name('index');
-        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'show'])->name('show');
         Route::get('/par-utilisateur', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'parUtilisateur'])->name('par-utilisateur');
         Route::get('/par-module', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'parModule'])->name('par-module');
         Route::get('/statistiques', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'statistiques'])->name('statistiques');
         Route::post('/export', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'export'])->name('export');
         Route::post('/purge', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'purge'])->name('purge');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\JournalController::class, 'show'])->name('show');
     });
 
     // Modèles

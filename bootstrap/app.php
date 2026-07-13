@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'entreprise' => \App\Http\Middleware\EntrepriseMiddleware::class,
             'client' => \App\Http\Middleware\ClientMiddleware::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
         // Middleware global pour la redirection par rôle et le timeout de session
