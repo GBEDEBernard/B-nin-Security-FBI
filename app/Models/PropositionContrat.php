@@ -58,6 +58,9 @@ class PropositionContrat extends Model
         // Admin qui traite
         'traite_par',
         'date_traitement',
+
+        // Entreprise liée
+        'entreprise_id',
     ];
 
     protected $casts = [

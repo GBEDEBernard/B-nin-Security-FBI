@@ -8,6 +8,7 @@ use App\Models\Entreprise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Notifications\PropositionNotification;
 use PDF;
 
 class PropositionContratController extends Controller
@@ -45,7 +46,7 @@ class PropositionContratController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PropositionContrat::query();
+        $query = PropositionContrat::query()->with('entreprise');
 
         // Recherche
         if ($request->has('search') && $request->search) {
@@ -69,15 +70,83 @@ class PropositionContratController extends Controller
 
         $propositions = $query->paginate(15)->appends($request->query());
 
-        return view('admin.superadmin.propositions.index', compact('propositions'));
+        // Stats calculées depuis le controller
+        $allQuery = PropositionContrat::query();
+        if ($request->has('search') && $request->search) {
+            $s = $request->search;
+            $allQuery->where(function ($q) use ($s) {
+                $q->where('nom_entreprise', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%")
+                    ->orWhere('telephone', 'like', "%{$s}%");
+            });
+        }
+        if ($request->has('statut') && $request->statut) {
+            $allQuery->where('statut', $request->statut);
+        }
+
+        $stats = [
+            'total'                 => (clone $allQuery)->count(),
+            'en_attente'            => (clone $allQuery)->whereIn('statut', ['soumis', 'en_cours', 'contrat_envoye'])->count(),
+            'en_attente_signature'  => (clone $allQuery)->where('statut', 'en_attente_signature')->count(),
+            'signes'                => (clone $allQuery)->where('statut', 'signe')->count(),
+        ];
+
+        return view('admin.superadmin.propositions.index', compact('propositions', 'stats'));
     }
 
     /**
-     * Formulaire de création d'une proposition
+     * Formulaire de création d'une proposition (SuperAdmin → Entreprise)
      */
     public function create()
     {
-        return view('admin.superadmin.propositions.create');
+        $entreprises = Entreprise::orderBy('nom_entreprise')->get();
+        return view('admin.superadmin.propositions.create', compact('entreprises'));
+    }
+
+    /**
+     * Enregistrer une proposition créée par le SuperAdmin pour une entreprise
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'entreprise_id' => 'required|exists:entreprises,id',
+            'type_service' => 'required|in:' . implode(',', array_keys(PropositionContrat::TYPES_SERVICE)),
+            'nombre_agents' => 'required|integer|min:1',
+            'description_besoins' => 'nullable|string',
+            'budget_approx' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string',
+        ]);
+
+        $entreprise = Entreprise::findOrFail($validated['entreprise_id']);
+
+        $validated['statut'] = 'soumis';
+        $validated['date_soumission'] = now();
+        $validated['traite_par'] = auth()->id();
+        $validated['date_traitement'] = now();
+
+        // Préremplir les infos depuis l'entreprise
+        $validated['nom_entreprise'] = $entreprise->nom_entreprise;
+        $validated['nom_commercial'] = $entreprise->nom_commercial;
+        $validated['forme_juridique'] = $entreprise->forme_juridique;
+        $validated['email'] = $entreprise->email;
+        $validated['telephone'] = $entreprise->telephone;
+        $validated['adresse'] = $entreprise->adresse;
+        $validated['ville'] = $entreprise->ville;
+        $validated['pays'] = $entreprise->pays;
+        $validated['numero_registre'] = $entreprise->numero_registre;
+        $validated['numeroIdentificationFiscale'] = $entreprise->numeroIdentificationFiscale;
+        $validated['numeroContribuable'] = $entreprise->numeroContribuable;
+        $validated['representant_nom'] = $entreprise->nom_representant_legal;
+        $validated['representant_email'] = $entreprise->email_representant_legal;
+        $validated['representant_telephone'] = $entreprise->telephone_representant_legal;
+
+        $proposition = PropositionContrat::create($validated);
+
+        // Notifier l'entreprise
+        $entreprise->notify(new PropositionNotification($proposition, 'cree'));
+
+        return redirect()->route('admin.superadmin.propositions.show', $proposition->id)
+            ->with('success', 'Proposition créée et envoyée à l\'entreprise.');
     }
 
     /**

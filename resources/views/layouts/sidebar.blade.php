@@ -509,6 +509,24 @@
           </ul>
         </li>
 
+        {{-- Propositions --}}
+        <li class="nav-item">
+          <a href="{{ route('admin.entreprise.propositions.index') }}" class="nav-link {{ request()->is('admin/entreprise/propositions*') ? 'active' : '' }}">
+            <i class="nav-icon bi bi-file-earmark-ruled"></i>
+            <p>
+              Propositions
+              @php
+              $nouvellesProps = \App\Models\PropositionContrat::where('entreprise_id', Auth::user()->entreprise_id)
+                ->whereIn('statut', ['soumis', 'en_cours', 'contrat_envoye'])
+                ->count();
+              @endphp
+              @if($nouvellesProps > 0)
+              <span class="nav-badge bg-warning">{{ $nouvellesProps }}</span>
+              @endif
+            </p>
+          </a>
+        </li>
+
         {{-- Contrats --}}
         <li class="nav-item">
           <a href="#" class="nav-link">

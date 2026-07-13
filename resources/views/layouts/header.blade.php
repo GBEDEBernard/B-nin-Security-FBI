@@ -736,104 +736,93 @@
    </div>
  </div>
 
- <script>
-   // Configuration du timeout de session (3 minutes = 180 secondes)
-   const SESSION_TIMEOUT = 3 * 60;
-   const WARNING_TIME = 60; // Afficher l'avertissement 60 secondes avant l'expiration
-   const HEARTBEAT_INTERVAL = 30000; // Heartbeat toutes les 30 secondes
+  <script>
+    const SESSION_TIMEOUT = 3 * 60;
+    const WARNING_TIME = 60;
+    const HEARTBEAT_INTERVAL = 30000;
 
-   let countdownInterval;
-   let heartbeatInterval;
-   let sessionWillExpire = false;
+    let countdownInterval;
+    let heartbeatInterval;
+    let sessionWillExpire = false;
+    let warningTimeoutId = null;
 
-   // Démarrer le suivi de la session
-   function startSessionTracking() {
-     // Envoyer un heartbeat toutes les 30 secondes pour maintenir la session active
-     heartbeatInterval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
-   }
+    function startSessionTracking() {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      heartbeatInterval = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL);
+    }
 
-   // Envoyer un heartbeat au serveur pour prolonger la session
-   function sendHeartbeat() {
-     fetch('{{ route("session.extend") }}', {
-       method: 'POST',
-       headers: {
-         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-         'Content-Type': 'application/json'
-       }
-     }).catch(() => {
-       // Ignorer les erreurs - la session pourrait être expirée
-     });
-   }
+    function stopSessionTracking() {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+    }
 
-   // Afficher le modal d'avertissement
-   function showTimeoutWarning() {
-     sessionWillExpire = true;
-     let timeLeft = WARNING_TIME;
+    function sendHeartbeat() {
+      fetch('{{ route("session.extend") }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json'
+        }
+      }).catch(() => {});
+    }
 
-     const modal = new bootstrap.Modal(document.getElementById('sessionTimeoutModal'));
-     modal.show();
+    function resetInactivityTimer() {
+      if (sessionWillExpire) return;
+      if (warningTimeoutId) clearTimeout(warningTimeoutId);
+      warningTimeoutId = setTimeout(showTimeoutWarning, (SESSION_TIMEOUT - WARNING_TIME) * 1000);
+    }
 
-     countdownInterval = setInterval(() => {
-       timeLeft--;
+    function showTimeoutWarning() {
+      sessionWillExpire = true;
+      let timeLeft = WARNING_TIME;
 
-       const minutes = Math.floor(timeLeft / 60);
-       const seconds = timeLeft % 60;
-       document.getElementById('sessionCountdown').textContent =
-         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      const modal = new bootstrap.Modal(document.getElementById('sessionTimeoutModal'));
+      modal.show();
 
-       if (timeLeft <= 0) {
-         clearInterval(countdownInterval);
-         // Déconnecter automatiquement
-         window.location.href = '{{ route("logout") }}';
-       }
-     }, 1000);
-   }
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('sessionCountdown').textContent =
+          `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          window.location.href = '{{ route("logout") }}';
+        }
+      }, 1000);
+    }
 
-   // Prolonger la session
-   document.getElementById('extendSessionBtn').addEventListener('click', function() {
-     clearInterval(countdownInterval);
-     sessionWillExpire = false;
+    document.getElementById('extendSessionBtn').addEventListener('click', function() {
+      clearInterval(countdownInterval);
+      sessionWillExpire = false;
 
-     // Masquer le modal
-     const modal = bootstrap.Modal.getInstance(document.getElementById('sessionTimeoutModal'));
-     modal.hide();
+      const modal = bootstrap.Modal.getInstance(document.getElementById('sessionTimeoutModal'));
+      modal.hide();
 
-     // Envoyer une requête pour prolonger la session
-     fetch('{{ route("session.extend") }}', {
-       method: 'POST',
-       headers: {
-         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-         'Content-Type': 'application/json'
-       }
-     }).then(() => {
-       // Redémarrer le suivi
-       startSessionTracking();
-     });
-   });
+      sendHeartbeat();
+      startSessionTracking();
+      resetInactivityTimer();
+    });
 
-   // Démarrer le suivi quand la page est chargée
-   document.addEventListener('DOMContentLoaded', function() {
-     // Vérifier si l'utilisateur est connecté
-     @auth
-     startSessionTracking();
+    document.addEventListener('DOMContentLoaded', function() {
+      @auth
+      startSessionTracking();
+      resetInactivityTimer();
+      @endauth
+    });
 
-     // Programmer l'avertissement
-     setTimeout(showTimeoutWarning, (SESSION_TIMEOUT - WARNING_TIME) * 1000);
-     @endauth
-   });
+    function onUserActivity() {
+      if (sessionWillExpire) return;
+      sendHeartbeat();
+      resetInactivityTimer();
+    }
 
-   // Envoyer un heartbeat quand l'utilisateur interagit avec la page
-   document.addEventListener('click', function() {
-     if (!sessionWillExpire) {
-       sendHeartbeat();
-     }
-   });
-
-   document.addEventListener('keypress', function() {
-     if (!sessionWillExpire) {
-       sendHeartbeat();
-     }
-   });
+    document.addEventListener('click', onUserActivity);
+    document.addEventListener('keypress', onUserActivity);
+    document.addEventListener('mousemove', onUserActivity);
+    document.addEventListener('scroll', onUserActivity);
 
    // ── Notifications dynamiques ──────────────────────────────────────
    function loadNotifications() {

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Notifications\Notifiable;
 
 class Entreprise extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Notifiable;
 
     protected $table = 'entreprises';
 
@@ -81,6 +82,11 @@ class Entreprise extends Model
     public function abonnement(): BelongsTo
     {
         return $this->belongsTo(Abonnement::class);
+    }
+
+    public function propositions(): HasMany
+    {
+        return $this->hasMany(PropositionContrat::class);
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────────

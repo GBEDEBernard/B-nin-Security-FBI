@@ -46,8 +46,8 @@ class AbonnementController extends Controller
         $totalActifs = $abonnements->where('est_active', true)->count();
         $revenuMensuel = $abonnements->where('est_active', true)->sum('montant_mensuel');
 
-        // Churn rate : résiliés ce mois / total actifs début mois
-        $resiliesCeMois = Abonnement::where('statut', 'resilie')
+        // Churn rate : résiliés ou suspendus ce mois / total actifs début mois
+        $resiliesCeMois = Abonnement::whereIn('statut', ['resilie', 'suspendu'])
             ->whereMonth('updated_at', now()->month)
             ->whereYear('updated_at', now()->year)
             ->count();

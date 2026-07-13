@@ -136,7 +136,8 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
     Route::prefix('propositions')->name('propositions.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])->name('soumettre');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'store'])->name('store');
+        Route::post('/soumettre', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'soumettre'])->name('soumettre');
         Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'edit'])->name('edit');
         Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\PropositionContratController::class, 'update'])->name('update');
@@ -349,6 +350,14 @@ Route::middleware(['auth', 'tenant', 'entreprise', 'verifier.abonnement'])->pref
         Route::post('/{id}/renouveler', [\App\Http\Controllers\Entreprise\ContratController::class, 'renouveler'])->name('renouveler');
         Route::post('/{id}/suspendre', [\App\Http\Controllers\Entreprise\ContratController::class, 'suspendre'])->name('suspendre');
         Route::post('/{id}/reprendre', [\App\Http\Controllers\Entreprise\ContratController::class, 'reprendre'])->name('reprendre');
+    });
+
+    // Propositions de contrat (visibles par l'entreprise)
+    Route::prefix('propositions')->name('propositions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Entreprise\PropositionController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Entreprise\PropositionController::class, 'show'])->name('show');
+        Route::post('/{id}/accepter', [\App\Http\Controllers\Entreprise\PropositionController::class, 'accepter'])->name('accepter');
+        Route::post('/{id}/refuser', [\App\Http\Controllers\Entreprise\PropositionController::class, 'refuser'])->name('refuser');
     });
 
     // Affectations
