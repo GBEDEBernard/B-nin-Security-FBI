@@ -90,30 +90,33 @@
 
     <div class="n-card">
         @forelse($notifications as $notif)
-        @php
-        $data = is_string($notif->donnees) ? json_decode($notif->donnees, true) : ($notif->donnees ?? []);
-        $icon = $data['icon'] ?? 'bell';
-        $color = $data['color'] ?? 'primary';
-        $message = $data['message'] ?? $data['titre'] ?? 'Notification';
-        $colors = ['primary' => 'var(--n-primary)', 'success' => '#16a34a', 'warning' => '#d97706', 'danger' => '#dc2626', 'info' => '#0891b2'];
-        $bgColors = ['primary' => 'var(--n-primary-bg)', 'success' => 'rgba(22,163,74,.1)', 'warning' => 'rgba(217,119,6,.1)', 'danger' => 'rgba(220,38,38,.1)', 'info' => 'rgba(8,145,178,.1)'];
-        $iconColor = $colors[$color] ?? $colors['primary'];
-        $iconBg = $bgColors[$color] ?? $bgColors['primary'];
-        @endphp
-        <div class="n-item {{ $notif->lu_le ? '' : 'unread' }}">
-            <div class="n-icon" style="background:{{ $iconBg }};color:{{ $iconColor }};">
-                <i class="bi bi-{{ $icon }}"></i>
-            </div>
-            <div class="flex-grow-1 min-w-0">
-                <div class="n-message">{{ $message }}</div>
-                <div class="n-time">{{ $notif->created_at->diffForHumans() }}</div>
-            </div>
-            @unless($notif->lu_le)
-            <button class="btn btn-sm btn-link text-muted mark-read" data-id="{{ $notif->id }}" title="Marquer comme lu">
-                <i class="bi bi-check-lg"></i>
-            </button>
-            @endunless
-        </div>
+         @php
+         $data = is_string($notif->donnees) ? json_decode($notif->donnees, true) : ($notif->donnees ?? []);
+         $icon = $data['icon'] ?? 'bell';
+         $color = $data['color'] ?? 'primary';
+         $message = $data['message'] ?? $data['titre'] ?? 'Notification';
+         $url = $data['url'] ?? null;
+         $colors = ['primary' => 'var(--n-primary)', 'success' => '#16a34a', 'warning' => '#d97706', 'danger' => '#dc2626', 'info' => '#0891b2'];
+         $bgColors = ['primary' => 'var(--n-primary-bg)', 'success' => 'rgba(22,163,74,.1)', 'warning' => 'rgba(217,119,6,.1)', 'danger' => 'rgba(220,38,38,.1)', 'info' => 'rgba(8,145,178,.1)'];
+         $iconColor = $colors[$color] ?? $colors['primary'];
+         $iconBg = $bgColors[$color] ?? $bgColors['primary'];
+         $tag = $url ? 'a' : 'div';
+         $href = $url ? "href='{$url}'" : '';
+         @endphp
+         <{{ $tag }} {{ $href }} class="n-item {{ $notif->lu_le ? '' : 'unread' }}" style="{{ $url ? 'cursor:pointer;' : '' }}">
+             <div class="n-icon" style="background:{{ $iconBg }};color:{{ $iconColor }};">
+                 <i class="bi bi-{{ $icon }}"></i>
+             </div>
+             <div class="flex-grow-1 min-w-0">
+                 <div class="n-message">{{ $message }}</div>
+                 <div class="n-time">{{ $notif->created_at->diffForHumans() }}</div>
+             </div>
+             @unless($notif->lu_le)
+             <button class="btn btn-sm btn-link text-muted mark-read" data-id="{{ $notif->id }}" title="Marquer comme lu">
+                 <i class="bi bi-check-lg"></i>
+             </button>
+             @endunless
+         </{{ $tag }}>
         @empty
         <div class="n-empty">
             <i class="bi bi-bell-slash"></i>

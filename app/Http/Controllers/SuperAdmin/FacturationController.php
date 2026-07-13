@@ -93,10 +93,20 @@ class FacturationController extends Controller
         return $pdf->download("facture_{$facture->numero_facture}.pdf");
     }
 
-    public function genererFactures()
+    public function genererFactures(Request $request)
     {
         $exitCode = Artisan::call('abonnements:facturer');
         $output = Artisan::output();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            preg_match('/(\d+)\s*facture/', $output, $matches);
+            $count = (int)($matches[1] ?? 0);
+            return response()->json([
+                'success' => $exitCode === 0,
+                'message' => trim($output),
+                'count' => $count,
+            ]);
+        }
 
         return back()->with('success', trim($output));
     }

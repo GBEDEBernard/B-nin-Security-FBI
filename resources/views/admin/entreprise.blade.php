@@ -601,28 +601,114 @@
                 </div>
             </div>
 
-            {{-- Activité Récente --}}
+            {{-- Factures Récentes --}}
             <div class="col-lg-6">
                 <div class="dashboard-card">
-                    <div class="card-header">
-                        <i class="bi bi-activity me-2 text-danger"></i>
-                        Activité Récente
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-file-earmark-text me-2 text-success"></i>
+                            Factures Récentes
+                        </span>
+                        <a href="{{ route('admin.entreprise.factures.index') }}" class="btn btn-sm btn-outline-success">Voir tout</a>
                     </div>
-                    <div class="card-body">
-                        <div class="activity-timeline">
-                            <div class="activity-item">
-                                <div class="fw-semibold">Nouveau pointage</div>
-                                <div class="text-muted small">Agent: Jean Koffi - Site SBEE - Il y a 1h</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="fw-semibold">Facture créée</div>
-                                <div class="text-muted small">Facture #2024-001 - SONEB - Il y a 3h</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="fw-semibold">Incident signalé</div>
-                                <div class="text-muted small">Incident sur le site de la SBEE - Hier</div>
-                            </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>N° Facture</th>
+                                        <th>Date</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($factures_recentes as $facture)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('admin.entreprise.factures.show', $facture->id) }}" class="text-decoration-none fw-semibold">
+                                                {{ $facture->numero_facture }}
+                                            </a>
+                                        </td>
+                                        <td>{{ $facture->date_emission->format('d/m/Y') }}</td>
+                                        <td>{{ number_format($facture->montant_ttc, 0, ',', ' ') }} FCFA</td>
+                                        <td>
+                                            @php
+                                            $badgeClass = match($facture->statut) {
+                                                'payee' => 'bg-success',
+                                                'partiellement_payee' => 'bg-info',
+                                                'impayee' => 'bg-danger',
+                                                'annulee' => 'bg-secondary',
+                                                default => 'bg-warning text-dark',
+                                            };
+                                            @endphp
+                                            <span class="badge {{ $badgeClass }}">{{ $facture->statut_label }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('admin.entreprise.factures.download', $facture->id) }}" class="btn btn-sm btn-outline-primary" title="Télécharger PDF">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Aucune facture pour le moment</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Notifications Récentes --}}
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-bell me-2 text-warning"></i>
+                            Notifications
+                        </span>
+                        @php
+                        $notifRoute = '';
+                        if (auth()->user() instanceof \App\Models\Employe) {
+                            $notifRoute = auth()->user()->estAgent() ? 'admin.agent.mes-notifications.index' : 'admin.entreprise.mes-notifications.index';
+                        } else {
+                            $notifRoute = 'admin.superadmin.mes-notifications.index';
+                        }
+                        @endphp
+                        <a href="{{ route($notifRoute) }}" class="btn btn-sm btn-outline-warning">Voir tout</a>
+                    </div>
+                    <div class="card-body p-0">
+                        @forelse($notifications as $notif)
+                        @php
+                        $data = is_string($notif->donnees) ? json_decode($notif->donnees, true) : ($notif->donnees ?? []);
+                        $notifIcon = $data['icon'] ?? 'bell';
+                        $notifColor = $data['color'] ?? 'primary';
+                        $notifMessage = $data['message'] ?? $data['titre'] ?? 'Notification';
+                        $notifUrl = $data['url'] ?? null;
+                        $notifColors = ['primary' => '#2563eb', 'success' => '#16a34a', 'warning' => '#d97706', 'danger' => '#dc2626', 'info' => '#0891b2'];
+                        $notifBgColors = ['primary' => 'rgba(37,99,235,.1)', 'success' => 'rgba(22,163,74,.1)', 'warning' => 'rgba(217,119,6,.1)', 'danger' => 'rgba(220,38,38,.1)', 'info' => 'rgba(8,145,178,.1)'];
+                        $nColor = $notifColors[$notifColor] ?? $notifColors['primary'];
+                        $nBg = $notifBgColors[$notifColor] ?? $notifBgColors['primary'];
+                        @endphp
+                        <a href="{{ $notifUrl ?: '#' }}" class="d-flex align-items-center gap-3 px-3 py-3 text-decoration-none border-bottom" style="transition: background .12s;hover:background:var(--bs-tertiary-bg);">
+                            <div style="width:34px;height:34px;border-radius:50%;background:{{ $nBg }};color:{{ $nColor }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-{{ $notifIcon }}"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <p class="mb-0 text-truncate" style="font-size:.85rem;">{{ $notifMessage }}</p>
+                                <small class="text-secondary">{{ $notif->created_at->diffForHumans() }}</small>
+                            </div>
+                        </a>
+                        @empty
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-bell-slash d-block mb-2" style="font-size:2rem;"></i>
+                            Aucune notification
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

@@ -22,10 +22,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,employe,client')->group(function () {
     Route::match(['GET', 'POST'], '/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
     Route::get('/notifications/unread-count', [\App\Http\Controllers\ProfileController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\ProfileController::class, 'markAsRead'])->name('notifications.mark-read');
 });
 
 // Page d'accueil - redirige selon le rôle de l'utilisateur connecté

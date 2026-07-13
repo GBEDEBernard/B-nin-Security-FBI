@@ -10,16 +10,27 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
+    private function getCurrentUser()
+    {
+        if (Auth::guard('employe')->check()) {
+            return Auth::guard('employe')->user();
+        }
+        if (Auth::guard('client')->check()) {
+            return Auth::guard('client')->user();
+        }
+        return Auth::guard('web')->user();
+    }
+
     public function show()
     {
-        $user = Auth::user();
+        $user = $this->getCurrentUser();
         $guard = $this->getGuard();
         return view('admin.profile.index', compact('user', 'guard'));
     }
 
     public function update(Request $request)
     {
-        $user = Auth::user();
+        $user = $this->getCurrentUser();
         $guard = $this->getGuard();
 
         $rules = [
@@ -68,40 +79,45 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
+        $user = $this->getCurrentUser();
+
         $validated = $request->validate([
             'current_password' => 'required|current_password',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        Auth::user()->update(['password' => Hash::make($validated['password'])]);
+        $user->update(['password' => Hash::make($validated['password'])]);
 
         return back()->with('success', 'Mot de passe modifié avec succès.');
     }
 
     public function notifications()
     {
-        $user = Auth::user();
+        $user = $this->getCurrentUser();
         $notifications = $user->notifications()->paginate(20);
         return view('admin.profile.notifications', compact('notifications'));
     }
 
     public function markAsRead($id)
     {
-        $notif = Auth::user()->notifications()->findOrFail($id);
+        $user = $this->getCurrentUser();
+        $notif = $user->notifications()->findOrFail($id);
         $notif->update(['lu_le' => now()]);
         return response()->json(['success' => true]);
     }
 
     public function markAllAsRead()
     {
-        Auth::user()->notifications()->whereNull('lu_le')->update(['lu_le' => now()]);
+        $user = $this->getCurrentUser();
+        $user->notifications()->whereNull('lu_le')->update(['lu_le' => now()]);
         return back()->with('success', 'Toutes les notifications ont été marquées comme lues.');
     }
 
     public function unreadCount()
     {
-        $count = Auth::user()->notifications()->whereNull('lu_le')->count();
-        $notifications = Auth::user()->notifications()->whereNull('lu_le')->take(5)->get()->map(function ($n) {
+        $user = $this->getCurrentUser();
+        $count = $user->notifications()->whereNull('lu_le')->count();
+        $notifications = $user->notifications()->whereNull('lu_le')->take(5)->get()->map(function ($n) {
             $data = is_string($n->donnees) ? json_decode($n->donnees, true) : ($n->donnees ?? []);
             return [
                 'id' => $n->id,
@@ -110,6 +126,7 @@ class ProfileController extends Controller
                 'icon' => $data['icon'] ?? 'bell',
                 'color' => $data['color'] ?? 'primary',
                 'time' => $n->created_at->diffForHumans(),
+                'url' => $data['url'] ?? null,
             ];
         });
         return response()->json(['count' => $count, 'notifications' => $notifications]);
@@ -117,13 +134,14 @@ class ProfileController extends Controller
 
     private function getGuard(): string
     {
+        if (Auth::guard('employe')->check()) {
+            $user = Auth::guard('employe')->user();
+            return $user->estAgent() ? 'admin.agent' : 'admin.entreprise';
+        }
         if (Auth::guard('web')->check()) {
             $user = Auth::guard('web')->user();
             if ($user instanceof \App\Models\Employe) {
-                if ($user->estAgent()) {
-                    return 'admin.agent';
-                }
-                return 'admin.entreprise';
+                return $user->estAgent() ? 'admin.agent' : 'admin.entreprise';
             }
             return 'admin.superadmin';
         }

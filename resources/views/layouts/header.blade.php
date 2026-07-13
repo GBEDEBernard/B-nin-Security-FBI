@@ -71,15 +71,25 @@
        </li>
        <!--end::Navbar Search-->
 
-       @auth
        @php
-       $currentUser = Auth::user();
+       $isAuth = false;
+       $currentUser = null;
        $guardPrefix = 'superadmin';
-       if ($currentUser instanceof \App\Models\Employe) {
+       if (Auth::guard('employe')->check()) {
+           $isAuth = true;
+           $currentUser = Auth::guard('employe')->user();
            $guardPrefix = $currentUser->estAgent() ? 'agent' : 'entreprise';
-       } elseif ($currentUser instanceof \App\Models\Client) {
+       } elseif (Auth::guard('client')->check()) {
+           $isAuth = true;
+           $currentUser = Auth::guard('client')->user();
            $guardPrefix = 'client';
+       } elseif (Auth::guard('web')->check()) {
+           $isAuth = true;
+           $currentUser = Auth::guard('web')->user();
        }
+       @endphp
+       @if($isAuth)
+       @php
        $notifRoute = route("admin.{$guardPrefix}.mes-notifications.index");
        @endphp
        <!--begin::Notifications Dropdown Menu-->
@@ -101,7 +111,7 @@
            </a>
          </div>
        </li>
-       @endauth
+       @endif
        <!--end::Notifications Dropdown Menu-->
 
        <!--begin::Fullscreen Toggle-->
@@ -114,7 +124,7 @@
        <!--end::Fullscreen Toggle-->
 
         <!--begin::User Menu Dropdown-->
-        @auth
+        @if($isAuth)
         @php
         $userName = $currentUser->name ?? $currentUser->nomComplet ?? $currentUser->nomAffichage ?? 'Utilisateur';
         $userInitial = strtoupper(substr($userName, 0, 1));
@@ -166,7 +176,7 @@
               @endif
               <div class="profile-dropdown-info">
                 <p class="profile-dropdown-name">{{ $userName }}</p>
-                <p class="profile-dropdown-email">{{ Auth::user()->email }}</p>
+                <p class="profile-dropdown-email">{{ $currentUser->email }}</p>
                 <span class="profile-dropdown-badge">{{ $roleLabel }}</span>
               </div>
             </div>
@@ -186,28 +196,28 @@
                 </div>
                 <div class="profile-dropdown-item-content">
                   <span class="profile-dropdown-item-label">Membre depuis</span>
-                  <span class="profile-dropdown-item-value">{{ Auth::user()->created_at->format('d/m/Y') }}</span>
+                  <span class="profile-dropdown-item-value">{{ $currentUser->created_at->format('d/m/Y') }}</span>
                 </div>
               </div>
-              @if(Auth::user()->last_login_at)
+              @if($currentUser->last_login_at)
               <div class="profile-dropdown-item">
                 <div class="profile-dropdown-item-icon">
                   <i class="bi bi-clock-history"></i>
                 </div>
                 <div class="profile-dropdown-item-content">
                   <span class="profile-dropdown-item-label">Dernière connexion</span>
-                  <span class="profile-dropdown-item-value">{{ Auth::user()->last_login_at->diffForHumans() }}</span>
+                  <span class="profile-dropdown-item-value">{{ $currentUser->last_login_at->diffForHumans() }}</span>
                 </div>
               </div>
               @endif
-              @if(Auth::user()->telephone)
+              @if($currentUser->telephone)
               <div class="profile-dropdown-item">
                 <div class="profile-dropdown-item-icon">
                   <i class="bi bi-telephone"></i>
                 </div>
                 <div class="profile-dropdown-item-content">
                   <span class="profile-dropdown-item-label">Téléphone</span>
-                  <span class="profile-dropdown-item-value">{{ Auth::user()->telephone }}</span>
+                  <span class="profile-dropdown-item-value">{{ $currentUser->telephone }}</span>
                 </div>
               </div>
               @endif
@@ -239,7 +249,7 @@
            <i class="bi bi-person-plus me-1"></i> Inscription
          </a>
        </li>
-       @endauth
+       @endif
        <!--end::User Menu Dropdown-->
 
        <!--begin::Theme Toggle-->
@@ -807,11 +817,11 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-      @auth
-      startSessionTracking();
-      resetInactivityTimer();
-      @endauth
-    });
+       @if($isAuth)
+       startSessionTracking();
+       resetInactivityTimer();
+       @endif
+     });
 
     function onUserActivity() {
       if (sessionWillExpire) return;
@@ -847,22 +857,24 @@
          }
 
          list.innerHTML = data.notifications.map(n => {
-           const colors = { primary: 'var(--bs-primary)', success: '#16a34a', warning: '#d97706', danger: '#dc2626', info: '#0891b2' };
-           const bgColors = { primary: 'rgba(37,99,235,.1)', success: 'rgba(22,163,74,.1)', warning: 'rgba(217,119,6,.1)', danger: 'rgba(220,38,38,.1)', info: 'rgba(8,145,178,.1)' };
-           const c = colors[n.color] || colors.primary;
-           const bg = bgColors[n.color] || bgColors.primary;
-           return '<a href="#" class="dropdown-item">' +
-             '<div class="d-flex align-items-center gap-2">' +
-               '<div style="width:32px;height:32px;border-radius:50%;background:' + bg + ';color:' + c + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
-                 '<i class="bi bi-' + n.icon + '" style="font-size:.8rem;"></i>' +
-               '</div>' +
-               '<div class="flex-grow-1 min-w-0">' +
-                 '<p class="mb-0 text-truncate" style="font-size:.85rem;">' + n.message + '</p>' +
-                 '<small class="text-secondary">' + n.time + '</small>' +
-               '</div>' +
-             '</div>' +
-           '</a><div class="dropdown-divider"></div>';
-         }).join('');
+            const colors = { primary: 'var(--bs-primary)', success: '#16a34a', warning: '#d97706', danger: '#dc2626', info: '#0891b2' };
+            const bgColors = { primary: 'rgba(37,99,235,.1)', success: 'rgba(22,163,74,.1)', warning: 'rgba(217,119,6,.1)', danger: 'rgba(220,38,38,.1)', info: 'rgba(8,145,178,.1)' };
+            const c = colors[n.color] || colors.primary;
+            const bg = bgColors[n.color] || bgColors.primary;
+            const href = n.url ? n.url : '#';
+            const dataId = 'notif-' + n.id;
+            return '<a href="' + href + '" class="dropdown-item notif-link" data-id="' + n.id + '" data-url="' + href + '">' +
+              '<div class="d-flex align-items-center gap-2">' +
+                '<div style="width:32px;height:32px;border-radius:50%;background:' + bg + ';color:' + c + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                  '<i class="bi bi-' + n.icon + '" style="font-size:.8rem;"></i>' +
+                '</div>' +
+                '<div class="flex-grow-1 min-w-0">' +
+                  '<p class="mb-0 text-truncate" style="font-size:.85rem;">' + n.message + '</p>' +
+                  '<small class="text-secondary">' + n.time + '</small>' +
+                '</div>' +
+              '</div>' +
+            '</a><div class="dropdown-divider"></div>';
+          }).join('');
 
          // Enlever le dernier divider
          const lastDivider = list.querySelector('.dropdown-divider:last-child');
@@ -873,10 +885,23 @@
        });
    }
 
-   document.addEventListener('DOMContentLoaded', function() {
-     @auth
-     loadNotifications();
-     setInterval(loadNotifications, 30000); // Rafraîchir toutes les 30s
-     @endauth
-   });
+   const MARK_READ_URL = '{{ route("notifications.mark-read", ["id" => "__ID__"]) }}';
+    document.addEventListener('DOMContentLoaded', function() {
+       @if($isAuth)
+       loadNotifications();
+       setInterval(loadNotifications, 30000); // Rafraîchir toutes les 30s
+
+       document.getElementById('notifList').addEventListener('click', function(e) {
+         const link = e.target.closest('.notif-link');
+         if (link) {
+           e.preventDefault();
+           const id = link.dataset.id;
+           const url = link.dataset.url;
+           fetch(MARK_READ_URL.replace('__ID__', id), { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+             .then(() => { if (url && url !== '#') window.location.href = url; })
+             .catch(() => { if (url && url !== '#') window.location.href = url; });
+         }
+       });
+       @endif
+     });
  </script>

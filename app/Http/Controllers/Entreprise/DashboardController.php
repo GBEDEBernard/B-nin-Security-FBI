@@ -140,12 +140,23 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Factures récentes (toutes)
+        $factures_recentes = Facture::where('entreprise_id', $entrepriseId)
+            ->orderByDesc('date_emission')
+            ->limit(5)
+            ->get();
+
+        // Notifications non lues
+        $notifications = auth()->user()->notifications()->whereNull('lu_le')->latest()->limit(5)->get();
+
         return view('admin.entreprise', compact(
             'stats',
             'chartData',
             'incidents_recents',
             'affectations_aujourdhui',
-            'factures_impayees'
+            'factures_impayees',
+            'factures_recentes',
+            'notifications'
         ));
     }
 

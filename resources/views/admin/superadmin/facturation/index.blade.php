@@ -13,12 +13,9 @@
                 <p class="text-muted mb-0">Vue consolidée de toutes les factures</p>
             </div>
             <div>
-                <form action="{{ route('admin.superadmin.facturation.generer') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-success me-2" onclick="return confirm('Générer les factures du mois pour tous les abonnements actifs ?')">
-                        <i class="bi bi-gear me-1"></i> Générer les factures du mois
-                    </button>
-                </form>
+                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#genererFacturesModal">
+                    <i class="bi bi-gear me-1"></i> Générer les factures du mois
+                </button>
                 <a href="{{ route('admin.superadmin.facturation.export') }}" class="btn btn-outline-secondary me-2">
                     <i class="bi bi-download me-1"></i> Exporter
                 </a>
@@ -222,4 +219,116 @@
             @endif
         </div>
     </div>
+
+    {{-- Modal de confirmation --}}
+    <div class="modal fade" id="genererFacturesModal" tabindex="-1" aria-labelledby="genererFacturesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="genererFacturesModalLabel">
+                        <i class="bi bi-gear text-success me-2"></i>Générer les factures
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <i class="bi bi-receipt-cutoff" style="font-size: 3.5rem; color: var(--bs-success); opacity: 0.7;"></i>
+                    </div>
+                    <h6 class="fw-semibold mb-2">Générer les factures du mois</h6>
+                    <p class="text-muted mb-0">
+                        Cette action va générer les factures pour tous les abonnements actifs selon leur cycle de facturation (mensuel, trimestriel, semestriel, annuel).
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-success px-4" id="confirmGenererFactures">
+                        <i class="bi bi-check-lg me-1"></i> Confirmer la génération
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal de résultat --}}
+    <div class="modal fade" id="resultatFacturesModal" tabindex="-1" aria-labelledby="resultatFacturesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="resultatFacturesModalLabel">
+                        <i class="bi bi-check-circle text-success me-2"></i>Résultat
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body text-center py-4" id="resultatFacturesBody">
+                    <div class="mb-3">
+                        <div id="resultatLoading" class="py-3">
+                            <div class="spinner-border text-success mb-3" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Génération en cours...</span>
+                            </div>
+                            <h6 class="fw-semibold">Génération en cours...</h6>
+                            <p class="text-muted mb-0 small">Veuillez patienter pendant la génération des factures.</p>
+                        </div>
+                        <div id="resultatSuccess" class="py-3" style="display:none;">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
+                            <h6 class="fw-semibold mt-3">Factures générées avec succès !</h6>
+                            <p class="text-muted mb-0" id="resultatMessage"></p>
+                        </div>
+                        <div id="resultatError" class="py-3" style="display:none;">
+                            <i class="bi bi-x-circle-fill text-danger" style="font-size: 3.5rem;"></i>
+                            <h6 class="fw-semibold mt-3">Erreur lors de la génération</h6>
+                            <p class="text-muted mb-0" id="resultatErrorMessage"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" id="resultatFermerBtn">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('confirmGenererFactures')?.addEventListener('click', function() {
+    const confirmModal = bootstrap.Modal.getInstance(document.getElementById('genererFacturesModal'));
+    confirmModal.hide();
+
+    const resultModal = new bootstrap.Modal(document.getElementById('resultatFacturesModal'));
+    resultModal.show();
+
+    document.getElementById('resultatLoading').style.display = '';
+    document.getElementById('resultatSuccess').style.display = 'none';
+    document.getElementById('resultatError').style.display = 'none';
+
+    fetch('{{ route("admin.superadmin.facturation.generer") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('resultatLoading').style.display = 'none';
+        if (data.success) {
+            document.getElementById('resultatSuccess').style.display = '';
+            document.getElementById('resultatMessage').textContent = data.message;
+        } else {
+            document.getElementById('resultatError').style.display = '';
+            document.getElementById('resultatErrorMessage').textContent = data.message;
+        }
+    })
+    .catch(error => {
+        document.getElementById('resultatLoading').style.display = 'none';
+        document.getElementById('resultatError').style.display = '';
+        document.getElementById('resultatErrorMessage').textContent = 'Une erreur est survenue lors de la génération des factures.';
+    });
+});
+
+document.getElementById('resultatFermerBtn')?.addEventListener('click', function() {
+    window.location.reload();
+});
+</script>
+@endpush
