@@ -20,7 +20,7 @@
   <div class="sidebar-wrapper">
     <nav class="mt-2">
       <!--begin::Sidebar Menu-->
-      <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="navigation">
+      <ul class="nav sidebar-menu flex-column" role="navigation" aria-label="Main navigation" id="navigation">
 
         {{-- Admin --}}
         <li class="nav-item">
@@ -35,6 +35,18 @@
         {{-- Caché quand le super admin est en contexte entreprise --}}
         {{-- =========================================================== --}}
         @if(Auth::guard('web')->check() && Auth::guard('web')->user()->estSuperAdmin() && !Auth::guard('web')->user()->estEnContexteEntreprise())
+
+        @php
+        $isSA_Abonnements = request()->routeIs('admin.superadmin.abonnements.*');
+        $isSA_Utilisateurs = request()->routeIs('admin.superadmin.utilisateurs.*');
+        $isSA_Roles = request()->routeIs('admin.superadmin.roles.*');
+        $isSA_Facturation = request()->routeIs('admin.superadmin.facturation.*');
+        $isSA_Rapports = request()->routeIs('admin.superadmin.rapports.*');
+        $isSA_APK = request()->routeIs('admin.superadmin.apk.*');
+        $isSA_Notifications = request()->routeIs('admin.superadmin.notifications.*');
+        $isSA_Journal = request()->routeIs('admin.superadmin.journal.*');
+        $isSA_Modeles = request()->routeIs('admin.superadmin.modeles.*');
+        @endphp
 
         <li class="nav-header text-uppercase fw-bold text-primary">Administration</li>
 
@@ -94,7 +106,7 @@
         </li>
 
         {{-- Abonnements (contrôle des agents par entreprise) --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Abonnements ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-credit-card-2-front-fill"></i>
             <p>
@@ -102,15 +114,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Abonnements) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.abonnements.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.abonnements.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.abonnements.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des abonnements</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.abonnements.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.abonnements.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.abonnements.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouvel abonnement</p>
               </a>
@@ -120,7 +132,7 @@
 
         {{-- Propositions de contrat (Super Admin) --}}
         <li class="nav-item">
-          <a href="{{ route('admin.superadmin.propositions.index') }}" class="nav-link {{ request()->is('admin/superadmin/propositions*') ? 'active' : '' }}">
+          <a href="{{ route('admin.superadmin.propositions.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.propositions.*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-file-earmark-ruled"></i>
             <p>
               Propositions
@@ -135,7 +147,7 @@
         </li>
 
         {{-- Utilisateurs Globaux --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Utilisateurs ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-people-gear"></i>
             <p>
@@ -143,15 +155,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Utilisateurs) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.utilisateurs.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.utilisateurs.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.utilisateurs.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des utilisateurs</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.utilisateurs.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.utilisateurs.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouvel utilisateur</p>
               </a>
@@ -160,7 +172,7 @@
         </li>
 
         {{-- Rôles & Permissions --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Roles ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-shield-lock"></i>
             <p>
@@ -168,15 +180,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Roles) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.roles.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.roles.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des rôles</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.roles.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.roles.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.roles.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouveau rôle</p>
               </a>
@@ -187,7 +199,7 @@
         <li class="nav-header text-uppercase fw-bold text-primary">Finance & Rapports</li>
 
         {{-- Facturation Globale --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Facturation ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-cash-stack"></i>
             <p>
@@ -195,27 +207,27 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Facturation) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.facturation.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.facturation.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.facturation.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Toutes les factures</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.facturation.paiements') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.facturation.paiements') }}" class="nav-link {{ request()->routeIs('admin.superadmin.facturation.paiements') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Paiements</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.facturation.creances') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.facturation.creances') }}" class="nav-link {{ request()->routeIs('admin.superadmin.facturation.creances') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Créances</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.facturation.statistiques') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.facturation.statistiques') }}" class="nav-link {{ request()->routeIs('admin.superadmin.facturation.statistiques') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Statistiques</p>
               </a>
@@ -224,7 +236,7 @@
         </li>
 
         {{-- Rapports Globaux --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Rapports ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-graph-up"></i>
             <p>
@@ -232,39 +244,39 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Rapports) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Tableau de bord</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.par-entreprise') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.par-entreprise') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.par-entreprise') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Par entreprise</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.financier') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.financier') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.financier') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Financier</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.employes') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.employes') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.employes') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Employés</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.clients') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.clients') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.clients') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Clients</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.rapports.contrats') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.rapports.contrats') }}" class="nav-link {{ request()->routeIs('admin.superadmin.rapports.contrats') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Contrats</p>
               </a>
@@ -275,7 +287,7 @@
         <li class="nav-header text-uppercase fw-bold text-primary">Système</li>
 
         {{-- Gestion APK --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_APK ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-android"></i>
             <p>
@@ -283,21 +295,21 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_APK) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.apk.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.apk.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.apk.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Versions APK</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.apk.configurations') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.apk.configurations') }}" class="nav-link {{ request()->routeIs('admin.superadmin.apk.configurations') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Configurations</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.apk.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.apk.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.apk.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouvelle version</p>
               </a>
@@ -306,7 +318,7 @@
         </li>
 
         {{-- Notifications Push --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Notifications ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-bell-fill"></i>
             <p>
@@ -314,21 +326,21 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Notifications) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.notifications.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.notifications.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.notifications.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Historique</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.notifications.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.notifications.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.notifications.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouvelle notification</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.notifications.statistiques') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.notifications.statistiques') }}" class="nav-link {{ request()->routeIs('admin.superadmin.notifications.statistiques') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Statistiques</p>
               </a>
@@ -337,7 +349,7 @@
         </li>
 
         {{-- Journal d'Activité --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Journal ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-text"></i>
             <p>
@@ -345,27 +357,27 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Journal) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.journal.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.journal.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.journal.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Historique</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.journal.par-utilisateur') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.journal.par-utilisateur') }}" class="nav-link {{ request()->routeIs('admin.superadmin.journal.par-utilisateur') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Par utilisateur</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.journal.par-module') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.journal.par-module') }}" class="nav-link {{ request()->routeIs('admin.superadmin.journal.par-module') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Par module</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.journal.statistiques') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.journal.statistiques') }}" class="nav-link {{ request()->routeIs('admin.superadmin.journal.statistiques') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Statistiques</p>
               </a>
@@ -374,7 +386,7 @@
         </li>
 
         {{-- Modèles --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isSA_Modeles ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-file-earmark-text-fill"></i>
             <p>
@@ -382,15 +394,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isSA_Modeles) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.modeles.index') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.modeles.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.modeles.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des modèles</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.superadmin.modeles.create') }}" class="nav-link">
+              <a href="{{ route('admin.superadmin.modeles.create') }}" class="nav-link {{ request()->routeIs('admin.superadmin.modeles.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Nouveau modèle</p>
               </a>
@@ -420,6 +432,12 @@
         $estSuperAdminEnContexte = $superAdminEnContexte;
         @endphp
         @if($estEnContexteEntreprise)
+
+        @php
+        $isEnt_Clients = request()->routeIs('admin.entreprise.clients.*');
+        $isEnt_Employes = request()->routeIs('admin.entreprise.employes.*');
+        $isEnt_Contrats = request()->routeIs('admin.entreprise.contrats.*');
+        @endphp
 
         <li class="nav-header text-uppercase fw-bold text-primary">
           @if($estSuperAdminEnContexte)
@@ -460,7 +478,7 @@
         @endif
 
         {{-- Clients --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isEnt_Clients ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-people-fill"></i>
             <p>
@@ -468,15 +486,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isEnt_Clients) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.entreprise.clients.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.clients.index') }}" class="nav-link {{ request()->routeIs('admin.entreprise.clients.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des clients</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.entreprise.clients.create') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.clients.create') }}" class="nav-link {{ request()->routeIs('admin.entreprise.clients.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un client</p>
               </a>
@@ -485,7 +503,7 @@
         </li>
 
         {{-- Employés --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isEnt_Employes ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-person-badge-fill"></i>
             <p>
@@ -493,15 +511,15 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isEnt_Employes) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.entreprise.employes.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.employes.index') }}" class="nav-link {{ request()->routeIs('admin.entreprise.employes.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Liste des employés</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ route('admin.entreprise.employes.create') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.employes.create') }}" class="nav-link {{ request()->routeIs('admin.entreprise.employes.create') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Ajouter un employé</p>
               </a>
@@ -511,7 +529,7 @@
 
         {{-- Propositions --}}
         <li class="nav-item">
-          <a href="{{ route('admin.entreprise.propositions.index') }}" class="nav-link {{ request()->is('admin/entreprise/propositions*') ? 'active' : '' }}">
+          <a href="{{ route('admin.entreprise.propositions.index') }}" class="nav-link {{ request()->routeIs('admin.entreprise.propositions.*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-file-earmark-ruled"></i>
             <p>
               Propositions
@@ -529,14 +547,14 @@
 
         {{-- Factures --}}
         <li class="nav-item">
-          <a href="{{ route('admin.entreprise.factures.index') }}" class="nav-link {{ request()->is('admin/entreprise/factures*') ? 'active' : '' }}">
+          <a href="{{ route('admin.entreprise.factures.index') }}" class="nav-link {{ request()->routeIs('admin.entreprise.factures.*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-receipt"></i>
             <p>Factures</p>
           </a>
         </li>
 
         {{-- Contrats --}}
-        <li class="nav-item">
+        <li class="nav-item{{ $isEnt_Contrats ? ' menu-open' : '' }}">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-file-earmark-text-fill"></i>
             <p>
@@ -545,9 +563,9 @@
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
-          <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview"@if($isEnt_Contrats) style="display:block"@endif>
             <li class="nav-item">
-              <a href="{{ route('admin.entreprise.contrats.index') }}" class="nav-link">
+              <a href="{{ route('admin.entreprise.contrats.index') }}" class="nav-link {{ request()->routeIs('admin.entreprise.contrats.index') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Tous les contrats</p>
               </a>
@@ -1471,7 +1489,7 @@
     // ========================================
     // Accordion Animation Handler
     // ========================================
-    const menuToggles = document.querySelectorAll('.sidebar-menu .nav-item > .nav-link:not([href="#"])');
+    const menuToggles = document.querySelectorAll('.sidebar-menu .nav-item > .nav-link[href="#"]');
 
     menuToggles.forEach(toggle => {
       toggle.addEventListener('click', function(e) {
@@ -1538,28 +1556,6 @@
         // Remove ripple after animation
         setTimeout(() => ripple.remove(), 600);
       });
-    });
-
-    // ========================================
-    // Active State Management
-    // ========================================
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && (currentPath === href || currentPath.startsWith(href + '/'))) {
-        link.classList.add('active');
-
-        // Open parent menus if closed
-        let parent = link.closest('.nav-treeview');
-        while (parent) {
-          const parentItem = parent.closest('.nav-item');
-          if (parentItem) {
-            parentItem.classList.add('menu-open', 'expand');
-            parent.style.display = 'block';
-          }
-          parent = parent.closest('.nav-treeview');
-        }
-      }
     });
 
     // ========================================
