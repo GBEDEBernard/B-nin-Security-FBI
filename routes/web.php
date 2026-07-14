@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SuperAdminController;
 
 /*|--------------------------------------------------------------------------
@@ -23,8 +24,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/session/extend', [AuthController::class, 'extendSession'])->name('session.extend');
+    Route::get('/recherche', [SearchController::class, 'search'])->name('search');
 });
 
 // Page d'accueil - redirige selon le rôle de l'utilisateur connecté

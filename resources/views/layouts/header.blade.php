@@ -1,5 +1,5 @@
  <!--begin::Header-->
- <nav class="app-header navbar navbar-expand shadow-sm" data-bs-theme="dark" style="min-height: 60px; background-color: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color);">
+  <nav class="app-header navbar navbar-expand shadow-sm sticky-top" data-bs-theme="dark" style="min-height: 60px; background-color: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color);">
    <!--begin::Container-->
    <div class="container-fluid">
      <!--begin::Start Navbar Links-->
@@ -19,127 +19,61 @@
 
      <!--begin::End Navbar Links-->
      <ul class="navbar-nav ms-auto align-items-center">
-       <!--begin::Navbar Search-->
-       <li class="nav-item">
-         <a class="nav-link" data-widget="navbar-search" href="#" role="button">
-           <i class="bi bi-search"></i>
-         </a>
-       </li>
-       <!--end::Navbar Search-->
+        <!--begin::Navbar Search-->
+        <li class="nav-item position-relative">
+          <div class="d-flex align-items-center" style="max-width: 320px;">
+            <div class="position-relative w-100">
+              <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2" style="font-size: 0.8rem; opacity: 0.5; z-index: 5;"></i>
+              <input type="text" id="liveSearch" class="form-control form-control-sm bg-transparent border-0 border-bottom ps-4" placeholder="Rechercher..." autocomplete="off" style="color: var(--bs-body-color); outline: none; box-shadow: none; border-radius: 0;">
+              <button type="button" id="clearSearch" class="btn btn-sm position-absolute top-50 end-0 translate-middle-y d-none" style="border: none; background: none; padding: 0 4px; font-size: 0.7rem; opacity: 0.5;">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+          <div id="searchResults" class="dropdown-menu w-100 mt-1 p-0" style="max-height: 70vh; overflow-y: auto; display: none; min-width: 400px; left: 50%; transform: translateX(-50%);"></div>
+        </li>
+        <!--end::Navbar Search-->
 
-       <!--begin::Messages Dropdown Menu-->
-       <li class="nav-item dropdown messages-dropdown">
-         <a class="nav-link" data-bs-toggle="dropdown" href="#">
-           <i class="bi bi-chat-text"></i>
-           <span class="navbar-badge badge text-bg-danger">3</span>
-         </a>
-         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user1-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   Brad Diesel
-                   <span class="float-end fs-7 text-danger"><i class="bi bi-star-fill"></i></span>
-                 </h3>
-                 <p class="fs-7">Call me whenever you can...</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user8-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   John Pierce
-                   <span class="float-end fs-7 text-secondary">
-                     <i class="bi bi-star-fill"></i>
-                   </span>
-                 </h3>
-                 <p class="fs-7">I got your message bro</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <!--begin::Message-->
-             <div class="d-flex">
-               <div class="flex-shrink-0">
-                 <img
-                   src="{{ asset('dist/assets/img/user3-128x128.jpg') }}"
-                   alt="User Avatar"
-                   class="img-size-50 rounded-circle me-3" />
-               </div>
-               <div class="flex-grow-1">
-                 <h3 class="dropdown-item-title">
-                   Nora Silvester
-                   <span class="float-end fs-7 text-warning">
-                     <i class="bi bi-star-fill"></i>
-                   </span>
-                 </h3>
-                 <p class="fs-7">The subject goes here</p>
-                 <p class="fs-7 text-secondary">
-                   <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                 </p>
-               </div>
-             </div>
-             <!--end::Message-->
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">Voir tous les messages</a>
-         </div>
-       </li>
-       <!--end::Messages Dropdown Menu-->
-
-       <!--begin::Notifications Dropdown Menu-->
-       <li class="nav-item dropdown notifications-dropdown">
-         <a class="nav-link" data-bs-toggle="dropdown" href="#">
-           <i class="bi bi-bell-fill"></i>
-           <span class="navbar-badge badge text-bg-warning">5</span>
-         </a>
-         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-           <span class="dropdown-item dropdown-header">5 Notifications</span>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-envelope me-2"></i> 4 nouveaux messages
-             <span class="float-end text-secondary fs-7">3 mins</span>
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-people-fill me-2"></i> 8 demandes de congés
-             <span class="float-end text-secondary fs-7">12 heures</span>
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item">
-             <i class="bi bi-exclamation-triangle me-2"></i> 3 nouveaux incidents
-             <span class="float-end text-secondary fs-7">2 jours</span>
-           </a>
-           <div class="dropdown-divider"></div>
-           <a href="#" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
-         </div>
-       </li>
-       <!--end::Notifications Dropdown Menu-->
+        <!--begin::Notifications Dropdown Menu-->
+        <li class="nav-item dropdown notifications-dropdown">
+          <a class="nav-link" data-bs-toggle="dropdown" href="#">
+            <i class="bi bi-bell-fill"></i>
+            @if($nonLues > 0)
+            <span class="navbar-badge badge text-bg-warning">{{ $nonLues }}</span>
+            @endif
+          </a>
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+            <span class="dropdown-item dropdown-header">{{ $nonLues }} Notification(s) non lue(s)</span>
+            @forelse($notifications as $notification)
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item @if(!$notification->lu_le) fw-bold @endif">
+              @php
+                $icone = match($notification->type) {
+                  'info' => 'bi-info-circle',
+                  'success' => 'bi-check-circle',
+                  'warning' => 'bi-exclamation-triangle',
+                  default => 'bi-bell',
+                };
+                $donnees = json_decode($notification->donnees, true) ?? [];
+                $titre = $donnees['titre'] ?? $notification->type;
+                $message = $donnees['message'] ?? '';
+              @endphp
+              <i class="bi {{ $icone }} me-2"></i>
+              {{ $titre }}
+              <span class="float-end text-secondary fs-7">{{ $notification->created_at->diffForHumans() }}</span>
+              @if($message)
+              <br><small class="text-muted ms-4">{{ $message }}</small>
+              @endif
+            </a>
+            @empty
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item text-muted">Aucune notification</span>
+            @endforelse
+            <div class="dropdown-divider"></div>
+            <a href="{{ route('admin.superadmin.notifications.index') }}" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
+          </div>
+        </li>
+        <!--end::Notifications Dropdown Menu-->
 
        <!--begin::Fullscreen Toggle-->
        <li class="nav-item">
@@ -193,28 +127,42 @@
              <small class="text-secondary" style="font-size: 0.75rem;">Membre depuis {{ Auth::user()->created_at->format('M. Y') }}</small>
            </li>
            <!--end::User Image-->
-           <!--begin::Menu Body-->
-           <li class="user-body">
-             <!--begin::Row-->
-             <div class="row">
-               <div class="col-4 text-center">
-                 <a href="#">Profil</a>
-               </div>
-               <div class="col-4 text-center">
-                 <a href="#">Rôles</a>
-               </div>
-               <div class="col-4 text-center">
-                 <a href="#">Paramètres</a>
-               </div>
-             </div>
-             <!--end::Row-->
-           </li>
-           <!--end::Menu Body-->
-           <!--begin::Menu Footer-->
-           <li class="user-footer p-2">
-             <a href="#" class="btn btn-outline-secondary btn-sm">
-               <i class="bi bi-person-circle me-1"></i> Profil
-             </a>
+            <!--begin::Menu Body-->
+            @php
+              $userId = Auth::id();
+              if (Auth::user()->estSuperAdmin()) {
+                $profilRoute = route('admin.superadmin.utilisateurs.show', $userId);
+                $rolesRoute = route('admin.superadmin.utilisateurs.edit', $userId);
+                $parametresRoute = route('admin.superadmin.parametres.index');
+              } elseif (Auth::user()->estUtilisateurEntreprise()) {
+                $profilRoute = route('admin.entreprise.profile');
+                $rolesRoute = route('admin.entreprise.profile');
+                $parametresRoute = route('admin.entreprise.profile');
+              } else {
+                $profilRoute = '#';
+                $rolesRoute = '#';
+                $parametresRoute = '#';
+              }
+            @endphp
+            <li class="user-body">
+              <div class="row">
+                <div class="col-4 text-center">
+                  <a href="{{ $profilRoute }}">Profil</a>
+                </div>
+                <div class="col-4 text-center">
+                  <a href="{{ $rolesRoute }}">Rôles</a>
+                </div>
+                <div class="col-4 text-center">
+                  <a href="{{ $parametresRoute }}">Paramètres</a>
+                </div>
+              </div>
+            </li>
+            <!--end::Menu Body-->
+            <!--begin::Menu Footer-->
+            <li class="user-footer p-2">
+              <a href="{{ $profilRoute }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-person-circle me-1"></i> Profil
+              </a>
              <form method="POST" action="{{ route('logout') }}" class="d-inline">
                @csrf
                <button type="submit" class="btn btn-outline-danger btn-sm float-end">
@@ -482,16 +430,117 @@
          <button type="button" class="btn btn-secondary" id="extendSessionBtn">
            <i class="bi bi-arrow-clockwise me-1"></i> Rester connecté
          </button>
-         <a href="{{ route('logout') }}" class="btn btn-outline-danger">
-           <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
-         </a>
+          <form method="POST" action="{{ route('logout') }}" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
+            </button>
+          </form>
        </div>
      </div>
    </div>
  </div>
 
- <script>
-   // Configuration du timeout de session (3 minutes = 180 secondes)
+  <script>
+    // Live Search
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('liveSearch');
+      const searchResults = document.getElementById('searchResults');
+      const clearBtn = document.getElementById('clearSearch');
+      let debounceTimer;
+
+      function buildResultsHTML(data) {
+        if (!data.results || data.results.length === 0) {
+          return '<div class="px-3 py-4 text-center text-muted small"><i class="bi bi-search me-2"></i>Aucun résultat</div>';
+        }
+
+        let html = '';
+        let currentType = '';
+
+        data.results.forEach(function(item) {
+          if (item.type !== currentType) {
+            currentType = item.type;
+            const icons = {
+              'Entreprise': 'building', 'Utilisateur': 'person', 'Employé': 'person-badge',
+              'Client': 'briefcase', 'Contrat': 'file-text', 'Proposition': 'file-earmark'
+            };
+            html += '<div class="dropdown-header small text-uppercase text-muted border-bottom px-3 py-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">'
+                  + '<i class="bi bi-' + (icons[currentType] || 'circle') + ' me-1"></i> ' + currentType + '</div>';
+          }
+
+          html += '<a href="' + item.url + '" class="dropdown-item d-flex align-items-center gap-2 px-3 py-2" style="border-left: 3px solid transparent;">'
+                + '<div style="width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--bs-primary);"></div>'
+                + '<div class="flex-grow-1 min-w-0">'
+                + '<div class="text-truncate fw-medium" style="font-size: 0.85rem;">' + item.titre + '</div>'
+                + '<div class="text-truncate text-muted" style="font-size: 0.75rem;">' + item.sous_titre + '</div>'
+                + '</div>';
+
+          if (item.badge) {
+            html += '<span class="badge ' + item.badge.class + ' rounded-pill" style="font-size: 0.65rem;">' + item.badge.text + '</span>';
+          }
+
+          html += '</a>';
+        });
+
+        return html;
+      }
+
+      function performSearch(query) {
+        if (query.length < 2) {
+          searchResults.style.display = 'none';
+          return;
+        }
+
+        fetch('{{ route("search") }}?q=' + encodeURIComponent(query), {
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          searchResults.innerHTML = buildResultsHTML(data);
+          searchResults.style.display = 'block';
+        })
+        .catch(function() {
+          searchResults.style.display = 'none';
+        });
+      }
+
+      searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const val = this.value.trim();
+        if (val.length > 0) {
+          clearBtn.classList.remove('d-none');
+        } else {
+          clearBtn.classList.add('d-none');
+          searchResults.style.display = 'none';
+          return;
+        }
+        debounceTimer = setTimeout(function() { performSearch(val); }, 300);
+      });
+
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          searchResults.style.display = 'none';
+          this.blur();
+        }
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.position-relative')) {
+          searchResults.style.display = 'none';
+        }
+      });
+
+      clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        this.classList.add('d-none');
+        searchResults.style.display = 'none';
+        searchInput.focus();
+      });
+    });
+  </script>
+
+  <script>
+    // Configuration du timeout de session (3 minutes = 180 secondes)
    const SESSION_TIMEOUT = 3 * 60;
    const WARNING_TIME = 60; // Afficher l'avertissement 60 secondes avant l'expiration
    const HEARTBEAT_INTERVAL = 30000; // Heartbeat toutes les 30 secondes
@@ -535,11 +584,19 @@
        document.getElementById('sessionCountdown').textContent =
          `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-       if (timeLeft <= 0) {
-         clearInterval(countdownInterval);
-         // Déconnecter automatiquement
-         window.location.href = '{{ route("logout") }}';
-       }
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          // Déconnecter automatiquement
+          fetch('{{ route("logout") }}', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Content-Type': 'application/json'
+            }
+          }).finally(() => {
+            window.location.href = '{{ route("login") }}';
+          });
+        }
      }, 1000);
    }
 
