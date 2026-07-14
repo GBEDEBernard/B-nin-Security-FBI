@@ -203,6 +203,104 @@
     .copy-btn:hover {
         background: rgba(69, 71, 90, 0.9);
     }
+
+    .search-bar {
+        background: #181825;
+        border: 1px solid #313244;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        color: #cdd6f4;
+        font-family: inherit;
+        font-size: 0.8rem;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+    .search-bar:focus {
+        outline: none;
+        border-color: #89b4fa;
+    }
+    .search-bar::placeholder {
+        color: #6c7086;
+    }
+    .filter-chip {
+        background: #181825;
+        border: 1px solid #313244;
+        color: #cdd6f4;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .filter-chip:hover {
+        border-color: #6c7086;
+    }
+    .filter-chip.active {
+        background: #45475a;
+        border-color: #89b4fa;
+        color: #89b4fa;
+    }
+    .filter-chip.active-error {
+        background: rgba(243, 139, 168, 0.2);
+        border-color: #f38ba8;
+        color: #f38ba8;
+    }
+    .filter-chip.active-warning {
+        background: rgba(249, 226, 175, 0.2);
+        border-color: #f9e2af;
+        color: #f9e2af;
+    }
+    .filter-chip.active-info {
+        background: rgba(137, 180, 250, 0.2);
+        border-color: #89b4fa;
+        color: #89b4fa;
+    }
+    .search-clear {
+        background: none;
+        border: none;
+        color: #6c7086;
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        padding: 0.25rem;
+        display: none;
+    }
+    .search-clear:hover {
+        color: #cdd6f4;
+    }
+    .search-wrapper {
+        position: relative;
+        flex: 1;
+    }
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c7086;
+        pointer-events: none;
+    }
+    .search-bar {
+        padding-left: 2.25rem;
+        padding-right: 2rem;
+    }
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .log-entry.hidden {
+        display: none;
+    }
+    .result-count {
+        font-size: 0.75rem;
+        color: #6c7086;
+        white-space: nowrap;
+    }
 </style>
 @endpush
 
@@ -240,22 +338,39 @@
             }
         @endphp
 
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-item stat-total">
-                <div class="stat-value">{{ count($entries) }}</div>
+                <div class="stat-value" id="statTotal">{{ count($entries) }}</div>
                 <div class="stat-label">Entrées totales</div>
             </div>
             <div class="stat-item stat-error">
-                <div class="stat-value">{{ $countError }}</div>
+                <div class="stat-value" id="statError">{{ $countError }}</div>
                 <div class="stat-label">Erreurs</div>
             </div>
             <div class="stat-item stat-warning">
-                <div class="stat-value">{{ $countWarning }}</div>
+                <div class="stat-value" id="statWarning">{{ $countWarning }}</div>
                 <div class="stat-label">Avertissements</div>
             </div>
             <div class="stat-item stat-info">
-                <div class="stat-value">{{ $countInfo }}</div>
+                <div class="stat-value" id="statInfo">{{ $countInfo }}</div>
                 <div class="stat-label">Informations</div>
+            </div>
+        </div>
+
+        <div class="filter-bar mb-3">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="logSearch" class="search-bar" placeholder="Rechercher dans les logs (message, niveau, timestamp, stack trace...)" oninput="filterLogs()">
+                <button class="search-clear" id="searchClear" onclick="clearSearch()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="d-flex gap-1 align-items-center">
+                <button class="filter-chip active" id="filterAll" onclick="setLevelFilter('all')">Tous</button>
+                <button class="filter-chip" id="filterError" onclick="setLevelFilter('error')">Erreurs</button>
+                <button class="filter-chip" id="filterWarning" onclick="setLevelFilter('warning')">Avertissements</button>
+                <button class="filter-chip" id="filterInfo" onclick="setLevelFilter('info')">Infos</button>
+                <span class="result-count ms-2" id="resultCount">{{ count($entries) }} / {{ count($entries) }}</span>
             </div>
         </div>
 
@@ -279,7 +394,7 @@
                     </a>
                 </div>
             </div>
-            <div class="log-body">
+            <div class="log-body" id="logBody">
                 @forelse($entries as $i => $entry)
                     @php
                         $levelClass = match($entry['level']) {
@@ -292,7 +407,7 @@
                             ? preg_replace('/^#\d+\s+/m', '', implode(' · ', array_slice($entry['trace'], 0, 2)))
                             : '';
                     @endphp
-                    <div class="log-entry {{ $levelClass }}" onclick="openLogModal({{ $i }})">
+                    <div class="log-entry {{ $levelClass }}" data-level="{{ $entry['level'] }}" data-index="{{ $i }}" onclick="openLogModal({{ $i }})">
                         <div class="d-flex align-items-start gap-2">
                             <span class="level-badge">{{ $entry['level'] }}</span>
                             <div class="flex-grow-1 min-w-0">
@@ -310,7 +425,7 @@
                         </button>
                     </div>
                 @empty
-                    <div class="empty-logs">
+                    <div class="empty-logs" id="emptyLogs">
                         <i class="bi bi-journal-check"></i>
                         <h5>Aucune entrée de log</h5>
                         <p>Le fichier de log est vide ou n'existe pas encore.</p>
@@ -364,6 +479,93 @@
 @push('scripts')
 <script>
     const logEntries = @json($entries);
+    let currentLevelFilter = 'all';
+    let currentSearch = '';
+
+    function filterLogs() {
+        const searchInput = document.getElementById('logSearch');
+        currentSearch = searchInput.value.toLowerCase().trim();
+        const clearBtn = document.getElementById('searchClear');
+        clearBtn.style.display = currentSearch ? 'block' : 'none';
+
+        applyFilters();
+    }
+
+    function clearSearch() {
+        document.getElementById('logSearch').value = '';
+        document.getElementById('searchClear').style.display = 'none';
+        currentSearch = '';
+        applyFilters();
+        document.getElementById('logSearch').focus();
+    }
+
+    function setLevelFilter(level) {
+        currentLevelFilter = level;
+
+        document.querySelectorAll('.filter-chip').forEach(function(btn) {
+            btn.className = 'filter-chip';
+        });
+
+        if (level === 'all') {
+            document.getElementById('filterAll').classList.add('active');
+        } else if (level === 'error') {
+            document.getElementById('filterError').classList.add('active-error');
+        } else if (level === 'warning') {
+            document.getElementById('filterWarning').classList.add('active-warning');
+        } else if (level === 'info') {
+            document.getElementById('filterInfo').classList.add('active-info');
+        }
+
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const entries = document.querySelectorAll('.log-entry');
+        let visibleCount = 0;
+        let errorCount = 0;
+        let warningCount = 0;
+        let infoCount = 0;
+
+        entries.forEach(function(entry) {
+            const level = entry.dataset.level;
+            const index = parseInt(entry.dataset.index);
+            const logEntry = logEntries[index];
+            if (!logEntry) return;
+
+            const fullText = (
+                logEntry.level + ' ' +
+                logEntry.timestamp + ' ' +
+                logEntry.message + ' ' +
+                (logEntry.trace ? logEntry.trace.join(' ') : '')
+            ).toLowerCase();
+
+            const matchesSearch = !currentSearch || fullText.includes(currentSearch);
+            const matchesLevel = currentLevelFilter === 'all' || level === currentLevelFilter;
+
+            const isVisible = matchesSearch && matchesLevel;
+            entry.classList.toggle('hidden', !isVisible);
+
+            if (isVisible) {
+                visibleCount++;
+                if (['error', 'critical', 'alert', 'emergency'].includes(level)) errorCount++;
+                else if (['warning', 'notice'].includes(level)) warningCount++;
+                else if (level === 'info') infoCount++;
+            }
+        });
+
+        document.getElementById('statTotal').textContent = visibleCount;
+        document.getElementById('statError').textContent = errorCount;
+        document.getElementById('statWarning').textContent = warningCount;
+        document.getElementById('statInfo').textContent = infoCount;
+
+        const total = entries.length;
+        document.getElementById('resultCount').textContent = visibleCount + ' / ' + total;
+
+        const emptyMsg = document.getElementById('emptyLogs');
+        if (emptyMsg) {
+            emptyMsg.style.display = (visibleCount === 0 && total > 0) ? 'block' : 'none';
+        }
+    }
 
     function openLogModal(index) {
         const entry = logEntries[index];
