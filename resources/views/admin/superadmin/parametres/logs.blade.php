@@ -4,22 +4,98 @@
 
 @push('styles')
 <style>
+    /* ==================================================================
+       DESIGN TOKENS — le terminal de logs garde une esthétique "code editor"
+       dans les deux thèmes, mais claire en light et sombre en dark, pour
+       rester cohérent avec le reste du panneau super admin.
+       Le thème est piloté par data-bs-theme="dark" sur <html> (Bootstrap 5.3).
+       ================================================================== */
+    :root,
+    [data-bs-theme="light"] {
+        --logs-page-bg: #f4f6f9;
+        --logs-bg: #ffffff;
+        --logs-header-bg: #eef1f6;
+        --logs-border: #dfe3ea;
+        --logs-text: #2c2f3a;
+        --logs-text-dim: #7a8296;
+        --logs-timestamp: #2f6fd9;
+        --logs-scrollbar-track: #eef1f6;
+        --logs-scrollbar-thumb: #c7cddb;
+        --logs-hover: rgba(47, 111, 217, 0.06);
+        --logs-stat-bg: #ffffff;
+        --logs-stat-border: #dfe3ea;
+        --logs-search-bg: #ffffff;
+        --logs-search-text: #2c2f3a;
+        --logs-modal-bg: #ffffff;
+        --logs-error: #c72e5c;
+        --logs-error-bg: rgba(199, 46, 92, 0.1);
+        --logs-warning: #b8790a;
+        --logs-warning-bg: rgba(184, 121, 10, 0.12);
+        --logs-info: #2f6fd9;
+        --logs-info-bg: rgba(47, 111, 217, 0.1);
+        --logs-debug: #6c7086;
+        --logs-debug-bg: rgba(108, 112, 134, 0.1);
+        --logs-vendor: #b3b8c4;
+        --logs-file: #2f9e5c;
+        --logs-msg: #b8324f;
+        --logs-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    [data-bs-theme="dark"] {
+        --logs-page-bg: #10121a;
+        --logs-bg: #1e1e2e;
+        --logs-header-bg: #181825;
+        --logs-border: #313244;
+        --logs-text: #cdd6f4;
+        --logs-text-dim: #6c7086;
+        --logs-timestamp: #89b4fa;
+        --logs-scrollbar-track: #181825;
+        --logs-scrollbar-thumb: #45475a;
+        --logs-hover: rgba(69, 71, 90, 0.3);
+        --logs-stat-bg: #1e1e2e;
+        --logs-stat-border: #313244;
+        --logs-search-bg: #181825;
+        --logs-search-text: #cdd6f4;
+        --logs-modal-bg: #11111b;
+        --logs-error: #f38ba8;
+        --logs-error-bg: rgba(243, 139, 168, 0.2);
+        --logs-warning: #f9e2af;
+        --logs-warning-bg: rgba(249, 226, 175, 0.2);
+        --logs-info: #89b4fa;
+        --logs-info-bg: rgba(137, 180, 250, 0.2);
+        --logs-debug: #a6adc8;
+        --logs-debug-bg: rgba(166, 173, 200, 0.2);
+        --logs-vendor: #45475a;
+        --logs-file: #a6e3a1;
+        --logs-msg: #f5e0dc;
+        --logs-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+        background-color: var(--logs-page-bg);
+    }
+
     .log-container {
-        background: #1e1e2e;
+        background: var(--logs-bg);
+        border: 1px solid var(--logs-border);
         border-radius: 12px;
         overflow: hidden;
         font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
         font-size: 0.8rem;
         line-height: 1.6;
+        box-shadow: var(--logs-shadow);
     }
     .log-header {
-        background: #181825;
+        background: var(--logs-header-bg);
         padding: 0.75rem 1.25rem;
-        color: #cdd6f4;
+        color: var(--logs-text);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid #313244;
+        border-bottom: 1px solid var(--logs-border);
+    }
+    .log-header .text-secondary {
+        color: var(--logs-text-dim) !important;
     }
     .log-body {
         padding: 0;
@@ -30,27 +106,27 @@
         width: 8px;
     }
     .log-body::-webkit-scrollbar-track {
-        background: #181825;
+        background: var(--logs-scrollbar-track);
     }
     .log-body::-webkit-scrollbar-thumb {
-        background: #45475a;
+        background: var(--logs-scrollbar-thumb);
         border-radius: 4px;
     }
     .log-entry {
         padding: 0.5rem 1.25rem;
-        border-bottom: 1px solid #313244;
+        border-bottom: 1px solid var(--logs-border);
         cursor: pointer;
         transition: background 0.15s ease;
         position: relative;
     }
     .log-entry:hover {
-        background: rgba(69, 71, 90, 0.3);
+        background: var(--logs-hover);
     }
     .log-entry:hover .view-btn {
         opacity: 1;
     }
     .log-entry .timestamp {
-        color: #89b4fa;
+        color: var(--logs-timestamp);
     }
     .log-entry .level-badge {
         font-weight: 700;
@@ -62,12 +138,12 @@
         min-width: 60px;
         text-align: center;
     }
-    .level-error .level-badge { background: rgba(243, 139, 168, 0.2); color: #f38ba8; }
-    .level-warning .level-badge { background: rgba(249, 226, 175, 0.2); color: #f9e2af; }
-    .level-info .level-badge { background: rgba(137, 180, 250, 0.2); color: #89b4fa; }
-    .level-debug .level-badge { background: rgba(166, 173, 200, 0.2); color: #a6adc8; }
+    .level-error .level-badge { background: var(--logs-error-bg); color: var(--logs-error); }
+    .level-warning .level-badge { background: var(--logs-warning-bg); color: var(--logs-warning); }
+    .level-info .level-badge { background: var(--logs-info-bg); color: var(--logs-info); }
+    .level-debug .level-badge { background: var(--logs-debug-bg); color: var(--logs-debug); }
     .log-entry .message {
-        color: #cdd6f4;
+        color: var(--logs-text);
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -75,7 +151,7 @@
     }
     .log-entry .trace-preview {
         font-size: 0.75rem;
-        color: #6c7086;
+        color: var(--logs-text-dim);
         display: -webkit-box;
         -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
@@ -89,9 +165,9 @@
         transform: translateY(-50%);
         opacity: 0;
         transition: opacity 0.2s ease;
-        background: rgba(69, 71, 90, 0.6);
+        background: var(--logs-hover);
         border: none;
-        color: #cdd6f4;
+        color: var(--logs-text);
         width: 28px;
         height: 28px;
         border-radius: 6px;
@@ -101,13 +177,13 @@
         font-size: 0.75rem;
     }
     .view-btn:hover {
-        background: rgba(69, 71, 90, 0.9);
-        color: #fff;
+        background: var(--logs-scrollbar-thumb);
+        color: var(--logs-text);
     }
     .empty-logs {
         padding: 3rem 1.25rem;
         text-align: center;
-        color: #6c7086;
+        color: var(--logs-text-dim);
     }
     .empty-logs i {
         font-size: 3rem;
@@ -122,11 +198,16 @@
         margin-bottom: 1.5rem;
     }
     .stat-item {
-        background: #1e1e2e;
+        background: var(--logs-stat-bg);
         border-radius: 10px;
         padding: 1rem;
         text-align: center;
-        border: 1px solid #313244;
+        border: 1px solid var(--logs-stat-border);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .stat-item:hover {
+        box-shadow: var(--logs-shadow);
+        transform: translateY(-1px);
     }
     .stat-item .stat-value {
         font-size: 1.5rem;
@@ -135,28 +216,28 @@
     }
     .stat-item .stat-label {
         font-size: 0.75rem;
-        color: #6c7086;
+        color: var(--logs-text-dim);
         margin-top: 0.25rem;
     }
-    .stat-error .stat-value { color: #f38ba8; }
-    .stat-warning .stat-value { color: #f9e2af; }
-    .stat-info .stat-value { color: #89b4fa; }
-    .stat-total .stat-value { color: #cdd6f4; }
+    .stat-error .stat-value { color: var(--logs-error); }
+    .stat-warning .stat-value { color: var(--logs-warning); }
+    .stat-info .stat-value { color: var(--logs-info); }
+    .stat-total .stat-value { color: var(--logs-text); }
     .log-actions {
         display: flex;
         gap: 0.5rem;
     }
 
     .modal-log {
-        background: #1e1e2e;
+        background: var(--logs-bg);
         border-radius: 8px;
         padding: 0;
         overflow: hidden;
     }
     .modal-log-header {
-        background: #181825;
+        background: var(--logs-header-bg);
         padding: 0.75rem 1rem;
-        border-bottom: 1px solid #313244;
+        border-bottom: 1px solid var(--logs-border);
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -165,7 +246,7 @@
         padding: 1rem;
         max-height: 55vh;
         overflow-y: auto;
-        color: #cdd6f4;
+        color: var(--logs-text);
         font-size: 0.78rem;
         line-height: 1.7;
         white-space: pre-wrap;
@@ -175,25 +256,25 @@
         width: 6px;
     }
     .modal-log-body::-webkit-scrollbar-track {
-        background: #181825;
+        background: var(--logs-scrollbar-track);
     }
     .modal-log-body::-webkit-scrollbar-thumb {
-        background: #45475a;
+        background: var(--logs-scrollbar-thumb);
         border-radius: 3px;
     }
     .modal-log-body .stack-line {
-        color: #6c7086;
+        color: var(--logs-text-dim);
     }
     .modal-log-body .stack-line.file {
-        color: #a6e3a1;
+        color: var(--logs-file);
     }
     .modal-log-body .stack-line.vendor {
-        color: #45475a;
+        color: var(--logs-vendor);
     }
     .copy-btn {
-        background: rgba(69, 71, 90, 0.6);
-        border: none;
-        color: #cdd6f4;
+        background: var(--logs-hover);
+        border: 1px solid var(--logs-border);
+        color: var(--logs-text);
         padding: 0.25rem 0.6rem;
         border-radius: 4px;
         font-size: 0.7rem;
@@ -201,31 +282,31 @@
         transition: background 0.2s;
     }
     .copy-btn:hover {
-        background: rgba(69, 71, 90, 0.9);
+        background: var(--logs-scrollbar-thumb);
     }
 
     .search-bar {
-        background: #181825;
-        border: 1px solid #313244;
+        background: var(--logs-search-bg);
+        border: 1px solid var(--logs-border);
         border-radius: 8px;
         padding: 0.5rem 0.75rem;
-        color: #cdd6f4;
+        color: var(--logs-search-text);
         font-family: inherit;
         font-size: 0.8rem;
         width: 100%;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, background-color 0.2s;
     }
     .search-bar:focus {
         outline: none;
-        border-color: #89b4fa;
+        border-color: var(--logs-info);
     }
     .search-bar::placeholder {
-        color: #6c7086;
+        color: var(--logs-text-dim);
     }
     .filter-chip {
-        background: #181825;
-        border: 1px solid #313244;
-        color: #cdd6f4;
+        background: var(--logs-search-bg);
+        border: 1px solid var(--logs-border);
+        color: var(--logs-text);
         padding: 0.3rem 0.75rem;
         border-radius: 20px;
         font-size: 0.75rem;
@@ -234,32 +315,32 @@
         font-family: inherit;
     }
     .filter-chip:hover {
-        border-color: #6c7086;
+        border-color: var(--logs-text-dim);
     }
     .filter-chip.active {
-        background: #45475a;
-        border-color: #89b4fa;
-        color: #89b4fa;
+        background: var(--logs-scrollbar-thumb);
+        border-color: var(--logs-info);
+        color: var(--logs-info);
     }
     .filter-chip.active-error {
-        background: rgba(243, 139, 168, 0.2);
-        border-color: #f38ba8;
-        color: #f38ba8;
+        background: var(--logs-error-bg);
+        border-color: var(--logs-error);
+        color: var(--logs-error);
     }
     .filter-chip.active-warning {
-        background: rgba(249, 226, 175, 0.2);
-        border-color: #f9e2af;
-        color: #f9e2af;
+        background: var(--logs-warning-bg);
+        border-color: var(--logs-warning);
+        color: var(--logs-warning);
     }
     .filter-chip.active-info {
-        background: rgba(137, 180, 250, 0.2);
-        border-color: #89b4fa;
-        color: #89b4fa;
+        background: var(--logs-info-bg);
+        border-color: var(--logs-info);
+        color: var(--logs-info);
     }
     .search-clear {
         background: none;
         border: none;
-        color: #6c7086;
+        color: var(--logs-text-dim);
         position: absolute;
         right: 0.75rem;
         top: 50%;
@@ -269,7 +350,7 @@
         display: none;
     }
     .search-clear:hover {
-        color: #cdd6f4;
+        color: var(--logs-text);
     }
     .search-wrapper {
         position: relative;
@@ -280,7 +361,7 @@
         left: 0.75rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #6c7086;
+        color: var(--logs-text-dim);
         pointer-events: none;
     }
     .search-bar {
@@ -298,8 +379,27 @@
     }
     .result-count {
         font-size: 0.75rem;
-        color: #6c7086;
+        color: var(--logs-text-dim);
         white-space: nowrap;
+    }
+
+    /* Modal Bootstrap : on aligne les bords/texte sur nos tokens */
+    #logDetailModal .modal-content {
+        background: var(--logs-modal-bg);
+        border: 1px solid var(--logs-border);
+    }
+    #logDetailModal .modal-header {
+        border-bottom: 1px solid var(--logs-border);
+    }
+    #logDetailModal .modal-title {
+        color: var(--logs-text);
+    }
+    [data-bs-theme="light"] #logDetailModal .btn-close,
+    :root:not([data-bs-theme="dark"]) #logDetailModal .btn-close {
+        filter: none;
+    }
+    [data-bs-theme="dark"] #logDetailModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
     }
 </style>
 @endpush
@@ -447,14 +547,14 @@
 {{-- Modal de détail --}}
 <div class="modal fade" id="logDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content" style="background:#11111b; border:1px solid #313244;">
-            <div class="modal-header" style="border-bottom:1px solid #313244;">
+        <div class="modal-content">
+            <div class="modal-header">
                 <div>
-                    <h5 class="modal-title" style="color:#cdd6f4;" id="logModalTitle">
+                    <h5 class="modal-title" id="logModalTitle">
                         <i class="bi bi-file-text me-2"></i>Détail de l'entrée de log
                     </h5>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
                 <div class="modal-log" id="logDetailContent">
@@ -583,13 +683,13 @@
         body.innerHTML = '';
 
         const msgDiv = document.createElement('div');
-        msgDiv.style.cssText = 'color:#f5e0dc; font-weight:600; margin-bottom:0.75rem;';
+        msgDiv.style.cssText = 'color:var(--logs-msg); font-weight:600; margin-bottom:0.75rem;';
         msgDiv.textContent = entry.message;
         body.appendChild(msgDiv);
 
         if (entry.trace && entry.trace.length > 0) {
             const traceTitle = document.createElement('div');
-            traceTitle.style.cssText = 'color:#89b4fa; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; padding-top:0.5rem; border-top:1px solid #313244;';
+            traceTitle.style.cssText = 'color:var(--logs-info); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; padding-top:0.5rem; border-top:1px solid var(--logs-border);';
             traceTitle.textContent = 'Pile d\'exécution (Stack Trace)';
             body.appendChild(traceTitle);
 

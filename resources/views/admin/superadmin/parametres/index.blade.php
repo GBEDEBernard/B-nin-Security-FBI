@@ -4,87 +4,191 @@
 
 @push('styles')
 <style>
+    /* ==================================================================
+       DESIGN TOKENS — Mode clair (valeurs par défaut) et sombre
+       Le thème est piloté par l'attribut data-bs-theme="dark" sur <html>
+       (standard Bootstrap 5.3). Si votre toggle utilise autre chose
+       (ex: classe .dark-mode), ajoutez le sélecteur dans la liste ci-dessous.
+       ================================================================== */
+    :root,
+    [data-bs-theme="light"] {
+        --gst-bg-page: #f4f6f9;
+        --gst-bg-card: #ffffff;
+        --gst-bg-header: #ffffff;
+        --gst-bg-subtle: #f8f9fa;
+        --gst-bg-hover: rgba(25, 135, 84, 0.06);
+        --gst-border: #e2e8f0;
+        --gst-border-strong: #e9ecef;
+        --gst-text-primary: #344767;
+        --gst-text-secondary: #495057;
+        --gst-text-muted: #6c757d;
+        --gst-accent: #198754;
+        --gst-accent-rgb: 25, 135, 84;
+        --gst-accent-soft: rgba(25, 135, 84, 0.12);
+        --gst-shadow-card: 0 2px 12px rgba(15, 23, 42, 0.06);
+        --gst-shadow-hover: 0 4px 16px rgba(25, 135, 84, 0.12);
+        --gst-shadow-stat: 0 6px 20px rgba(15, 23, 42, 0.08);
+        --gst-input-bg: #ffffff;
+        --gst-code-bg: #f1f3f5;
+        --gst-code-text: #c7254e;
+        --gst-warning: #f59e0b;
+        --gst-warning-soft: rgba(245, 158, 11, 0.1);
+        --gst-danger: #dc3545;
+        --gst-danger-soft: rgba(220, 53, 69, 0.1);
+        --gst-info: #0ea5e9;
+        --gst-info-soft: rgba(14, 165, 233, 0.1);
+    }
+
+    [data-bs-theme="dark"] {
+        --gst-bg-page: #10121a;
+        --gst-bg-card: #1a1d29;
+        --gst-bg-header: #1a1d29;
+        --gst-bg-subtle: #20232f;
+        --gst-bg-hover: rgba(32, 201, 122, 0.1);
+        --gst-border: #2b2f3d;
+        --gst-border-strong: #2b2f3d;
+        --gst-text-primary: #e7e9ee;
+        --gst-text-secondary: #c5c9d4;
+        --gst-text-muted: #8b93a7;
+        --gst-accent: #20c97a;
+        --gst-accent-rgb: 32, 201, 122;
+        --gst-accent-soft: rgba(32, 201, 122, 0.18);
+        --gst-shadow-card: 0 2px 14px rgba(0, 0, 0, 0.4);
+        --gst-shadow-hover: 0 4px 18px rgba(32, 201, 122, 0.18);
+        --gst-shadow-stat: 0 8px 22px rgba(0, 0, 0, 0.45);
+        --gst-input-bg: #171a24;
+        --gst-code-bg: #232735;
+        --gst-code-text: #ff9ec4;
+        --gst-warning: #f5b94d;
+        --gst-warning-soft: rgba(245, 185, 77, 0.14);
+        --gst-danger: #f16b7a;
+        --gst-danger-soft: rgba(241, 107, 122, 0.14);
+        --gst-info: #5cc4f5;
+        --gst-info-soft: rgba(92, 196, 245, 0.14);
+    }
+
+    body {
+        background-color: var(--gst-bg-page);
+        transition: background-color 0.2s ease;
+    }
+
+    /* ---------- Tabs ---------- */
     .settings-tabs .nav-link {
-        color: #6c757d;
+        color: var(--gst-text-muted);
         border: none;
         padding: 0.85rem 1.25rem;
         font-weight: 500;
         transition: all 0.25s ease;
         border-radius: 8px 8px 0 0;
         position: relative;
+        background: transparent;
     }
     .settings-tabs .nav-link:hover {
-        color: #198754;
-        background: rgba(25, 135, 84, 0.05);
+        color: var(--gst-accent);
+        background: var(--gst-bg-hover);
     }
     .settings-tabs .nav-link.active {
-        color: #198754;
-        background: #fff;
-        border-bottom: 3px solid #198754;
+        color: var(--gst-accent);
+        background: var(--gst-bg-card);
+        border-bottom: 3px solid var(--gst-accent);
     }
     .settings-tabs .nav-link i {
         margin-right: 8px;
         font-size: 1.1rem;
     }
+
+    /* ---------- Card ---------- */
     .settings-card {
-        border: none;
+        border: 1px solid var(--gst-border);
         border-radius: 0 0 12px 12px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        box-shadow: var(--gst-shadow-card);
+        background: var(--gst-bg-card);
     }
     .settings-card .card-body {
         padding: 2rem;
+        background: var(--gst-bg-card);
+        color: var(--gst-text-primary);
+        border-radius: 0 0 12px 12px;
     }
+    .settings-card-header {
+        background: var(--gst-bg-header);
+        border-radius: 12px 12px 0 0;
+        border-bottom: 1px solid var(--gst-border);
+    }
+
     .form-section-title {
         font-size: 0.85rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #198754;
+        color: var(--gst-accent);
         margin-bottom: 1.25rem;
         padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e9ecef;
+        border-bottom: 2px solid var(--gst-border-strong);
     }
     .form-label {
         font-weight: 500;
         font-size: 0.875rem;
-        color: #344767;
+        color: var(--gst-text-primary);
     }
     .form-control, .form-select {
         border-radius: 8px;
-        border: 1.5px solid #e2e8f0;
+        border: 1.5px solid var(--gst-border);
         padding: 0.55rem 0.9rem;
         font-size: 0.875rem;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        background-color: var(--gst-input-bg);
+        color: var(--gst-text-primary);
     }
     .form-control:focus, .form-select:focus {
-        border-color: #198754;
-        box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.12);
+        border-color: var(--gst-accent);
+        box-shadow: 0 0 0 3px var(--gst-accent-soft);
+        background-color: var(--gst-input-bg);
+        color: var(--gst-text-primary);
+    }
+    .form-control::placeholder {
+        color: var(--gst-text-muted);
+    }
+    .form-control:disabled, .form-select:disabled {
+        background-color: var(--gst-bg-subtle);
+        opacity: 0.7;
     }
     .form-switch .form-check-input {
         width: 2.8em;
         height: 1.4em;
         cursor: pointer;
+        background-color: var(--gst-bg-subtle);
+        border-color: var(--gst-border);
     }
     .form-switch .form-check-input:checked {
-        background-color: #198754;
-        border-color: #198754;
+        background-color: var(--gst-accent);
+        border-color: var(--gst-accent);
     }
+    small.text-muted {
+        color: var(--gst-text-muted) !important;
+    }
+
     .btn-save {
         padding: 0.55rem 1.8rem;
         border-radius: 8px;
         font-weight: 600;
         font-size: 0.875rem;
     }
+
+    /* ---------- Action cards (onglet Système) ---------- */
     .action-card {
-        border: 1.5px solid #e2e8f0;
+        border: 1.5px solid var(--gst-border);
         border-radius: 12px;
         padding: 1.25rem;
         transition: all 0.25s ease;
-        background: #fff;
+        background: var(--gst-bg-card);
     }
     .action-card:hover {
-        border-color: #198754;
-        box-shadow: 0 4px 16px rgba(25, 135, 84, 0.1);
+        border-color: var(--gst-accent);
+        box-shadow: var(--gst-shadow-hover);
+    }
+    .action-card h6 {
+        color: var(--gst-text-primary);
     }
     .action-card .action-icon {
         width: 44px;
@@ -94,39 +198,66 @@
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
+        flex-shrink: 0;
     }
-    .log-line {
-        font-size: 0.8rem;
-        font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-        padding: 0.35rem 0.75rem;
-        border-bottom: 1px solid #f1f3f5;
-        color: #495057;
-        line-height: 1.5;
-        word-break: break-all;
-    }
-    .log-line:nth-child(odd) {
-        background: #f8f9fa;
-    }
-    .log-line:hover {
-        background: #e8f5e9;
-    }
-    .log-error { color: #dc3545; }
-    .log-warning { color: #f59e0b; }
-    .log-info { color: #0ea5e9; }
+    .action-icon.bg-warning.bg-opacity-10 { background: var(--gst-warning-soft) !important; color: var(--gst-warning) !important; }
+    .action-icon.bg-success.bg-opacity-10 { background: var(--gst-accent-soft) !important; color: var(--gst-accent) !important; }
+    .action-icon.bg-info.bg-opacity-10 { background: var(--gst-info-soft) !important; color: var(--gst-info) !important; }
+    .action-icon.bg-danger.bg-opacity-10 { background: var(--gst-danger-soft) !important; color: var(--gst-danger) !important; }
+
     .stat-card {
         border: none;
         border-radius: 12px;
         padding: 1.25rem;
         transition: all 0.3s ease;
+        background: var(--gst-bg-card);
     }
     .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        box-shadow: var(--gst-shadow-stat);
     }
+
     .timezone-select {
         max-height: 250px;
         overflow-y: auto;
     }
+
+    /* ---------- Table "paramètres actuels" ---------- */
+    .settings-table {
+        --bs-table-color: var(--gst-text-primary);
+        --bs-table-bg: var(--gst-bg-card);
+        --bs-table-border-color: var(--gst-border);
+        border-color: var(--gst-border);
+    }
+    .settings-table thead th {
+        background: var(--gst-bg-subtle);
+        color: var(--gst-text-secondary);
+        font-weight: 600;
+        border-color: var(--gst-border);
+    }
+    .settings-table td, .settings-table th {
+        border-color: var(--gst-border);
+        vertical-align: middle;
+    }
+    .settings-table code {
+        background: var(--gst-code-bg);
+        color: var(--gst-code-text);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    .settings-table .badge.bg-secondary {
+        background-color: var(--gst-bg-subtle) !important;
+        color: var(--gst-text-secondary) !important;
+        border: 1px solid var(--gst-border);
+        font-weight: 500;
+    }
+
+    /* ---------- Breadcrumb ---------- */
+    .app-content-header .text-muted {
+        color: var(--gst-text-muted) !important;
+    }
+
     @media (max-width: 768px) {
         .settings-tabs .nav-link {
             padding: 0.6rem 0.8rem;
@@ -167,7 +298,7 @@
         @php $currentTab = request('tab', 'general'); @endphp
 
         <div class="card settings-card">
-            <div class="card-header bg-white p-0 border-bottom-0">
+            <div class="card-header settings-card-header p-0">
                 <ul class="nav nav-tabs settings-tabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link {{ $currentTab === 'general' ? 'active' : '' }}"
@@ -603,8 +734,8 @@
                     <i class="bi bi-database me-2"></i>Paramètres actuels (lecture seule)
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-sm" style="font-size:0.85rem;">
-                        <thead class="table-light">
+                    <table class="table table-bordered table-sm settings-table" style="font-size:0.85rem;">
+                        <thead>
                             <tr>
                                 <th>Clé</th>
                                 <th>Valeur</th>
