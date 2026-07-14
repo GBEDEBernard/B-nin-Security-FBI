@@ -460,12 +460,23 @@
         <div class="filter-bar mb-3">
             <div class="search-wrapper">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" id="logSearch" class="search-bar" placeholder="Rechercher dans les logs (message, niveau, timestamp, stack trace...)" oninput="filterLogs()">
+                <input type="text" id="logSearch" class="search-bar" placeholder="Recherche libre — tapez « aujourd'hui », « erreur sql », « now »..." oninput="applyFilters()">
                 <button class="search-clear" id="searchClear" onclick="clearSearch()">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-            <div class="d-flex gap-1 align-items-center">
+            <div class="d-flex gap-1 align-items-center flex-wrap">
+                <div class="dropdown">
+                    <button class="filter-chip active" id="timeDropdown" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-clock me-1"></i>Tout
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="min-width:auto;font-size:0.8rem;">
+                        <li><a class="dropdown-item" href="#" onclick="setTimeFilter('all', 'Tout');return false;">Tout</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTimeFilter('today', 'Aujourd\'hui');return false;">Aujourd'hui</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTimeFilter('hour', 'Cette heure');return false;">Cette heure</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTimeFilter('24h', 'Dernières 24h');return false;">Dernières 24h</a></li>
+                    </ul>
+                </div>
                 <button class="filter-chip active" id="filterAll" onclick="setLevelFilter('all')">Tous</button>
                 <button class="filter-chip" id="filterError" onclick="setLevelFilter('error')">Erreurs</button>
                 <button class="filter-chip" id="filterWarning" onclick="setLevelFilter('warning')">Avertissements</button>
@@ -578,164 +589,213 @@
 
 @push('scripts')
 <script>
-    const logEntries = @json($entries);
-    let currentLevelFilter = 'all';
-    let currentSearch = '';
+(function() {
+    const entries = @json($entries);
+    const domEntries = Array.from(document.querySelectorAll('.log-entry'));
+    const $ = function(id) { return document.getElementById(id); };
+    const chips = {
+        all: $('filterAll'),
+        error: $('filterError'),
+        warning: $('filterWarning'),
+        info: $('filterInfo'),
+    };
+    const stats = {
+        total: $('statTotal'),
+        error: $('statError'),
+        warning: $('statWarning'),
+        info: $('statInfo'),
+    };
+    const resultCount = $('resultCount');
+    const searchInput = $('logSearch');
+    const searchClear = $('searchClear');
+    const timeBtn = $('timeDropdown');
+    const emptyMsg = $('emptyLogs');
 
-    function filterLogs() {
-        const searchInput = document.getElementById('logSearch');
-        currentSearch = searchInput.value.toLowerCase().trim();
-        const clearBtn = document.getElementById('searchClear');
-        clearBtn.style.display = currentSearch ? 'block' : 'none';
+    let levelFilter = 'all';
+    let timeFilter = 'all';
 
-        applyFilters();
+    function parseDate(ts) {
+        const d = new Date(ts.replace(' ', 'T'));
+        return isNaN(d.getTime()) ? null : d;
     }
 
-    function clearSearch() {
-        document.getElementById('logSearch').value = '';
-        document.getElementById('searchClear').style.display = 'none';
-        currentSearch = '';
-        applyFilters();
-        document.getElementById('logSearch').focus();
+    function inRange(d, range) {
+        if (!d) return true;
+        const now = new Date();
+        if (range === 'today') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        if (range === 'hour') return (now - d) <= 3600000;
+        if (range === '24h') return (now - d) <= 86400000;
+        return true;
     }
 
-    function setLevelFilter(level) {
-        currentLevelFilter = level;
+    window.applyFilters = function() {
+        const q = searchInput.value.toLowerCase().trim();
+        searchClear.style.display = q ? 'block' : 'none';
 
-        document.querySelectorAll('.filter-chip').forEach(function(btn) {
-            btn.className = 'filter-chip';
-        });
+        const keywords = q ? q.split(/\s+/) : [];
+        const hasDateKw = keywords.some(function(k) { return k === 'aujourd\'hui' || k === 'today' || k === 'now' || k === 'maintenant' || k === 'recent' || k === 'récent' || k === 'hier' || k === 'yesterday'; });
 
-        if (level === 'all') {
-            document.getElementById('filterAll').classList.add('active');
-        } else if (level === 'error') {
-            document.getElementById('filterError').classList.add('active-error');
-        } else if (level === 'warning') {
-            document.getElementById('filterWarning').classList.add('active-warning');
-        } else if (level === 'info') {
-            document.getElementById('filterInfo').classList.add('active-info');
-        }
+        var vTotal = 0, vErr = 0, vWarn = 0, vInfo = 0;
 
-        applyFilters();
-    }
+        for (var i = 0; i < domEntries.length; i++) {
+            var el = domEntries[i];
+            var idx = parseInt(el.dataset.index);
+            var e = entries[idx];
+            if (!e) { el.classList.add('hidden'); continue; }
 
-    function applyFilters() {
-        const entries = document.querySelectorAll('.log-entry');
-        let visibleCount = 0;
-        let errorCount = 0;
-        let warningCount = 0;
-        let infoCount = 0;
+            var show = true;
 
-        entries.forEach(function(entry) {
-            const level = entry.dataset.level;
-            const index = parseInt(entry.dataset.index);
-            const logEntry = logEntries[index];
-            if (!logEntry) return;
+            if (levelFilter !== 'all' && e.level !== levelFilter) show = false;
 
-            const fullText = (
-                logEntry.level + ' ' +
-                logEntry.timestamp + ' ' +
-                logEntry.message + ' ' +
-                (logEntry.trace ? logEntry.trace.join(' ') : '')
-            ).toLowerCase();
-
-            const matchesSearch = !currentSearch || fullText.includes(currentSearch);
-            const matchesLevel = currentLevelFilter === 'all' || level === currentLevelFilter;
-
-            const isVisible = matchesSearch && matchesLevel;
-            entry.classList.toggle('hidden', !isVisible);
-
-            if (isVisible) {
-                visibleCount++;
-                if (['error', 'critical', 'alert', 'emergency'].includes(level)) errorCount++;
-                else if (['warning', 'notice'].includes(level)) warningCount++;
-                else if (level === 'info') infoCount++;
+            if (show && timeFilter !== 'all') {
+                var d = parseDate(e.timestamp);
+                show = inRange(d, timeFilter);
             }
-        });
 
-        document.getElementById('statTotal').textContent = visibleCount;
-        document.getElementById('statError').textContent = errorCount;
-        document.getElementById('statWarning').textContent = warningCount;
-        document.getElementById('statInfo').textContent = infoCount;
+            if (show && keywords.length > 0) {
+                var full = (e.level + ' ' + e.timestamp + ' ' + e.message + ' ' + (e.trace ? e.trace.join(' ') : '')).toLowerCase();
+                for (var k = 0; k < keywords.length; k++) {
+                    var kw = keywords[k];
+                    if (kw === 'aujourd\'hui' || kw === 'today') {
+                        var dd = parseDate(e.timestamp);
+                        show = dd && dd.getFullYear() === (new Date()).getFullYear() && dd.getMonth() === (new Date()).getMonth() && dd.getDate() === (new Date()).getDate();
+                    } else if (kw === 'now' || kw === 'maintenant' || kw === 'recent' || kw === 'récent') {
+                        var dd = parseDate(e.timestamp);
+                        show = dd && (new Date() - dd) <= 3600000;
+                    } else if (kw === 'hier' || kw === 'yesterday') {
+                        var dd = parseDate(e.timestamp);
+                        var y = new Date(); y.setDate(y.getDate() - 1);
+                        show = dd && dd.getFullYear() === y.getFullYear() && dd.getMonth() === y.getMonth() && dd.getDate() === y.getDate();
+                    } else {
+                        show = full.indexOf(kw) !== -1;
+                    }
+                    if (!show) break;
+                }
+            }
 
-        const total = entries.length;
-        document.getElementById('resultCount').textContent = visibleCount + ' / ' + total;
+            el.classList.toggle('hidden', !show);
 
-        const emptyMsg = document.getElementById('emptyLogs');
-        if (emptyMsg) {
-            emptyMsg.style.display = (visibleCount === 0 && total > 0) ? 'block' : 'none';
+            if (show) {
+                vTotal++;
+                if (e.level === 'error' || e.level === 'critical' || e.level === 'alert' || e.level === 'emergency') vErr++;
+                else if (e.level === 'warning' || e.level === 'notice') vWarn++;
+                else if (e.level === 'info') vInfo++;
+            }
         }
+
+        stats.total.textContent = vTotal;
+        stats.error.textContent = vErr;
+        stats.warning.textContent = vWarn;
+        stats.info.textContent = vInfo;
+        resultCount.textContent = vTotal + ' / ' + domEntries.length;
+        if (emptyMsg) emptyMsg.style.display = (vTotal === 0 && domEntries.length > 0) ? 'block' : 'none';
+    };
+
+    window.clearSearch = function() {
+        searchInput.value = '';
+        searchClear.style.display = 'none';
+        searchInput.focus();
+        applyFilters();
+    };
+
+    window.setLevelFilter = function(level) {
+        levelFilter = level;
+        for (var key in chips) chips[key].className = 'filter-chip';
+        if (level === 'all') chips.all.classList.add('active');
+        else if (level === 'error') chips.error.classList.add('active-error');
+        else if (level === 'warning') chips.warning.classList.add('active-warning');
+        else if (level === 'info') chips.info.classList.add('active-info');
+        applyFilters();
+    };
+
+    window.setTimeFilter = function(value, label) {
+        timeFilter = value;
+        timeBtn.innerHTML = '<i class="bi bi-clock me-1"></i>' + label;
+        var dd = bootstrap.Dropdown.getInstance(timeBtn);
+        if (dd) dd.hide();
+        applyFilters();
+    };
+
+    function getErrorExplanation(message) {
+        var m = message.toLowerCase();
+        if (m.indexOf('sqlstate') !== -1 || m.indexOf('column not found') !== -1 || m.indexOf('unknown column') !== -1) return { type:'base de données', icon:'bi-database', summary:'Colonne introuvable dans la base de données', detail:'Une requête SQL tente d\'accéder à une colonne qui n\'existe pas dans la table. Cela arrive après une migration incomplète, un rollback, ou quand le code référence une colonne qui n\'a pas été ajoutée.', causes:['Une migration a été rollbackée et les colonnes ont été supprimées','Une migration n\'a pas encore été exécutée','Le code fait référence à une colonne renommée ou supprimée'], solutions:['Exécutez les migrations manquantes : php artisan migrate','Vérifiez que toutes les colonnes sont bien créées dans la base','Comparez le schéma de la base avec les fichiers de migration']};
+        if (m.indexOf('duplicate column') !== -1 || m.indexOf('column already exists') !== -1) return { type:'base de données', icon:'bi-database', summary:'Colonne en double', detail:'Une migration tente de créer une colonne qui existe déjà dans la table.', causes:['La migration a déjà été exécutée mais est rejouée','Conflit entre deux migrations différentes'], solutions:['Vérifiez les migrations en attente avec php artisan migrate:status','Supprimez la migration en conflit ou corrigez-la']};
+        if (m.indexOf('duplicate key') !== -1 || m.indexOf('duplicate entry') !== -1) return { type:'base de données', icon:'bi-database', summary:'Doublon : contrainte d\'unicité violée', detail:'Tentative d\'insérer une valeur qui viole une contrainte d\'unicité (clé unique ou index).', causes:['Un enregistrement avec la même valeur unique existe déjà','Un index a déjà été créé sur la même colonne'], solutions:['Corrigez les données en doublon dans la table','Supprimez l\'index en double si la migration a déjà été exécutée']};
+        if (m.indexOf('view') !== -1 && m.indexOf('not found') !== -1) return { type:'vue manquante', icon:'bi-file-earmark', summary:'Vue Blade introuvable', detail:'Le contrôleur tente de charger une vue Blade qui n\'existe pas dans le dossier resources/views.', causes:['Le fichier .blade.php n\'a pas été créé','Le nom de la vue est mal orthographié dans le contrôleur','La vue a été déplacée ou supprimée'], solutions:['Créez le fichier de vue manquant','Vérifiez l\'orthographe du nom de vue dans le contrôleur','Utilisez php artisan view:clear après avoir créé la vue']};
+        if (m.indexOf('undefined method') !== -1 || m.indexOf('call to undefined method') !== -1) return { type:'code', icon:'bi-code-slash', summary:'Méthode appelée mais non définie', detail:'Le code tente d\'appeler une méthode qui n\'existe pas sur l\'objet ou le modèle.', causes:['La méthode n\'a pas encore été implémentée dans la classe','L\'objet n\'est pas du type attendu','Faute de frappe dans le nom de la méthode'], solutions:['Ajoutez la méthode manquante dans le modèle concerné','Vérifiez le type de l\'objet avant d\'appeler la méthode','Corrigez le nom de la méthode si c\'est une faute de frappe']};
+        if (m.indexOf('class') !== -1 && m.indexOf('not found') !== -1) return { type:'autoloading', icon:'bi-box', summary:'Classe introuvable par l\'autoloader', detail:'PHP ne parvient pas à charger une classe. Le namespace ou le chemin du fichier est incorrect.', causes:['Le fichier de la classe n\'existe pas','Le namespace déclaré dans le fichier ne correspond pas au chemin','L\'autoloader n\'a pas été mis à jour après la création de la classe'], solutions:['Exécutez composer dump-autoload pour régénérer l\'autoloader','Vérifiez que le namespace et le chemin du fichier correspondent','Vérifiez l\'orthographe du nom et du namespace de la classe']};
+        if (m.indexOf('does not exist') !== -1 && m.indexOf('option') !== -1) return { type:'console', icon:'bi-terminal', summary:'Option de commande invalide', detail:'Une commande Artisan a été appelée avec une option qui n\'existe pas dans sa définition.', causes:['L\'option a été supprimée ou renommée','La commande est mal orthographiée'], solutions:['Consultez l\'aide : php artisan help <commande>','Corrigez l\'option utilisée']};
+        if (m.indexOf('could not find driver') !== -1) return { type:'base de données', icon:'bi-database', summary:'Pilote de base de données manquant', detail:'PHP ne dispose pas du pilote (driver) nécessaire pour se connecter à la base de données configurée.', causes:['L\'extension PHP requise (pdo_mysql, pdo_sqlite) n\'est pas installée','Le fichier .env configure un driver non disponible'], solutions:['Installez l\'extension PHP manquante','Vérifiez DB_CONNECTION dans .env']};
+        if (m.indexOf('doesn\'t have a default value') !== -1 || m.indexOf('default value') !== -1) return { type:'base de données', icon:'bi-database', summary:'Champ obligatoire sans valeur par défaut', detail:'Une insertion en base échoue car un champ NOT NULL n\'a pas de valeur.', causes:['La colonne est NOT NULL mais non remplie','Le modèle n\'inclut pas ce champ dans $fillable'], solutions:['Ajoutez une valeur par défaut dans la migration','Assurez-vous que le champ est fourni','Ajoutez le champ dans $fillable du modèle']};
+        if (m.indexOf('read property') !== -1 && m.indexOf('on null') !== -1) return { type:'code', icon:'bi-code-slash', summary:'Lecture sur une valeur nulle', detail:'Le code accède à une propriété sur une variable qui vaut null.', causes:['Une relation Eloquent n\'a pas retourné de résultat','Un utilisateur connecté est null','La variable n\'a pas été initialisée'], solutions:['Vérifiez que l\'objet existe avant d\'accéder','Utilisez ?-> (null safe) de PHP 8','Ajoutez une vérification conditionnelle']};
+        if (m.indexOf('syntax error') !== -1 || m.indexOf('parse error') !== -1) return { type:'code', icon:'bi-code-slash', summary:'Erreur de syntaxe PHP', detail:'PHP rencontre une erreur de syntaxe : parenthèse manquante, point-virgule oublié, etc.', causes:['Faute de frappe dans le code PHP','Fermeture de parenthèse manquante','Syntaxe incorrecte dans un fichier Blade'], solutions:['Utilisez php -l <fichier> pour détecter l\'erreur','Vérifiez les parenthèses et points-virgules','Regardez le fichier et la ligne indiqués']};
+        if (m.indexOf('route') !== -1 && m.indexOf('not defined') !== -1) return { type:'routing', icon:'bi-signpost-2', summary:'Route nommée introuvable', detail:'Le code tente de générer une URL avec route() mais le nom de route n\'existe pas.', causes:['La route n\'a pas été définie','Le nom de route est mal orthographié','La route a été supprimée ou renommée'], solutions:['Vérifiez avec php artisan route:list','Corrigez le nom de route dans l\'appel','Ajoutez la route manquante']};
+        if (m.indexOf('undefined variable') !== -1) return { type:'vue', icon:'bi-file-earmark', summary:'Variable indéfinie dans une vue', detail:'Une vue Blade tente d\'afficher une variable non passée par le contrôleur.', causes:['Le contrôleur n\'a pas passé la variable','Faute de frappe dans le nom de la variable'], solutions:['Vérifiez que le contrôleur passe bien la variable','Corrigez le nom dans la vue']};
+        return null;
     }
 
-    function openLogModal(index) {
-        const entry = logEntries[index];
-        if (!entry) return;
+    window.openLogModal = function(index) {
+        var e = entries[index];
+        if (!e) return;
 
-        document.getElementById('modalLevel').textContent = entry.level.toUpperCase();
-        document.getElementById('modalLevel').className = 'level-badge';
-        const parentLevelClass = ['error','critical','alert','emergency'].includes(entry.level) ? 'level-error'
-            : ['warning','notice'].includes(entry.level) ? 'level-warning'
-            : entry.level === 'info' ? 'level-info' : 'level-debug';
-        document.getElementById('modalHeader').className = 'modal-log-header ' + parentLevelClass;
-        document.getElementById('modalTimestamp').textContent = entry.timestamp;
+        $('modalLevel').textContent = e.level.toUpperCase();
+        $('modalLevel').className = 'level-badge';
+        var plc = (e.level === 'error'||e.level==='critical'||e.level==='alert'||e.level==='emergency') ? 'level-error' : (e.level==='warning'||e.level==='notice') ? 'level-warning' : e.level==='info' ? 'level-info' : 'level-debug';
+        $('modalHeader').className = 'modal-log-header ' + plc;
+        $('modalTimestamp').textContent = e.timestamp;
 
-        const body = document.getElementById('modalBody');
+        var body = $('modalBody');
         body.innerHTML = '';
 
-        const msgDiv = document.createElement('div');
-        msgDiv.style.cssText = 'color:var(--logs-msg); font-weight:600; margin-bottom:0.75rem;';
-        msgDiv.textContent = entry.message;
-        body.appendChild(msgDiv);
+        var msg = document.createElement('div');
+        msg.style.cssText = 'color:var(--logs-msg);font-weight:600;margin-bottom:0.75rem;';
+        msg.textContent = e.message;
+        body.appendChild(msg);
 
-        if (entry.trace && entry.trace.length > 0) {
-            const traceTitle = document.createElement('div');
-            traceTitle.style.cssText = 'color:var(--logs-info); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; padding-top:0.5rem; border-top:1px solid var(--logs-border);';
-            traceTitle.textContent = 'Pile d\'exécution (Stack Trace)';
-            body.appendChild(traceTitle);
-
-            entry.trace.forEach(function(line) {
-                const d = document.createElement('div');
-                d.className = 'stack-line';
-                const trimmed = line.trim();
-                if (trimmed.includes('/vendor/')) {
-                    d.classList.add('vendor');
-                } else if (trimmed.startsWith('#')) {
-                    d.classList.add('file');
-                }
-                d.textContent = line;
-                body.appendChild(d);
-            });
+        var expl = getErrorExplanation(e.message);
+        if (expl) {
+            var box = document.createElement('div');
+            box.style.cssText = 'background:var(--logs-info-bg);border:1px solid var(--logs-border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.75rem;';
+            box.innerHTML = '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;"><i class="' + expl.icon + '" style="color:var(--logs-info);font-size:1rem;"></i><span style="font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--logs-info);">' + expl.type + '</span><span style="margin-left:auto;background:var(--logs-info-bg);padding:0.1rem 0.4rem;border-radius:4px;font-size:0.65rem;color:var(--logs-info);">? Explication</span></div><div style="font-weight:600;font-size:0.82rem;color:var(--logs-text);margin-bottom:0.35rem;">' + expl.summary + '</div><div style="font-size:0.78rem;color:var(--logs-text-dim);margin-bottom:0.5rem;">' + expl.detail + '</div><div style="font-size:0.75rem;color:var(--logs-warning);margin-bottom:0.25rem;"><i class="bi bi-exclamation-triangle me-1"></i>Causes possibles :</div><ul style="margin:0 0 0.5rem 1.2rem;padding:0;font-size:0.75rem;color:var(--logs-text-dim);">' + expl.causes.map(function(c){return '<li>'+c+'</li>';}).join('') + '</ul><div style="font-size:0.75rem;color:var(--logs-file);margin-bottom:0.25rem;"><i class="bi bi-check-circle me-1"></i>Solutions :</div><ul style="margin:0 0 0 1.2rem;padding:0;font-size:0.75rem;color:var(--logs-text-dim);">' + expl.solutions.map(function(s){return '<li>'+s+'</li>';}).join('') + '</ul>';
+            body.appendChild(box);
         }
 
-        const entryIndex = document.getElementById('logModalTitle');
-        entryIndex.dataset.index = index;
+        if (e.trace && e.trace.length > 0) {
+            var ttl = document.createElement('div');
+            ttl.style.cssText = 'color:var(--logs-info);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;padding-top:0.5rem;border-top:1px solid var(--logs-border);';
+            ttl.textContent = 'Pile d\'exécution (Stack Trace)';
+            body.appendChild(ttl);
+            for (var t = 0; t < e.trace.length; t++) {
+                var d = document.createElement('div');
+                d.className = 'stack-line';
+                var tr = e.trace[t].trim();
+                if (tr.indexOf('/vendor/') !== -1) d.classList.add('vendor');
+                else if (tr.indexOf('#') === 0) d.classList.add('file');
+                d.textContent = e.trace[t];
+                body.appendChild(d);
+            }
+        }
 
-        const modal = new bootstrap.Modal(document.getElementById('logDetailModal'));
-        modal.show();
-    }
+        $('logModalTitle').dataset.index = index;
+        new bootstrap.Modal($('logDetailModal')).show();
+    };
 
-    function copyLogContent() {
-        const index = document.getElementById('logModalTitle').dataset.index;
-        const entry = logEntries[index];
-        if (!entry) return;
-
-        const text = '[' + entry.timestamp + '] ' + entry.level.toUpperCase() + ': ' + entry.message
-            + (entry.trace && entry.trace.length > 0 ? '\n' + entry.trace.join('\n') : '');
-
-        navigator.clipboard.writeText(text).then(function() {
-            const btn = document.querySelector('.copy-btn');
+    window.copyLogContent = function() {
+        var idx = $('logModalTitle').dataset.index;
+        var e = entries[parseInt(idx)];
+        if (!e) return;
+        var txt = '[' + e.timestamp + '] ' + e.level.toUpperCase() + ': ' + e.message + (e.trace && e.trace.length ? '\n' + e.trace.join('\n') : '');
+        navigator.clipboard.writeText(txt).then(function() {
+            var btn = document.querySelector('.copy-btn');
             btn.innerHTML = '<i class="bi bi-check me-1"></i>Copié !';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copier';
-            }, 2000);
+            setTimeout(function(){ btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copier'; }, 2000);
         }).catch(function() {
-            const btn = document.querySelector('.copy-btn');
+            var btn = document.querySelector('.copy-btn');
             btn.innerHTML = '<i class="bi bi-x me-1"></i>Erreur';
-            setTimeout(function() {
-                btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copier';
-            }, 2000);
+            setTimeout(function(){ btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copier'; }, 2000);
         });
-    }
+    };
+})();
 </script>
 @endpush
 @endsection
