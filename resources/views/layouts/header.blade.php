@@ -132,7 +132,7 @@
               $userId = Auth::id();
               if (Auth::user()->estSuperAdmin()) {
                 $profilRoute = route('admin.superadmin.utilisateurs.show', $userId);
-                $rolesRoute = route('admin.superadmin.utilisateurs.edit', $userId);
+                $rolesRoute = route('admin.superadmin.roles.index');
                 $parametresRoute = route('admin.superadmin.parametres.index');
               } elseif (Auth::user()->estUtilisateurEntreprise()) {
                 $profilRoute = route('admin.entreprise.profile');

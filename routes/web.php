@@ -159,6 +159,19 @@ Route::middleware(['auth', 'tenant', 'superadmin'])->prefix('admin/superadmin')-
         Route::post('/{id}/reset-password', [\App\Http\Controllers\SuperAdmin\UtilisateurController::class, 'resetPassword'])->name('reset-password');
     });
 
+    // Gestion des rôles et permissions
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/duplicate', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'duplicate'])->name('duplicate');
+        Route::get('/{id}/users', [\App\Http\Controllers\SuperAdmin\RoleController::class, 'users'])->name('users');
+    });
+
     // Paramètres globaux
     Route::prefix('parametres')->name('parametres.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'index'])->name('index');

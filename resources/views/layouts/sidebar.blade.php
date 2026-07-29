@@ -373,6 +373,31 @@
           </ul>
         </li>
 
+        {{-- Rôles & Permissions --}}
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-shield-lock"></i>
+            <p>
+              Rôles & Permissions
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.roles.index') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Liste des rôles</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ route('admin.superadmin.roles.create') }}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Nouveau rôle</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         {{-- Paramètres --}}
         <li class="nav-item">
           <a href="{{ route('admin.superadmin.parametres.index') }}" class="nav-link">
