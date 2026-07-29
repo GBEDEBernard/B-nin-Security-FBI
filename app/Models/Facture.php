@@ -9,6 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Facture extends Model
 {
     protected $table = 'factures';
+
+    protected $casts = [
+        'date_emission' => 'datetime',
+        'date_echeance' => 'datetime',
+        'date_paiement' => 'datetime',
+        'montant_ht' => 'decimal:2',
+        'montant_ttc' => 'decimal:2',
+        'montant_paye' => 'decimal:2',
+        'montant_restant' => 'decimal:2',
+    ];
+
     protected $fillable = [
         'entreprise_id',
         'contrat_prestation_id',

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', "Activités du module {$moduleLabel ?? $moduleType}")
+@section('title')
+    Activités du module {{ $moduleLabel ?? $moduleType }}
+@endsection
 
 @section('content')
 <div class="container-fluid p-4">
