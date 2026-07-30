@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Entreprise;
 use App\Models\User;
+use App\Models\Employe;
+use App\Models\Client;
+use App\Models\ContratPrestation;
+use App\Models\Abonnement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -48,7 +52,7 @@ class SuperAdminController extends Controller
 
     public function entreprisesIndex(Request $request)
     {
-        $query = Entreprise::withCount(['employes', 'clients', 'contratsPrestation']);
+        $query = Entreprise::withCount(['employes', 'clients', 'contratsPrestation', 'factures', 'incidents']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -81,7 +85,72 @@ class SuperAdminController extends Controller
 
         $entreprises = $query->paginate(10)->appends($request->query());
 
-        return view('admin.superadmin.entreprises.index', compact('entreprises'));
+        // Statistiques du tableau de bord
+        $stats = [
+            'total' => Entreprise::count(),
+            'actives' => Entreprise::where('est_active', true)->count(),
+            'inactives' => Entreprise::where('est_active', false)->count(),
+            'essai' => Entreprise::whereHas('abonnement', fn($q) => $q->where('est_en_essai', true))->count(),
+            'total_employes' => Employe::count(),
+            'total_clients' => Client::count(),
+            'total_contrats' => ContratPrestation::count(),
+            'revenu_mensuel' => Entreprise::where('est_active', true)
+                ->with('abonnement')->get()
+                ->sum(fn($e) => $e->montant_mensuel ?? 0),
+            'expired' => Entreprise::whereHas('abonnement', fn($q) => $q
+                ->where('statut', 'expire')
+                ->orWhere('date_fin', '<', now())
+            )->count(),
+        ];
+
+        // Répartition par formule
+        $formules = Abonnement::selectRaw('formule, count(*) as total')
+            ->groupBy('formule')->pluck('total', 'formule')->toArray();
+        $chartFormules = [
+            'labels' => array_keys($formules),
+            'data' => array_values($formules),
+        ];
+
+        // Créations par mois (12 derniers mois)
+        $monthly = Entreprise::selectRaw("strftime('%m', created_at) as mois, strftime('%Y', created_at) as annee, count(*) as total")
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('annee', 'mois')
+            ->orderBy('annee')->orderBy('mois')
+            ->get()->keyBy(fn($m) => $m->annee . '-' . $m->mois);
+
+        $chartMonthly = ['labels' => [], 'data' => []];
+        for ($i = 11; $i >= 0; $i--) {
+            $d = now()->subMonths($i);
+            $key = $d->format('Y-m');
+            $chartMonthly['labels'][] = $d->format('M Y');
+            $chartMonthly['data'][] = $monthly->get($key)?->total ?? 0;
+        }
+
+        // Top 10 entreprises par employés
+        $topEntreprises = Entreprise::withCount('employes')
+            ->where('est_active', true)
+            ->orderByDesc('employes_count')
+            ->limit(10)
+            ->get();
+        $chartTop = [
+            'labels' => $topEntreprises->pluck('nom_entreprise')->toArray(),
+            'data' => $topEntreprises->pluck('employes_count')->toArray(),
+        ];
+
+        // Répartition par ville
+        $villes = Entreprise::selectRaw('ville, count(*) as total')
+            ->whereNotNull('ville')->where('ville', '!=', '')
+            ->groupBy('ville')->orderByDesc('total')->limit(8)
+            ->pluck('total', 'ville')->toArray();
+        $chartVilles = [
+            'labels' => array_keys($villes),
+            'data' => array_values($villes),
+        ];
+
+        return view('admin.superadmin.entreprises.index', compact(
+            'entreprises', 'stats',
+            'chartFormules', 'chartMonthly', 'chartTop', 'chartVilles'
+        ));
     }
 
     public function entreprisesCreate()
