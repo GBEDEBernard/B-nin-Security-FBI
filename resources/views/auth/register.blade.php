@@ -11,7 +11,7 @@
 <head>
   <!-- Métadonnées de la page -->
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>@yield('title', 'Bénin Security - Inscription')</title>
+    <title>@yield('title', config('app.name') . ' - Inscription')</title>
 
   <!-- Viewport pour le responsive design -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -745,7 +745,7 @@
         <!-- Icône de bouclier (sécurité) -->
         <i class="bi bi-shield-check"></i>
       </div>
-      <h1 class="brand-name">Bénin Security</h1>
+      <h1 class="brand-name">{{ config('app.name') }}</h1>
       <p class="brand-tagline">Gestion de Sécurité Intelligente</p>
     </div>
 

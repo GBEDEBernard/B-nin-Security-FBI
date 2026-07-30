@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>@yield('title', 'Bénin Security - Connexion')</title>
+    <title>@yield('title', config('app.name') . ' - Connexion')</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="theme-color" content="#1a1a2e" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -671,7 +671,7 @@
   <div class="auth-container">
     <div class="logo-section">
       <div class="logo-wrapper"><i class="bi bi-shield-check"></i></div>
-      <h1 class="brand-name">Bénin Security</h1>
+      <h1 class="brand-name">{{ config('app.name') }}</h1>
       <p class="brand-tagline">Gestion de Sécurité Intelligente</p>
     </div>
 

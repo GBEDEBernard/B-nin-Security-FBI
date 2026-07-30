@@ -10,7 +10,7 @@
       </div>
       <!--end::Brand Image-->
       <!--begin::Brand Text-->
-      <span class="brand-text fw-bold">Bénin <span class="text-success">Security</span></span>
+      <span class="brand-text fw-bold">{{ config('app.name') }}</span>
       <!--end::Brand Text-->
     </a>
     <!--end::Brand Link-->
@@ -412,7 +412,7 @@
 
         {{-- Paramètres --}}
         <li class="nav-item">
-          <a href="{{ route('admin.superadmin.parametres.index') }}" class="nav-link">
+          <a href="{{ route('admin.superadmin.parametres.index') }}" class="nav-link {{ request()->routeIs('admin.superadmin.parametres.*') ? 'active' : '' }}">
             <i class="nav-icon bi bi-gear-fill"></i>
             <p>Paramètres Système</p>
           </a>

@@ -343,7 +343,7 @@
         <div class="signature-box">
             <p><strong>Pour LE PRESTATAIRE</strong></p>
             <div class="signature-line">
-                <p class="signature-name">Bénin Security</p>
+                <p class="signature-name">{{ config('app.name') }}</p>
                 <p class="signature-role">Représentant légal</p>
             </div>
         </div>
@@ -359,7 +359,7 @@
 
     <!-- Pied de page -->
     <div class="footer">
-        <p><strong>Bénin Security</strong> - Société de sécurité privée</p>
+        <p><strong>{{ config('app.name') }}</strong> - Société de sécurité privée</p>
         <p>Siège social : Cotonou, République du Benin | RCCM : RC/2024/001</p>
         <p>Email : contact@benin-security.com | Tel : +229 XX XX XX XX</p>
     </div>
