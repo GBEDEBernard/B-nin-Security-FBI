@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>@yield('title', 'Bénin Security - Gestion de Sécurité')</title>
+  <title>@yield('title', config('app.name') . ' - Gestion de Sécurité')</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="color-scheme" content="light dark" />
@@ -12,8 +12,8 @@
   {{-- CSRF token obligatoire pour les requêtes AJAX --}}
   <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-  <meta name="title" content="Bénin Security - Gestion de Sécurité Professionnelle" />
-  <meta name="author" content="Bénin Security" />
+  <meta name="title" content="{{ config('app.name') }} - Gestion de Sécurité Professionnelle" />
+  <meta name="author" content="{{ config('app.name') }}" />
   <meta name="description" content="Plateforme de gestion de sécurité professionnelle au Bénin." />
 
   {{-- Fonts --}}

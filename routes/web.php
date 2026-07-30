@@ -167,11 +167,8 @@ Route::middleware(['auth:web,employe,client', 'tenant', 'superadmin'])->prefix('
     // Paramètres globaux
     Route::prefix('parametres')->name('parametres.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'index'])->name('index');
-        Route::put('/general', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'general'])->name('general');
-        Route::put('/email', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'email'])->name('email');
-        Route::put('/security', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'security'])->name('security');
-        Route::put('/api', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'api'])->name('api');
-        Route::put('/mobile', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'mobile'])->name('mobile');
+        Route::post('/', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'update'])->name('update');
+        Route::post('/groupe/{group}', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'updateGroup'])->name('update-group');
         Route::post('/test-email', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'testEmail'])->name('test-email');
         Route::post('/clear-cache', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'clearCache'])->name('clear-cache');
         Route::get('/logs', [\App\Http\Controllers\SuperAdmin\ParametreController::class, 'logs'])->name('logs');

@@ -187,7 +187,7 @@
                 <div class="box">
                     <div class="box-title">Informations légales</div>
                     <div class="box-content">
-                        <strong>Bénin Security Services</strong><br>
+                        <strong>{{ config('app.name') }} Services</strong><br>
                         IFU : 123456789<br>
                         RCCM : RB/BEN/12345<br>
                         Régime : Réel d'impôt<br>
@@ -291,7 +291,7 @@
     @endif
 
     <div class="footer">
-        Bénin Security Services - contact@benin-security.bj - +229 21 30 00 01<br>
+        {{ config('app.name') }} Services - contact@benin-security.bj - +229 21 30 00 01<br>
         IBAN : BJ123 4567 8901 2345 6789 0123 | Banque : BOA Bénin<br>
         <em>Facture {{ $facture->numero_facture }} - Générée le {{ now()->format('d/m/Y à H:i') }}</em>
     </div>

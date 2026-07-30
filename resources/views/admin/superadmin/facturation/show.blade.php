@@ -86,7 +86,7 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6 class="text-success mb-3"><i class="bi bi-building me-1"></i> Bénin Security Services</h6>
+                            <h6 class="text-success mb-3"><i class="bi bi-building me-1"></i> {{ config('app.name') }} Services</h6>
                             <p class="mb-1">Contact: contact@benin-security.bj</p>
                             <p class="mb-1">Tél: +229 21 30 00 01</p>
                         </div>
