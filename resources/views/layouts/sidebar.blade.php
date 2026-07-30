@@ -10,7 +10,23 @@
       </div>
       <!--end::Brand Image-->
       <!--begin::Brand Text-->
-      <span class="brand-text fw-bold">{{ config('app.name') }}</span>
+      <span class="brand-text fw-bold">
+        @php
+        $isSuperAdminEnContexte = Auth::guard('web')->check()
+          && Auth::guard('web')->user()->estSuperAdmin()
+          && Auth::guard('web')->user()->estEnContexteEntreprise();
+        $isEmploye = Auth::guard('employe')->check();
+        $brandName = config('app.name');
+        if ($isSuperAdminEnContexte) {
+          $entreprise = Auth::guard('web')->user()->getEntrepriseContexte();
+          if ($entreprise) $brandName = $entreprise->nom_entreprise;
+        } elseif ($isEmploye) {
+          $employe = Auth::guard('employe')->user();
+          if ($employe->entreprise) $brandName = $employe->entreprise->nom_entreprise;
+        }
+        @endphp
+        {{ $brandName }}
+      </span>
       <!--end::Brand Text-->
     </a>
     <!--end::Brand Link-->
